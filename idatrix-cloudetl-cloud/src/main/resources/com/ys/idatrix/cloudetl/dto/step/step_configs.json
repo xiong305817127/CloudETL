@@ -1,0 +1,7 @@
+{
+    "transName": "trans name",
+    "stepName": "step name",
+    "configs": {
+        "clusterSchema": "cluster schema name"
+    }
+}

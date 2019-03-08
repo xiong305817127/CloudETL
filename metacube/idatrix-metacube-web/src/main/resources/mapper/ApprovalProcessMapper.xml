@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.ApprovalProcessMapper">
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.ApprovalProcess">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="renter_id" property="renterId" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="dept_code" property="deptCode" jdbcType="VARCHAR"/>
+        <result column="cause" property="cause" jdbcType="VARCHAR"/>
+        <result column="resource_id" property="resourceId" jdbcType="BIGINT"/>
+        <result column="resource_type" property="resourceType" jdbcType="INTEGER"/>
+        <result column="auth_value" property="authValue" jdbcType="INTEGER"/>
+        <result column="status" property="status" jdbcType="INTEGER"/>
+        <result column="approver" property="approver" jdbcType="VARCHAR"/>
+        <result column="opinion" property="opinion" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, creator, renter_id, create_time, dept_code, cause, resource_id, resource_type,
+    auth_value, status, approver, opinion, modify_time
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from mc_approval_process
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from mc_approval_process
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com.ys.idatrix.metacube.metamanage.domain.ApprovalProcess">
+    insert into mc_approval_process (id, creator, renter_id,
+      create_time, dept_code, cause,
+      resource_id, resource_type, auth_value,
+      status, approver, opinion,
+      modify_time)
+    values (#{id,jdbcType=BIGINT}, #{creator,jdbcType=VARCHAR}, #{renterId,jdbcType=BIGINT},
+      #{createTime,jdbcType=TIMESTAMP}, #{deptCode,jdbcType=VARCHAR}, #{cause,jdbcType=VARCHAR},
+      #{resourceId,jdbcType=BIGINT}, #{resourceType,jdbcType=INTEGER}, #{authValue,jdbcType=INTEGER},
+      #{status,jdbcType=INTEGER}, #{approver,jdbcType=VARCHAR}, #{opinion,jdbcType=VARCHAR},
+      #{modifyTime,jdbcType=TIMESTAMP})
+  </insert>
+    <insert id="insertSelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.ApprovalProcess">
+        insert into mc_approval_process
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="renterId != null">
+                renter_id,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="deptCode != null">
+                dept_code,
+            </if>
+            <if test="cause != null">
+                cause,
+            </if>
+            <if test="resourceId != null">
+                resource_id,
+            </if>
+            <if test="resourceType != null">
+                resource_type,
+            </if>
+            <if test="authValue != null">
+                auth_value,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="approver != null">
+                approver,
+            </if>
+            <if test="opinion != null">
+                opinion,
+            </if>
+            <if test="modifyTime != null">
+                modify_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="renterId != null">
+                #{renterId,jdbcType=BIGINT},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="deptCode != null">
+                #{deptCode,jdbcType=VARCHAR},
+            </if>
+            <if test="cause != null">
+                #{cause,jdbcType=VARCHAR},
+            </if>
+            <if test="resourceId != null">
+                #{resourceId,jdbcType=BIGINT},
+            </if>
+            <if test="resourceType != null">
+                #{resourceType,jdbcType=INTEGER},
+            </if>
+            <if test="authValue != null">
+                #{authValue,jdbcType=INTEGER},
+            </if>
+            <if test="status != null">
+                #{status,jdbcType=INTEGER},
+            </if>
+            <if test="approver != null">
+                #{approver,jdbcType=VARCHAR},
+            </if>
+            <if test="opinion != null">
+                #{opinion,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.ApprovalProcess">
+        update mc_approval_process
+        <set>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="renterId != null">
+                renter_id = #{renterId,jdbcType=BIGINT},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="deptCode != null">
+                dept_code = #{deptCode,jdbcType=VARCHAR},
+            </if>
+            <if test="cause != null">
+                cause = #{cause,jdbcType=VARCHAR},
+            </if>
+            <if test="resourceId != null">
+                resource_id = #{resourceId,jdbcType=BIGINT},
+            </if>
+            <if test="resourceType != null">
+                resource_type = #{resourceType,jdbcType=INTEGER},
+            </if>
+            <if test="authValue != null">
+                auth_value = #{authValue,jdbcType=INTEGER},
+            </if>
+            <if test="status != null">
+                status = #{status,jdbcType=INTEGER},
+            </if>
+            <if test="approver != null">
+                approver = #{approver,jdbcType=VARCHAR},
+            </if>
+            <if test="opinion != null">
+                opinion = #{opinion,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.ys.idatrix.metacube.metamanage.domain.ApprovalProcess">
+    update mc_approval_process
+    set creator = #{creator,jdbcType=VARCHAR},
+      renter_id = #{renterId,jdbcType=BIGINT},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      dept_code = #{deptCode,jdbcType=VARCHAR},
+      cause = #{cause,jdbcType=VARCHAR},
+      resource_id = #{resourceId,jdbcType=BIGINT},
+      resource_type = #{resourceType,jdbcType=INTEGER},
+      auth_value = #{authValue,jdbcType=INTEGER},
+      status = #{status,jdbcType=INTEGER},
+      approver = #{approver,jdbcType=VARCHAR},
+      opinion = #{opinion,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <select id="find" resultType="java.lang.Integer">
+        SELECT count(*) FROM mc_approval_process
+        <where>
+            <if test="deptCode != null">
+                AND dept_code = #{deptCode,jdbcType=VARCHAR}
+            </if>
+            <if test="status != null">
+                AND status = #{status,jdbcType=INTEGER}
+            </if>
+            <if test="resourceId != null">
+                AND resource_id = #{resourceId,jdbcType=BIGINT}
+            </if>
+            <if test="resourceType != null">
+                AND resource_type = #{resourceType,jdbcType=INTEGER}
+            </if>
+        </where>
+    </select>
+
+    <update id="batchToPass">
+        UPDATE mc_approval_process
+        SET `status` = 2, `approver` = #{approver, jdbcType=VARCHAR}, modify_time = #{now, jdbcType=TIMESTAMP}
+        WHERE
+        id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id, jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+    <update id="batchToNoPass">
+        UPDATE mc_approval_process
+        SET `status` = 3, `approver` = #{approver, jdbcType=VARCHAR}, opinion = #{opinion, jdbcType=VARCHAR},
+        modify_time = #{now, jdbcType=TIMESTAMP}
+        WHERE
+        id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id, jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+    <update id="batchToRecycled">
+        UPDATE mc_approval_process
+        SET `status` = 4, `approver` = #{approver, jdbcType=VARCHAR}, modify_time = #{now, jdbcType=TIMESTAMP}
+        WHERE
+        id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id, jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+    <resultMap id="ApprovalProcessVOResultMap" type="com.ys.idatrix.metacube.metamanage.vo.request.ApprovalProcessVO">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="renter_id" property="renterId" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="dept_code" property="deptCode" jdbcType="VARCHAR"/>
+        <result column="cause" property="cause" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="INTEGER"/>
+        <result column="approver" property="approver" jdbcType="VARCHAR"/>
+        <result column="opinion" property="opinion" jdbcType="VARCHAR"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+
+        <result column="server_id" property="serverId" jdbcType="BIGINT" />
+        <result column="server_name" property="serverName" jdbcType="VARCHAR"/>
+        <result column="hostname" property="hostname" jdbcType="VARCHAR" />
+        <result column="ip" property="ip" jdbcType="VARCHAR"/>
+
+        <result column="database_id" property="databaseId" jdbcType="BIGINT" />
+        <result column="database_type" property="databaseType" />
+        <result column="schema_name" property="databaseName" jdbcType="VARCHAR"/>
+        <result column="schema_name_cn" property="databaseNameCn" jdbcType="VARCHAR"/>
+        <result column="belong" property="belong" jdbcType="INTEGER"/>
+        <result column="metadata_database_type" property="databaseType" jdbcType="INTEGER"/>
+
+        <result column="schema_id" property="schemaId" jdbcType="BIGINT" />
+        <result column="schema_org_code" property="schemaDeptCodes" jdbcType="VARCHAR"/>
+
+        <result column="resource_id" property="resourceId" jdbcType="INTEGER"/>
+        <result column="metadata_name" property="resourceName" jdbcType="VARCHAR"/>
+        <result column="metadata_identification" property="resourceNameCn" jdbcType="VARCHAR"/>
+        <result column="metadata_resource_type" property="resourceType" jdbcType="INTEGER"/>
+
+        <result column="auth_names" property="authNames" jdbcType="VARCHAR"/>
+        <result column="auth_types" property="authTypes" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="searchResourceApplyList"
+            parameterType="com.ys.idatrix.metacube.metamanage.vo.request.ApprovalProcessSearchVo"
+            resultMap="ApprovalProcessVOResultMap">
+        SELECT
+        ap.*,
+        se.ip 'ip',
+        se.`name` 'server_name',
+        se.hostname 'hostname',
+        da.belong 'belong',
+
+        sc.name 'schema_name',
+        sc.name_cn 'schema_name_cn',
+        sc.org_code 'schema_org_code',
+
+        md.metadata_name 'metadata_name',
+        md.identification 'metadata_identification',
+        md.database_type 'metadata_database_type',
+        md.resource_type 'metadata_resource_type'
+        FROM
+        mc_approval_process ap
+        LEFT JOIN (
+        select id, `name` as 'metadata_name', `identification`, `database_type`, `resource_type`, `schema_id` from
+        mc_metadata
+        UNION
+        select id, `name`, `identification`, 8, null, `schema_id` from mc_metadata_es
+        ) md ON md.id = ap.resource_id
+        LEFT JOIN
+        mc_schema sc ON sc.id = md.schema_id
+        LEFT JOIN mc_database da ON sc.db_id = da.id
+        LEFT JOIN mc_server se ON da.server_id = se.id
+        where ap.resource_type = md.database_type
+        <if test="status != null">
+            AND ap.status IN
+            <foreach collection="status" item="sta" open="(" close=")" separator="," >
+                #{sta}
+            </foreach>
+        </if>
+        <if test="resourceOrganisationCodes != null and resourceOrganisationCodes.size() > 0">
+            AND
+            <foreach collection="resourceOrganisationCodes" item="resourceOrganisationCode" open="(" separator="or"
+                     close=")">
+                FIND_IN_SET(#{resourceOrganisationCode}, sc.org_code)
+            </foreach>
+        </if>
+        <if test="databaseType != null">
+            AND md.database_type = #{databaseType}
+        </if>
+        <if test="creator != null">
+            AND ap.creator = #{creator}
+        </if>
+        <if test="createTime != null">
+            AND DATE_FORMAT(ap.create_time, '%Y-%m-%d') = DATE_FORMAT(#{createTime}, '%Y-%m-%d')
+        </if>
+        <if test="ascriptionDeptCode != null">
+            AND FIND_IN_SET(#{ascriptionDeptCode}, ap.dept_code)
+        </if>
+        <if test="renterId != null">
+            AND ap.renter_id = #{renterId}
+        </if>
+        ORDER BY ap.modify_time DESC
+    </select>
+
+    <select id="searchAuthorityApproveList"
+            parameterType="com.ys.idatrix.metacube.metamanage.vo.request.ApprovalProcessSearchVo"
+            resultMap="ApprovalProcessVOResultMap">
+        SELECT
+        ap.*,
+        se.ip 'ip',
+        se.`name` 'server_name',
+        se.hostname 'hostname',
+        da.belong 'belong',
+
+        sc.name 'schema_name',
+        sc.name_cn 'schema_name_cn',
+        sc.org_code 'schema_org_code',
+
+        md.metadata_name 'metadata_name',
+        md.identification 'metadata_identification',
+        md.database_type 'metadata_database_type',
+        md.resource_type 'metadata_resource_type'
+        FROM
+        mc_approval_process ap
+        LEFT JOIN (
+        select id, `name` as 'metadata_name', `identification`, `database_type`, `resource_type`, `schema_id` from
+        mc_metadata
+        UNION
+        select id, `name`, `identification`, 8, null, `schema_id` from mc_metadata_es
+        ) md ON md.id = ap.resource_id
+        LEFT JOIN
+        mc_schema sc ON sc.id = md.schema_id
+        LEFT JOIN mc_database da ON sc.db_id = da.id
+        LEFT JOIN mc_server se ON da.server_id = se.id
+        where ap.resource_type = md.database_type
+        <if test="status != null">
+            AND ap.status IN
+            <foreach collection="status" item="sta" open="(" close=")" separator="," >
+                #{sta}
+            </foreach>
+        </if>
+        <if test="creator != null">
+            AND ap.creator = #{creator}
+        </if>
+        <if test="renterId != null">
+            AND ap.renter_id = #{renterId}
+        </if>
+        <if test="createTime != null">
+            AND DATE_FORMAT(ap.create_time, '%Y-%m-%d') = DATE_FORMAT(#{createTime}, '%Y-%m-%d')
+        </if>
+        <if test="ascriptionDeptCode != null">
+            AND FIND_IN_SET(#{ascriptionDeptCode}, sc.org_code)
+        </if>
+        ORDER BY ap.modify_time DESC
+    </select>
+
+    <select id="findAuthResource" resultMap="ApprovalProcessVOResultMap" >
+        SELECT
+          sc.id 'schema_id',
+          md.id 'resource_id',
+          da.type AS database_type
+        FROM
+          mc_approval_process ap
+        LEFT JOIN (
+        select id, `name` as 'metadata_name', `identification`, `database_type`, `resource_type`, `schema_id` from
+        mc_metadata
+        UNION
+        select id, `name`, `identification`, 8, null, `schema_id` from mc_metadata_es
+        ) md ON md.id = ap.resource_id
+        LEFT JOIN mc_schema sc ON sc.id = md.schema_id
+        LEFT JOIN mc_database da ON sc.db_id = da.id
+        LEFT JOIN mc_server se ON da.server_id = se.id
+        WHERE ap.`status` = 2 AND FIND_IN_SET(#{deptCode}, ap.dept_code)
+        <if test="databaseTypes != null">
+            AND ap.resource_type in
+            <foreach collection="databaseTypes" item="type" open="(" separator="," close=")">
+                #{type}
+            </foreach>
+        </if>
+        <if test="resourceTypes != null">
+            and md.resource_type in
+            <foreach collection="resourceTypes" item="type" open="(" separator="," close=")" >
+                #{type}
+            </foreach>
+        </if>
+        <if test="authValues != null">
+            and (
+            <foreach item="auth" collection="authValues" separator="OR">
+                ap.auth_value &amp; #{auth} = #{auth}
+            </foreach>
+            )
+        </if>
+    </select>
+
+    <resultMap id="ResourceAuthVOMap" type="com.ys.idatrix.metacube.metamanage.vo.request.ResourceAuthVO">
+        <result column="auth_name" property="authName" jdbcType="VARCHAR"/>
+        <result column="auth_type" property="authType" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="getPermissionInfo" resultMap="ResourceAuthVOMap">
+        SELECT
+        ra.auth_name,
+        ra.auth_type
+        FROM
+        mc_approval_process ap
+        LEFT JOIN mc_resource_auth ra ON ap.auth_value &amp; ra.auth_value
+        WHERE ap.id = #{approvalProcessId}
+    </select>
+
+
+    <resultMap id="AuthMetadataMap" type="com.ys.idatrix.metacube.metamanage.vo.response.AuthMetadataVO">
+        <result column="id" property="id" jdbcType="BIGINT"/>
+        <result column="resource_id" property="resourceId" jdbcType="BIGINT"/>
+        <result column="resource_type" property="resourceType" jdbcType="INTEGER"/>
+        <result column="authNames" property="authNames" jdbcType="VARCHAR"/>
+        <result column="authTypes" property="authTypes" jdbcType="VARCHAR"/>
+        <result column="authValues" property="authValues" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--不定参数获取所属组织指定权限和数据源类型的元数据-->
+    <select id="getAuthMetadata" resultMap="AuthMetadataMap">
+        SELECT
+        a.id,
+        a.resource_id,
+        a.resource_type,
+        GROUP_CONCAT(b.auth_name) as authNames,
+        GROUP_CONCAT(b.auth_type) as authTypes,
+        GROUP_CONCAT(b.auth_value) as authValues
+        FROM
+        mc_approval_process a
+        left join mc_resource_auth b ON a.auth_value &amp; b.auth_value
+        <where>
+            <if test="resourceId != null">
+                and a.resource_id=#{resourceId}
+            </if>
+            <if test="status != null">
+                and a.status=#{status}
+            </if>
+            <if test="deptCode != null">
+                and a.dept_code=#{deptCode}
+            </if>
+            <if test="authName != null">
+                and b.auth_name=#{authName}
+            </if>
+            <if test="authValues != null">
+                and (
+                <foreach item="auth" collection="authValues" separator="OR">
+                    a.auth_value &amp; #{auth} = #{auth}
+                </foreach>
+                }
+            </if>
+            <if test="resourceTypes != null">
+                and a.resource_type in
+                <foreach item="type" collection="resourceTypes" open="(" separator=","
+                         close=")">
+                    #{type}
+                </foreach>
+            </if>
+        </where>
+        group by a.id
+    </select>
+
+</mapper>

@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.SnapshotTableColumnMapper">
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableColumn">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="version" property="version" jdbcType="INTEGER"/>
+        <result column="column_id" property="columnId" jdbcType="BIGINT"/>
+        <result column="column_name" property="columnName" jdbcType="VARCHAR"/>
+        <result column="column_type" property="columnType" jdbcType="VARCHAR"/>
+        <result column="type_length" property="typeLength" jdbcType="VARCHAR"/>
+        <result column="type_precision" property="typePrecision" jdbcType="VARCHAR"/>
+        <result column="is_pk" property="isPk" jdbcType="BIT"/>
+        <result column="is_auto_increment" property="isAutoIncrement" jdbcType="BIT"/>
+        <result column="is_null" property="isNull" jdbcType="BIT"/>
+        <result column="default_value" property="defaultValue" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="location" property="location" jdbcType="INTEGER"/>
+        <result column="table_id" property="tableId" jdbcType="BIGINT"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+        <result column="is_partition" property="isPartition" jdbcType="BIT"/>
+        <result column="index_partition" property="indexPartition" jdbcType="INTEGER"/>
+        <result column="is_bucket" property="isBucket" jdbcType="BIT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    id, version, column_id, column_name, column_type, type_length, type_precision, is_pk, is_auto_increment,
+    is_null, default_value, description, location, table_id, creator, create_time, modifier, 
+    modify_time, is_partition, index_partition, is_bucket
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from mc_snapshot_table_column
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from mc_snapshot_table_column
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+
+    <insert id="insert" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableColumn">
+    insert into mc_snapshot_table_column (id, version, column_id, column_name,
+      column_type, type_length, type_precision, 
+      is_pk, is_auto_increment, is_null, 
+      default_value, description, location, 
+      table_id, creator, create_time, 
+      modifier, modify_time, is_partition, 
+      index_partition, is_bucket)
+    values (#{id,jdbcType=BIGINT}, #{version,jdbcType=INTEGER}, #{columnId, jdbcType=BIGINT}, #{columnName,jdbcType=VARCHAR},
+      #{columnType,jdbcType=VARCHAR}, #{typeLength,jdbcType=VARCHAR}, #{typePrecision,jdbcType=VARCHAR}, 
+      #{isPk,jdbcType=BIT}, #{isAutoIncrement,jdbcType=BIT}, #{isNull,jdbcType=BIT}, 
+      #{defaultValue,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, #{location,jdbcType=INTEGER}, 
+      #{tableId,jdbcType=BIGINT}, #{creator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{modifier,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}, #{isPartition,jdbcType=BIT}, 
+      #{indexPartition,jdbcType=INTEGER}, #{isBucket,jdbcType=BIT})
+  </insert>
+
+    <insert id="insertSelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableColumn">
+        insert into mc_snapshot_table_column
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="version != null">
+                version,
+            </if>
+            <if test="columnId != null">
+                column_id,
+            </if>
+            <if test="columnName != null">
+                column_name,
+            </if>
+            <if test="columnType != null">
+                column_type,
+            </if>
+            <if test="typeLength != null">
+                type_length,
+            </if>
+            <if test="typePrecision != null">
+                type_precision,
+            </if>
+            <if test="isPk != null">
+                is_pk,
+            </if>
+            <if test="isAutoIncrement != null">
+                is_auto_increment,
+            </if>
+            <if test="isNull != null">
+                is_null,
+            </if>
+            <if test="defaultValue != null">
+                default_value,
+            </if>
+            <if test="description != null">
+                description,
+            </if>
+            <if test="location != null">
+                location,
+            </if>
+            <if test="tableId != null">
+                table_id,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="modifier != null">
+                modifier,
+            </if>
+            <if test="modifyTime != null">
+                modify_time,
+            </if>
+            <if test="isPartition != null">
+                is_partition,
+            </if>
+            <if test="indexPartition != null">
+                index_partition,
+            </if>
+            <if test="isBucket != null">
+                is_bucket,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="version != null">
+                #{version,jdbcType=INTEGER},
+            </if>
+            <if test="columnId != null">
+                #{columnId, jdbcType=BIGINT},
+            </if>
+            <if test="columnName != null">
+                #{columnName,jdbcType=VARCHAR},
+            </if>
+            <if test="columnType != null">
+                #{columnType,jdbcType=VARCHAR},
+            </if>
+            <if test="typeLength != null">
+                #{typeLength,jdbcType=VARCHAR},
+            </if>
+            <if test="typePrecision != null">
+                #{typePrecision,jdbcType=VARCHAR},
+            </if>
+            <if test="isPk != null">
+                #{isPk,jdbcType=BIT},
+            </if>
+            <if test="isAutoIncrement != null">
+                #{isAutoIncrement,jdbcType=BIT},
+            </if>
+            <if test="isNull != null">
+                #{isNull,jdbcType=BIT},
+            </if>
+            <if test="defaultValue != null">
+                #{defaultValue,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="location != null">
+                #{location,jdbcType=INTEGER},
+            </if>
+            <if test="tableId != null">
+                #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isPartition != null">
+                #{isPartition,jdbcType=BIT},
+            </if>
+            <if test="indexPartition != null">
+                #{indexPartition,jdbcType=INTEGER},
+            </if>
+            <if test="isBucket != null">
+                #{isBucket,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective"
+            parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableColumn">
+        update mc_snapshot_table_column
+        <set>
+            <if test="version != null">
+                version = #{version,jdbcType=INTEGER},
+            </if>
+            <if test="columnId != null">
+                column_id = #{columnId, jdbcType=INTEGER},
+            </if>
+            <if test="columnName != null">
+                column_name = #{columnName,jdbcType=VARCHAR},
+            </if>
+            <if test="columnType != null">
+                column_type = #{columnType,jdbcType=VARCHAR},
+            </if>
+            <if test="typeLength != null">
+                type_length = #{typeLength,jdbcType=VARCHAR},
+            </if>
+            <if test="typePrecision != null">
+                type_precision = #{typePrecision,jdbcType=VARCHAR},
+            </if>
+            <if test="isPk != null">
+                is_pk = #{isPk,jdbcType=BIT},
+            </if>
+            <if test="isAutoIncrement != null">
+                is_auto_increment = #{isAutoIncrement,jdbcType=BIT},
+            </if>
+            <if test="isNull != null">
+                is_null = #{isNull,jdbcType=BIT},
+            </if>
+            <if test="defaultValue != null">
+                default_value = #{defaultValue,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                description = #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="location != null">
+                location = #{location,jdbcType=INTEGER},
+            </if>
+            <if test="tableId != null">
+                table_id = #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                modifier = #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isPartition != null">
+                is_partition = #{isPartition,jdbcType=BIT},
+            </if>
+            <if test="indexPartition != null">
+                index_partition = #{indexPartition,jdbcType=INTEGER},
+            </if>
+            <if test="isBucket != null">
+                is_bucket = #{isBucket,jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableColumn">
+    update mc_snapshot_table_column
+    set version = #{version,jdbcType=INTEGER},
+      column_id = #{columnId,jdbcType=BIGINT},
+      column_name = #{columnName,jdbcType=VARCHAR},
+      column_type = #{columnType,jdbcType=VARCHAR},
+      type_length = #{typeLength,jdbcType=VARCHAR},
+      type_precision = #{typePrecision,jdbcType=VARCHAR},
+      is_pk = #{isPk,jdbcType=BIT},
+      is_auto_increment = #{isAutoIncrement,jdbcType=BIT},
+      is_null = #{isNull,jdbcType=BIT},
+      default_value = #{defaultValue,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR},
+      location = #{location,jdbcType=INTEGER},
+      table_id = #{tableId,jdbcType=BIGINT},
+      creator = #{creator,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modifier = #{modifier,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      is_partition = #{isPartition,jdbcType=BIT},
+      index_partition = #{indexPartition,jdbcType=INTEGER},
+      is_bucket = #{isBucket,jdbcType=BIT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO mc_snapshot_table_column (
+        version,
+        column_id,
+        column_name,
+        column_type,
+        type_length,
+        type_precision,
+        is_pk,
+        is_auto_increment,
+        is_null,
+        default_value,
+        description,
+        location,
+        table_id,
+        creator,
+        create_time,
+        modifier,
+        modify_time
+        )
+        VALUES
+        <foreach collection="list" item="column" index="index" separator=",">
+            (
+            #{column.version,jdbcType=INTEGER}, #{column.columnId,jdbcType=BIGINT},
+            #{column.columnName,jdbcType=VARCHAR},
+            #{column.columnType,jdbcType=VARCHAR}, #{column.typeLength,jdbcType=VARCHAR},
+            #{column.typePrecision,jdbcType=VARCHAR},
+            #{column.isPk,jdbcType=BIT}, #{column.isAutoIncrement, jdbcType=BIT}, #{column.isNull,jdbcType=BIT},
+            #{column.defaultValue,jdbcType=VARCHAR},
+            #{column.description,jdbcType=VARCHAR}, #{column.location,jdbcType=INTEGER},
+            #{column.tableId,jdbcType=BIGINT},
+            #{column.creator,jdbcType=VARCHAR}, #{column.createTime,jdbcType=TIMESTAMP},
+            #{column.modifier,jdbcType=VARCHAR},
+            #{column.modifyTime,jdbcType=TIMESTAMP}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectListByTableIdAndVersion" resultMap="BaseResultMap">
+        SELECT
+          <include refid="Base_Column_List"/>
+        FROM mc_snapshot_table_column
+        WHERE table_id = #{tableId,jdbcType=BIGINT} AND version = #{version,jdbcType=INTEGER}
+    </select>
+
+    <select id="findByColumnIdAndVersion" resultMap="BaseResultMap">
+        SELECT
+          <include refid="Base_Column_List"/>
+        FROM mc_snapshot_table_column
+        WHERE column_id = #{columnId,jdbcType=BIGINT} AND version = #{version,jdbcType=INTEGER}
+    </select>
+
+</mapper>

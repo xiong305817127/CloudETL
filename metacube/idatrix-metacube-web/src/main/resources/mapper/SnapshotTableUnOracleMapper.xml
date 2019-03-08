@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.SnapshotTableUnOracleMapper">
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableUnOracle">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="versions" property="versions" jdbcType="INTEGER"/>
+        <result column="un_id" property="unId" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="column_ids" property="columnIds" jdbcType="VARCHAR"/>
+        <result column="is_enabled" property="isEnabled" jdbcType="BIT"/>
+        <result column="table_id" property="tableId" jdbcType="BIGINT"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, versions, un_id, name, column_ids, is_enabled, table_id, creator, create_time, 
+    modifier, modify_time
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from mc_snapshot_table_un_oracle
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from mc_snapshot_table_un_oracle
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableUnOracle">
+    insert into mc_snapshot_table_un_oracle (id, versions, un_id, 
+      name, column_ids, is_enabled, 
+      table_id, creator, create_time, 
+      modifier, modify_time)
+    values (#{id,jdbcType=BIGINT}, #{versions,jdbcType=INTEGER}, #{unId,jdbcType=BIGINT}, 
+      #{name,jdbcType=VARCHAR}, #{columnIds,jdbcType=VARCHAR}, #{isEnabled,jdbcType=BIT}, 
+      #{tableId,jdbcType=BIGINT}, #{creator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{modifier,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP})
+  </insert>
+    <insert id="insertSelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableUnOracle">
+        insert into mc_snapshot_table_un_oracle
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="versions != null">
+                versions,
+            </if>
+            <if test="unId != null">
+                un_id,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="columnIds != null">
+                column_ids,
+            </if>
+            <if test="isEnabled != null">
+                is_enabled,
+            </if>
+            <if test="tableId != null">
+                table_id,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="modifier != null">
+                modifier,
+            </if>
+            <if test="modifyTime != null">
+                modify_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="versions != null">
+                #{versions,jdbcType=INTEGER},
+            </if>
+            <if test="unId != null">
+                #{unId,jdbcType=BIGINT},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="columnIds != null">
+                #{columnIds,jdbcType=VARCHAR},
+            </if>
+            <if test="isEnabled != null">
+                #{isEnabled,jdbcType=BIT},
+            </if>
+            <if test="tableId != null">
+                #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective"
+            parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableUnOracle">
+        update mc_snapshot_table_un_oracle
+        <set>
+            <if test="versions != null">
+                versions = #{versions,jdbcType=INTEGER},
+            </if>
+            <if test="unId != null">
+                un_id = #{unId,jdbcType=BIGINT},
+            </if>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="columnIds != null">
+                column_ids = #{columnIds,jdbcType=VARCHAR},
+            </if>
+            <if test="isEnabled != null">
+                is_enabled = #{isEnabled,jdbcType=BIT},
+            </if>
+            <if test="tableId != null">
+                table_id = #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                modifier = #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableUnOracle">
+    update mc_snapshot_table_un_oracle
+    set versions = #{versions,jdbcType=INTEGER},
+      un_id = #{unId,jdbcType=BIGINT},
+      name = #{name,jdbcType=VARCHAR},
+      column_ids = #{columnIds,jdbcType=VARCHAR},
+      is_enabled = #{isEnabled,jdbcType=BIT},
+      table_id = #{tableId,jdbcType=BIGINT},
+      creator = #{creator,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modifier = #{modifier,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO mc_snapshot_table_un_oracle (
+            versions,
+            un_id,
+            NAME,
+            column_ids,
+            is_enabled,
+            table_id,
+            creator,
+            create_time,
+            modifier,
+            modify_time
+        )
+        VALUES
+        <foreach collection="list" item="un" index="index" separator=",">
+            (
+                #{un.versions,jdbcType=INTEGER}, #{un.unId,jdbcType=BIGINT},
+                #{un.name,jdbcType=VARCHAR}, #{un.columnIds,jdbcType=VARCHAR}, #{un.isEnabled,jdbcType=BIT},
+                #{un.tableId,jdbcType=BIGINT}, #{un.creator,jdbcType=VARCHAR}, #{un.createTime,jdbcType=TIMESTAMP},
+                #{un.modifier,jdbcType=VARCHAR}, #{un.modifyTime,jdbcType=TIMESTAMP})
+        </foreach>
+    </insert>
+
+    <select id="selectByTableIdAndVersion" resultMap="BaseResultMap" >
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM mc_snapshot_table_un_oracle WHERE table_id = #{tableId,jdbcType=BIGINT} AND versions = #{versions,jdbcType=INTEGER}
+    </select>
+</mapper>

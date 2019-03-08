@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.MetadataMapper">
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.Metadata">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="identification" property="identification" jdbcType="VARCHAR"/>
+        <result column="public_status" property="publicStatus" jdbcType="INTEGER"/>
+        <result column="theme_id" property="themeId" jdbcType="BIGINT"/>
+        <result column="tags" property="tags" jdbcType="VARCHAR"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="version" property="version" jdbcType="INTEGER"/>
+        <result column="renter_id" property="renterId" jdbcType="BIGINT"/>
+        <result column="is_gather" property="isGather" jdbcType="BIT"/>
+        <result column="status" property="status" jdbcType="INTEGER"/>
+        <result column="database_type" property="databaseType" jdbcType="INTEGER"/>
+        <result column="resource_type" property="resourceType" jdbcType="INTEGER"/>
+        <result column="schema_id" property="schemaId" jdbcType="BIGINT"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+        <result column="deptCodes" property="deptCodes" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        me.id, me.name, me.identification, me.public_status, me.theme_id, me.tags, me.remark, me.version, me.renter_id,
+        me.is_gather, me.status, me.database_type, me.resource_type, me.schema_id, me.creator, me.create_time,
+        me.modifier, me.modify_time, sc.org_code AS deptCodes
+    </sql>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from mc_metadata me LEFT JOIN mc_schema sc ON me.schema_id = sc.id
+        where me.id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from mc_metadata
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com.ys.idatrix.metacube.metamanage.domain.Metadata">
+        insert into mc_metadata (id, name, identification,
+          public_status, theme_id, tags,
+          remark, version, renter_id,
+          is_gather, status, database_type,
+          resource_type, schema_id, creator,
+          create_time, modifier, modify_time
+          )
+        values (#{id,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR}, #{identification,jdbcType=VARCHAR},
+          #{publicStatus,jdbcType=INTEGER}, #{themeId,jdbcType=BIGINT}, #{tags,jdbcType=VARCHAR},
+          #{remark,jdbcType=VARCHAR}, #{version,jdbcType=INTEGER}, #{renterId,jdbcType=BIGINT},
+          #{isGather,jdbcType=BIT}, #{status,jdbcType=INTEGER}, #{databaseType,jdbcType=INTEGER},
+          #{resourceType,jdbcType=INTEGER}, #{schemaId,jdbcType=BIGINT}, #{creator,jdbcType=VARCHAR},
+          #{createTime,jdbcType=TIMESTAMP}, #{modifier,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}
+          )
+    </insert>
+
+    <insert id="insertSelective" keyProperty="id" useGeneratedKeys="true" parameterType="com.ys.idatrix.metacube.metamanage.domain.Metadata" >
+        insert into mc_metadata
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="identification != null">
+                identification,
+            </if>
+            <if test="publicStatus != null">
+                public_status,
+            </if>
+            <if test="themeId != null">
+                theme_id,
+            </if>
+            <if test="tags != null">
+                tags,
+            </if>
+            <if test="remark != null">
+                remark,
+            </if>
+            <if test="version != null">
+                version,
+            </if>
+            <if test="renterId != null">
+                renter_id,
+            </if>
+            <if test="isGather != null">
+                is_gather,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="databaseType != null">
+                database_type,
+            </if>
+            <if test="resourceType != null">
+                resource_type,
+            </if>
+            <if test="schemaId != null">
+                schema_id,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="modifier != null">
+                modifier,
+            </if>
+            <if test="modifyTime != null">
+                modify_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="identification != null">
+                #{identification,jdbcType=VARCHAR},
+            </if>
+            <if test="publicStatus != null">
+                #{publicStatus,jdbcType=INTEGER},
+            </if>
+            <if test="themeId != null">
+                #{themeId,jdbcType=BIGINT},
+            </if>
+            <if test="tags != null">
+                #{tags,jdbcType=VARCHAR},
+            </if>
+            <if test="remark != null">
+                #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="version != null">
+                #{version,jdbcType=INTEGER},
+            </if>
+            <if test="renterId != null">
+                #{renterId,jdbcType=BIGINT},
+            </if>
+            <if test="isGather != null">
+                #{isGather,jdbcType=BIT},
+            </if>
+            <if test="status != null">
+                #{status,jdbcType=INTEGER},
+            </if>
+            <if test="databaseType != null">
+                #{databaseType,jdbcType=INTEGER},
+            </if>
+            <if test="resourceType != null">
+                #{resourceType,jdbcType=INTEGER},
+            </if>
+            <if test="schemaId != null">
+                #{schemaId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.Metadata">
+        update mc_metadata
+        <set>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="identification != null">
+                identification = #{identification,jdbcType=VARCHAR},
+            </if>
+            <if test="publicStatus != null">
+                public_status = #{publicStatus,jdbcType=INTEGER},
+            </if>
+            <if test="themeId != null">
+                theme_id = #{themeId,jdbcType=BIGINT},
+            </if>
+            <if test="tags != null">
+                tags = #{tags,jdbcType=VARCHAR},
+            </if>
+            <if test="remark != null">
+                remark = #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="version != null">
+                version = #{version,jdbcType=INTEGER},
+            </if>
+            <if test="renterId != null">
+                renter_id = #{renterId,jdbcType=BIGINT},
+            </if>
+            <if test="isGather != null">
+                is_gather = #{isGather,jdbcType=BIT},
+            </if>
+            <if test="status != null">
+                status = #{status,jdbcType=INTEGER},
+            </if>
+            <if test="databaseType != null">
+                database_type = #{databaseType,jdbcType=INTEGER},
+            </if>
+            <if test="resourceType != null">
+                resource_type = #{resourceType,jdbcType=INTEGER},
+            </if>
+            <if test="schemaId != null">
+                schema_id = #{schemaId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                modifier = #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.ys.idatrix.metacube.metamanage.domain.Metadata">
+        update mc_metadata
+        set name = #{name,jdbcType=VARCHAR},
+          identification = #{identification,jdbcType=VARCHAR},
+          public_status = #{publicStatus,jdbcType=INTEGER},
+          theme_id = #{themeId,jdbcType=BIGINT},
+          tags = #{tags,jdbcType=VARCHAR},
+          remark = #{remark,jdbcType=VARCHAR},
+          version = #{version,jdbcType=INTEGER},
+          renter_id = #{renterId,jdbcType=BIGINT},
+          is_gather = #{isGather,jdbcType=BIT},
+          status = #{status,jdbcType=INTEGER},
+          database_type = #{databaseType,jdbcType=INTEGER},
+          resource_type = #{resourceType,jdbcType=INTEGER},
+          schema_id = #{schemaId,jdbcType=BIGINT},
+          creator = #{creator,jdbcType=VARCHAR},
+          create_time = #{createTime,jdbcType=TIMESTAMP},
+          modifier = #{modifier,jdbcType=VARCHAR},
+          modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <!--不定参数查询元数据-->
+    <select id="search" resultMap="BaseResultMap"
+            parameterType="com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        mc_metadata me LEFT JOIN mc_schema sc ON me.schema_id = sc.id
+        <where>
+            <if test="status!=null">
+                and me.status = #{status}
+            </if>
+            <if test="databaseType!=null">
+                and me.database_type = #{databaseType}
+            </if>
+            <if test="resourceType!=null">
+                and me.resource_type = #{resourceType}
+            </if>
+            <if test="schemaId != null">
+                AND me.schema_id = #{schemaId}
+            </if>
+            <if test="creator!=null">
+                and me.creator = #{creator}
+            </if>
+            <if test="renterId!=null">
+                and me.renter_id = #{renterId}
+            </if>
+            <if test="regCode!=null">
+                and FIND_IN_SET(#{regCode}, sc.org_code)
+            </if>
+        </where>
+        ORDER BY me.modify_time DESC, me.create_time DESC
+    </select>
+
+    <select id="searchList" parameterType="com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        mc_metadata me LEFT JOIN mc_schema sc ON me.schema_id = sc.id
+        WHERE me.status = 1
+        <if test="schemaId != null">
+            AND me.schema_id = #{schemaId}
+        </if>
+        <if test="databaseType!=null">
+            AND me.database_type = #{databaseType}
+        </if>
+        <if test="resourceType!=null">
+            AND me.resource_type = #{resourceType}
+        </if>
+        <if test="regCode!=null">
+            and FIND_IN_SET(#{regCode}, sc.org_code)
+        </if>
+        ORDER BY me.modify_time DESC, me.create_time DESC
+    </select>
+
+    <!--查询所属组织、指定数据库类型下的生效的元数据-->
+    <select id="searchByDeptAndDbTypes" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        mc_metadata me LEFT JOIN mc_schema sc ON me.schema_id = sc.id
+        <where>
+            me.status = 1
+            <if test="deptCode!=null">
+                and FIND_IN_SET(#{deptCode}, sc.org_code)
+            </if>
+            <if test="databaseTypes != null">
+                AND me.resource_type in
+                <foreach collection="databaseTypes" item="type" open="(" separator="," close=")">
+                    #{type}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="queryMetaDataBySearchVO" resultMap="BaseResultMap"
+            parameterType="com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        mc_metadata me LEFT JOIN mc_schema sc ON me.schema_id = sc.id
+        WHERE
+        me.renter_id = #{renterId}
+        <if test="status != null">
+            AND me.status = #{status}
+        </if>
+        <if test="schemaId != null">
+            AND me.schema_id = #{schemaId}
+        </if>
+        <if test="databaseType != null">
+            AND me.database_type = #{databaseType}
+        </if>
+        ORDER BY me.modify_time DESC
+    </select>
+
+    <select id="queryMetaData" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        mc_metadata me LEFT JOIN mc_schema sc ON me.schema_id = sc.id
+        WHERE
+        1=1
+        <if test="identification != null">
+            AND me.identification = #{identification}
+        </if>
+        <if test="name != null">
+            AND me.name = #{name, jdbcType=VARCHAR}
+        </if>
+        <if test="schemaId != null">
+            AND me.schema_id = #{schemaId}
+        </if>
+    </select>
+
+    <select id="findMetadataByThemeId" resultType="java.lang.Integer">
+        SELECT
+          count(*)
+        FROM
+          mc_metadata
+        WHERE
+          theme_id = #{themeId, jdbcType=BIGINT} AND status != 2
+    </select>
+
+    <select id="findByMetadata" parameterType="com.ys.idatrix.metacube.metamanage.domain.Metadata"
+            resultType="java.lang.Integer">
+        SELECT
+        count(*)
+        FROM
+        mc_metadata
+        WHERE
+        status != 2
+        AND schema_id = #{schemaId,jdbcType=BIGINT}
+        <if test="id != null">
+            AND id != #{id,jdbcType=BIGINT}
+        </if>
+        <if test="name != null">
+            AND name = #{name,jdbcType=VARCHAR}
+        </if>
+        <if test="identification != null">
+            AND identification = #{identification, jdbcType=VARCHAR}
+        </if>
+        <if test="databaseType != null">
+            AND database_type = #{databaseType, jdbcType=INTEGER}
+        </if>
+        <if test="resourceType != null">
+            AND resource_type = #{resourceType,jdbcType=INTEGER}
+        </if>
+    </select>
+
+    <!-- 判断是否存在的查询 -->
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        mc_metadata me LEFT JOIN mc_schema sc ON me.schema_id = sc.id
+        WHERE me.id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <update id="delete">
+        UPDATE mc_metadata SET status = 2 WHERE id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <select id="getAllHDFSFolderInfo" resultMap="BaseResultMap">
+        SELECT
+          sc.id AS id,
+          sc.NAME AS NAME,
+          CONCAT( sc.NAME, me.identification ) AS identification,
+          me.theme_id AS theme_id,
+          me.tags AS tags,
+          me.remark AS remark,
+          me.dept_codes AS dept_codes,
+          me.version AS version,
+          me.renter_id AS renter_id,
+          me.is_gather AS is_gather,
+          me.status AS status,
+          me.database_type AS database_type,
+          me.resource_type AS resource_type,
+          me.schema_id AS schema_id,
+          me.creator AS creator,
+          me.create_time AS create_time,
+          me.modifier AS modifier,
+          me.modify_time AS modify_time
+        FROM
+          mc_metadata me
+        LEFT JOIN mc_schema sc ON me.schema_id = sc.id
+        WHERE me.database_type =7
+        <if test="user != null">
+            AND me.creator = #{user,jdbcType=VARCHAR}
+        </if>
+        <if test="orgCode != null">
+            AND (find_in_set( #{orgCode}, sc.org_code )
+        </if>
+        <if test="pathPrefix != null">
+            AND sc.name like '${pathPrefix}%'
+        </if>
+    </select>
+
+    <!--根据schemaId查询用户能操作的表-->
+    <select id="getAllMetadataByUser" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        mc_metadata me
+        LEFT JOIN mc_schema sc ON me.schema_id = sc.id
+        <where>
+            <if test="status != null">
+                me.status = #{status,jdbcType=INTEGER}
+            </if>
+            <if test="schemaId != null">
+                me.schema_id = #{schemaId,jdbcType=BIGINT}
+            </if>
+            <if test="regCode != null">
+                and FIND_IN_SET(#{regCode}, sc.reg_code)
+            </if>
+            <if test="databaseTypes != null">
+                and me.database_type in
+                <foreach item="type" collection="databaseTypes" open="(" separator=","
+                         close=")">
+                    #{type}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!--根据schemaId查询用户能操作的表-->
+    <select id="getMetaDefHDFSFullDir" resultType="java.lang.String">
+        SELECT
+        CONCAT( a.name, b.name ) as path
+        FROM
+        mc_metadata a
+        inner join mc_schema b on b.id = a.schema_id
+        WHERE
+        a.id = #{id}
+    </select>
+
+    <select id="findByIdList" resultMap="BaseResultMap" >
+      SELECT
+        me.*
+      FROM
+        mc_metadata me
+      <where>
+          <if test="idList != null and idList.size() > 0">
+              id IN
+              <foreach collection="idList" item="id" open="(" close=")" separator="," >
+                  #{id}
+              </foreach>
+          </if>
+      </where>
+    </select>
+    
+    <resultMap id="MetadataDTOMap" type="com.ys.idatrix.metacube.api.beans.MetadataDTO">
+        <result column="meta_id" property="metaId" />
+        <result column="meta_name" property="metaName" />
+        <result column="schema_id" property="schemaId" />
+        <result column="schema_name" property="schemaName" />
+        <result column="database_id" property="databaseId" />
+        <result column="server_id" property="serverId" />
+    </resultMap>
+
+    <select id="findByDatabaseInfo" resultMap="MetadataDTOMap">
+        SELECT
+        me.id meta_id,
+        me.name meta_name,
+        me.schema_id schema_id,
+        sc.`name` schema_name,
+        md.id database_id,
+        ms.id server_id
+        FROM
+        mc_metadata me
+        LEFT JOIN mc_schema sc ON me.schema_id = sc.id
+        LEFT JOIN mc_database md ON sc.db_id = md.id
+        LEFT JOIN mc_server ms ON ms.id = md.server_id
+        WHERE
+        me.status = 1
+        AND ms.ip = #{ip}
+        AND md.type = #{databaseType}
+        <if test="databaseType == 2">
+            AND sc.service_name = #{serviceName}
+        </if>
+        AND sc.`name` = #{schemaName}
+        AND me.`name` = #{tableName}
+        <if test="resourceType != null">
+            AND me.resource_type = #{resourceType}
+        </if>
+        AND me.renter_id = #{renterId}
+    </select>
+
+    <select id="findListBySchemaIdAndResourceType" resultMap="MetadataDTOMap">
+        SELECT
+        me.id meta_id,
+        me.name meta_name,
+        me.schema_id schema_id,
+        sc.`name` schema_name,
+        md.id database_id,
+        ms.id server_id
+        FROM
+        mc_metadata me
+        LEFT JOIN mc_schema sc ON me.schema_id = sc.id
+        LEFT JOIN mc_database md ON sc.db_id = md.id
+        LEFT JOIN mc_server ms ON ms.id = md.server_id
+        WHERE
+        me.status = 1
+        AND me.schema_id = #{schemaId}
+        AND me.resource_type = #{resourceType}
+    </select>
+
+</mapper>

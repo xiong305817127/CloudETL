@@ -1,0 +1,17 @@
+.project
+target
+idatrix-cloudetl-cloud/config
+.classpath
+.settings
+.telemetry
+/idatrix-cloudetl-cloud/plugins
+pwd
+/idatrix-cloudetl-cloud/system
+/idatrix-cloudetl-cloud/repository.log
+/idatrix-cloudetl-cloud/product/plugins-guangzhou
+version*
+cloudetl_daily*
+**/logs/**
+**/XHTestMain.java
+.idea
+/idatrix-cloudetl-cloud/src/test/java/com/ys/test/DirectMiningTest.java

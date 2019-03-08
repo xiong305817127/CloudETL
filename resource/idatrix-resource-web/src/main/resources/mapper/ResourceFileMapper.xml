@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.datareport.dao.ResourceFileDAO">
+    <resultMap id="BaseResultMap"
+               type="com.idatrix.resource.datareport.po.ResourceFilePO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="resource_id" property="resourceId" jdbcType="BIGINT" />
+        <result column="origin_file_name" property="originFileName" jdbcType="VARCHAR" />
+        <result column="pub_file_name" property="pubFileName" jdbcType="VARCHAR" />
+        <result column="file_version" property="fileVersion" jdbcType="INTEGER" />
+        <result column="data_batch" property="dataBatch" jdbcType="VARCHAR" />
+        <result column="file_size" property="fileSize" jdbcType="VARCHAR" />
+        <result column="file_type" property="fileType" jdbcType="VARCHAR" />
+        <result column="file_description" property="fileDescription" jdbcType="VARCHAR" />
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+        id, resource_id, origin_file_name, pub_file_name, file_version, data_batch, file_size,
+        file_type, file_description, creator, create_time, modifier, modify_time
+    </sql>
+
+    <insert id="insertResourceFile" parameterType="com.idatrix.resource.datareport.po.ResourceFilePO"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into rc_resource_file (
+        resource_id, origin_file_name, pub_file_name, file_version, data_batch, file_size,
+        file_type, file_description, creator, create_time, modifier, modify_time)
+        values (#{resourceId}, #{originFileName}, #{pubFileName}, #{fileVersion}, #{dataBatch},
+        #{fileSize}, #{fileType}, #{fileDescription}, #{creator}, #{createTime}, #{modifier},
+        #{modifyTime})
+    </insert>
+
+    <select id="queryResourceFile"  resultMap="BaseResultMap" >
+        select
+        <include refid="Base_Column_List" />
+        from rc_resource_file
+        where 1=1 and resource_id=#{id}
+        <if test="fileName!=null">
+            and pub_file_name like '%${fileName}%'
+        </if>
+        <if test="descOrder!=null">
+            order by modify_time DESC
+        </if>
+        <if test="ascOrder!=null">
+            order by modify_time ASC
+        </if>
+
+
+    </select>
+
+    <select id="isExistedResourceFile"  resultMap="BaseResultMap" parameterType="hashmap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_resource_file
+        where resource_id = #{resourceId} and pub_file_name = #{pubFileName}
+    </select>
+
+    <select id="getResourceFileById" parameterType="java.lang.Long" resultMap="BaseResultMap" >
+        select
+        <include refid="Base_Column_List" />
+        from rc_resource_file
+        where id = #{id}
+    </select>
+
+    <update id="updateResourceFile" parameterType="com.idatrix.resource.datareport.po.ResourceFilePO">
+        update rc_resource_file
+        set id = #{id},
+        resource_id = #{resourceId},
+        origin_file_name = #{originFileName},
+        pub_file_name = #{pubFileName},
+        file_size = #{fileSize},
+        file_type = #{fileType},
+        file_description = #{fileDescription},
+        file_version = #{fileVersion},
+        data_batch = #{dataBatch},
+        modifier = #{modifier},
+        modify_time = #{modifyTime}
+        where id = #{id}
+    </update>
+</mapper>

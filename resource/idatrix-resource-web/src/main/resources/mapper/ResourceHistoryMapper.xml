@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.catalog.dao.ResourceHistoryDAO">
+    <resultMap id="BaseResultMap"
+               type="com.idatrix.resource.catalog.po.ResourceHistoryPO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="resource_id" property="resourceId" jdbcType="BIGINT" />
+        <result column="action" property="action" jdbcType="VARCHAR" />
+        <result column="action_name" property="actionName" jdbcType="VARCHAR" />
+
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, resource_id, action, action_name, creator, create_time
+    </sql>
+
+    <select id="getAllResourceHistory" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_resource_history
+    </select>
+
+    <select id="getHistoryByResourceId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from rc_resource_history
+        where resource_id = #{resourceId}
+    </select>
+
+    <select id="getHistoryById" resultMap="BaseResultMap" parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List" />
+        from rc_resource_history
+        where id = #{id}
+    </select>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        delete from rc_resource_history
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteByResource" parameterType="java.lang.Long">
+        delete from rc_resource_history
+        where resource_id = #{resourceId}
+    </delete>
+
+    <insert id="insert" parameterType="com.idatrix.resource.catalog.po.ResourceHistoryPO" useGeneratedKeys="true" keyProperty="id">
+        insert into rc_resource_history (
+        resource_id, action, action_name, creator, create_time)
+        values
+        (#{resourceId}, #{action}, #{actionName}, #{creator}, #{createTime})
+    </insert>
+
+
+
+</mapper>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.catalog.dao.CatalogNodeDAO">
+    <resultMap id="BaseResultMap"
+               type="com.idatrix.resource.catalog.po.CatalogNodePO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+        <result column="parent_full_code" property="parentFullCode" jdbcType="VARCHAR" />
+        <result column="resource_name" property="resourceName" jdbcType="VARCHAR" />
+        <result column="resource_encode" property="resourceEncode" jdbcType="VARCHAR" />
+        <result column="dept" property="dept" jdbcType="VARCHAR" />
+
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, parent_id, parent_full_code, resource_name, resource_encode, dept, creator, create_time,
+        modifier, modify_time
+    </sql>
+
+    <select id="getByCondition" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_catalog
+        where 1=1
+        <if test="name!=null">
+            and resource_name=#{name}
+        </if>
+        <if test="code!=null">
+            and resource_encode=#{code}
+        </if>
+        <if test="fullCode!=null">
+            and parent_full_code=#{fullCode}
+        </if>
+
+    </select>
+
+
+    <select id="getCatalogNodeById" resultMap="BaseResultMap"
+            parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from rc_catalog
+        where id = #{id}
+    </select>
+    <select id="getByParentFullCode" resultMap="BaseResultMap"
+            parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List" />
+        from rc_catalog
+        where parent_full_code=#{parentFullCode}
+    </select>
+
+    <select id="getAllCatalogNodes" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_catalog
+    </select>
+    <select id="getCatalogByParentId" resultMap="BaseResultMap"
+            parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from rc_catalog
+        where parent_id = #{parentId}
+    </select>
+    <select id="getCatalogParentList" resultType="java.lang.Long">
+        select DISTINCT parent_id
+        from rc_catalog
+    </select>
+
+
+    <delete id="deleteByNodeId" parameterType="java.lang.Long">
+        delete from rc_catalog
+        where id = #{id}
+    </delete>
+
+    <insert id="insert" parameterType="com.idatrix.resource.catalog.po.CatalogNodePO" useGeneratedKeys="true" keyProperty="id">
+        insert into rc_catalog ( parent_id, parent_full_code,
+        resource_name, resource_encode, dept,
+        creator, create_time,
+        modifier, modify_time)
+        values ( #{parentId}, #{parentFullCode}, #{resourceName},#{resourceEncode}, #{dept},
+        #{creator}, #{createTime}, #{modifier}, #{modifyTime})
+    </insert>
+    <insert id="insertList" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        insert into rc_catalog (  id, parent_id, parent_full_code,
+        resource_name, resource_encode, dept, creator, create_time,
+        modifier, modify_time)
+        values
+        <foreach collection="list" item="item" index="index" separator="," >
+         (#{item.id}, #{item.parentId}, #{item.parentFullCode}, #{item.resourceName}, #{item.resourceEncode}, #{item.dept},
+            #{item.creator}, #{item.create_time}, #{item.modifier}, #{item.modify_time})
+        </foreach>
+    </insert>
+
+    <update id="updateById" parameterType="com.idatrix.resource.catalog.po.CatalogNodePO">
+        update rc_catalog
+        set id = #{id},
+        parent_id = #{parentId},
+        parent_full_code = #{parentFullCode},
+        resource_name = #{resourceName},
+        resource_encode = #{resourceEncode},
+        dept = #{dept},
+        creator = #{creator},
+        create_time = #{createTime},
+        modifier = #{modifier},
+        modify_time = #{modifyTime}
+        where id = #{id}
+    </update>
+</mapper>

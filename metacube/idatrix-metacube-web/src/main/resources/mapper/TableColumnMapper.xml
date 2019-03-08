@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.TableColumnMapper">
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.TableColumn">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="column_name" property="columnName" jdbcType="VARCHAR"/>
+        <result column="column_type" property="columnType" jdbcType="VARCHAR"/>
+        <result column="type_length" property="typeLength" jdbcType="VARCHAR"/>
+        <result column="type_precision" property="typePrecision" jdbcType="VARCHAR"/>
+        <result column="is_pk" property="isPk" jdbcType="BIT"/>
+        <result column="is_null" property="isNull" jdbcType="BIT"/>
+        <result column="default_value" property="defaultValue" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="location" property="location" jdbcType="INTEGER"/>
+        <result column="table_id" property="tableId" jdbcType="BIGINT"/>
+        <result column="is_deleted" property="isDeleted" jdbcType="BIT"/>
+        <result column="is_partition" property="isPartition" jdbcType="BIT"/>
+        <result column="is_bucket" property="isBucket" jdbcType="BIT"/>
+        <result column="index_partition" property="indexPartition" jdbcType="INTEGER" />
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+        <result column="is_auto_increment" property="isAutoIncrement" jdbcType="BIT" />
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, column_name, column_type, type_length, type_precision, is_pk, is_null, default_value, 
+    description, location, table_id, is_deleted,
+    is_partition, index_partition, is_bucket,
+    creator, create_time, modifier, modify_time,is_auto_increment
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from mc_table_column
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from mc_table_column
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com.ys.idatrix.metacube.metamanage.domain.TableColumn">
+    insert into mc_table_column (id, column_name, column_type, 
+      type_length, type_precision, is_pk, 
+      is_null, default_value, description, 
+      location, table_id, is_deleted,
+       is_partition, index_partition, is_bucket,
+      creator, create_time, modifier, 
+      modify_time, is_auto_increment)
+    values (#{id,jdbcType=BIGINT}, #{columnName,jdbcType=VARCHAR}, #{columnType,jdbcType=VARCHAR}, 
+      #{typeLength,jdbcType=VARCHAR}, #{typePrecision,jdbcType=VARCHAR}, #{isPk,jdbcType=BIT}, 
+      #{isNull,jdbcType=BIT}, #{defaultValue,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR}, 
+      #{location,jdbcType=INTEGER}, #{tableId,jdbcType=BIGINT},
+      #{isDeleted,jdbcType=BIT},
+      #{isPartition,jdbcType=BIT},
+      #{indexPartition, jdbcType=INTEGER},
+      #{isBucket, jdbcType=BIT},
+      #{creator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifier,jdbcType=VARCHAR}, 
+      #{modifyTime,jdbcType=TIMESTAMP}, #{isAutoIncrement, jdbcType=BIT})
+  </insert>
+    <insert id="insertSelective" keyProperty="id" useGeneratedKeys="true" parameterType="com.ys.idatrix.metacube.metamanage.domain.TableColumn">
+        insert into mc_table_column
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="columnName != null">
+                column_name,
+            </if>
+            <if test="columnType != null">
+                column_type,
+            </if>
+            <if test="typeLength != null">
+                type_length,
+            </if>
+            <if test="typePrecision != null">
+                type_precision,
+            </if>
+            <if test="isPk != null">
+                is_pk,
+            </if>
+            <if test="isNull != null">
+                is_null,
+            </if>
+            <if test="defaultValue != null">
+                default_value,
+            </if>
+            <if test="description != null">
+                description,
+            </if>
+            <if test="location != null">
+                location,
+            </if>
+            <if test="tableId != null">
+                table_id,
+            </if>
+            <if test="isDeleted != null">
+                is_deleted,
+            </if>
+            <if test="isPartition != null">
+                is_partition,
+            </if>
+            <if test="indexPartition != null">
+                index_partition,
+            </if>
+            <if test="isBucket != null">
+                is_bucket,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="modifier != null">
+                modifier,
+            </if>
+            <if test="modifyTime != null">
+                modify_time,
+            </if>
+            <if test="isAutoIncrement != null">
+                is_auto_increment,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="columnName != null">
+                #{columnName,jdbcType=VARCHAR},
+            </if>
+            <if test="columnType != null">
+                #{columnType,jdbcType=VARCHAR},
+            </if>
+            <if test="typeLength != null">
+                #{typeLength,jdbcType=VARCHAR},
+            </if>
+            <if test="typePrecision != null">
+                #{typePrecision,jdbcType=VARCHAR},
+            </if>
+            <if test="isPk != null">
+                #{isPk,jdbcType=BIT},
+            </if>
+            <if test="isNull != null">
+                #{isNull,jdbcType=BIT},
+            </if>
+            <if test="defaultValue != null">
+                #{defaultValue,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="location != null">
+                #{location,jdbcType=INTEGER},
+            </if>
+            <if test="tableId != null">
+                #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="isDeleted != null">
+                #{isDeleted,jdbcType=BIT},
+            </if>
+            <if test="isPartition != null">
+                #{isPartition,jdbcType=BIT}
+            </if>
+            <if test="indexPartition != null">
+                #{indexPartition,jdbcType=INTEGER}
+            </if>
+            <if test="isBucket != null">
+                #{isBucket,jdbcType=BIT}
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isAutoIncrement != null">
+                #{isAutoIncrement, jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.TableColumn">
+        update mc_table_column
+        <set>
+            <if test="columnName != null">
+                column_name = #{columnName,jdbcType=VARCHAR},
+            </if>
+            <if test="columnType != null">
+                column_type = #{columnType,jdbcType=VARCHAR},
+            </if>
+            type_length = #{typeLength,jdbcType=VARCHAR},
+            type_precision = #{typePrecision,jdbcType=VARCHAR},
+            <if test="isPk != null">
+                is_pk = #{isPk,jdbcType=BIT},
+            </if>
+            <if test="isNull != null">
+                is_null = #{isNull,jdbcType=BIT},
+            </if>
+            <if test="defaultValue != null">
+                default_value = #{defaultValue,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                description = #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="location != null">
+                location = #{location,jdbcType=INTEGER},
+            </if>
+            <if test="tableId != null">
+                table_id = #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted,jdbcType=BIT},
+            </if>
+            <if test="isPartition != null">
+                #{isPartition,jdbcType=BIT}
+            </if>
+            <if test="indexPartition != null">
+                #{indexPartition,jdbcType=INTEGER}
+            </if>
+            <if test="isBucket != null">
+                #{isBucket,jdbcType=BIT}
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                modifier = #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isAutoIncrement != null">
+                is_auto_increment = #{isAutoIncrement, jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.ys.idatrix.metacube.metamanage.domain.TableColumn">
+    update mc_table_column
+    set column_name = #{columnName,jdbcType=VARCHAR},
+      column_type = #{columnType,jdbcType=VARCHAR},
+      type_length = #{typeLength,jdbcType=VARCHAR},
+      type_precision = #{typePrecision,jdbcType=VARCHAR},
+      is_pk = #{isPk,jdbcType=BIT},
+      is_null = #{isNull,jdbcType=BIT},
+      default_value = #{defaultValue,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR},
+      location = #{location,jdbcType=INTEGER},
+      table_id = #{tableId,jdbcType=BIGINT},
+      is_deleted = #{isDeleted,jdbcType=BIT},
+      is_partition =#{isPartition,jdbcType=BIT},
+      index_partition =#{indexPartition,jdbcType=INTEGER},
+      is_bucket =#{isBucket, jdbcType=BIT},
+      creator = #{creator,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modifier = #{modifier,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      is_auto_increment = #{isAutoIncrement, jdbcType=BIT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <select id="findByTableColumn" resultType="java.lang.Integer">
+        SELECT
+            count(*)
+        FROM
+            mc_table_column
+        WHERE
+            is_deleted = 0
+        AND table_id = #{tableId,jdbcType=BIGINT}
+        <if test="columnName != null">
+            AND column_name = #{columnName,jdbcType=VARCHAR}
+        </if>
+        <if test="location != null">
+            AND location = #{location,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <select id="findTableColumnListByTableId" resultMap="BaseResultMap">
+        SELECT
+          <include refid="Base_Column_List"/>
+        FROM
+            mc_table_column
+        WHERE
+            is_deleted = 0
+        AND table_id = #{tableId,jdbcType=BIGINT}
+    </select>
+
+    <update id="delete">
+      UPDATE mc_table_column SET is_deleted = 1 WHERE id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="deleteByTableId">
+        UPDATE mc_table_column SET is_deleted = 1 WHERE table_id = #{tableId,jdbcType=BIGINT}
+    </update>
+
+    <select id="selectMaxLocationByTableId" resultType="java.lang.Integer">
+      select IFNULL(max(location), 0) from mc_table_column where table_id = #{tableId, jdbcType=BIGINT}
+    </select>
+    
+     <select id="selectByTableAndName" resultMap="BaseResultMap"  >
+        select
+        <include refid="Base_Column_List"/>
+        from mc_table_column
+        where table_id = #{tableId,jdbcType=BIGINT} AND column_name = #{columnName,jdbcType=VARCHAR}
+    </select>
+
+    <select id="getTableColumnListByIdList" resultMap="BaseResultMap" >
+        select
+        <include refid="Base_Column_List"/>
+        from mc_table_column
+        WHERE id in
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+          #{id}
+        </foreach>
+    </select>
+
+</mapper>

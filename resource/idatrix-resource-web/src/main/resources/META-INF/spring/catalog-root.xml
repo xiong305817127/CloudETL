@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-4.0.xsd
+            http://www.springframework.org/schema/task
+            http://www.springframework.org/schema/task/spring-task-4.0.xsd">
+
+	<bean
+			class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="order" value="1" />
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+		<property name="locations">
+			<list>
+				<value>classpath:init.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<!--① 扫描Spring Bean -->
+	<context:component-scan base-package="com.idatrix.resource" >
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+	</context:component-scan>
+
+	<import resource="catalog-mybatis.xml"/>
+	<import resource="catalog-dubbo.xml"/>
+	<import resource="catalog-redis.xml"/>
+
+    <!--使用spring自带调度，单机运行无任何问题-->
+    <import resource="catalog-task.xml" />
+    <!--使用quartz 主要解决定时任务分布式集群时重复执行问题，quartz还需要依赖quartz.properties配置文件，
+    里面需要配置数据，可以执行数据库脚本 tables_mysql_innodb.sql  changed by robin 2018/10/18  -->
+    <!--<import resource="catalog-quartz.xml"/>-->
+</beans>

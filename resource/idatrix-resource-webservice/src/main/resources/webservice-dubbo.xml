@@ -1,0 +1,27 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-3.1.xsd
+       http://code.alibabatech.com/schema/dubbo
+       http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+
+    <dubbo:application name="idatrix-resource" owner="idatrix"
+                       organization="ys" />
+
+    <dubbo:registry protocol="zookeeper" address="${dubbo.registry.address}" />
+
+    <dubbo:protocol name="dubbo"  port="${dubbo.protocol.port}"/>
+
+    <!-- 设置所有服务消费的 timeout -->
+    <dubbo:consumer timeout="30000" />
+
+    <dubbo:reference interface="com.ys.idatrix.metacube.api.service.cloudetl.CloudETLService" id="cloudETLService" />
+
+    <!-- sql execute dao dubbo consumer -->
+    <dubbo:reference interface="com.ys.idatrix.db.proxy.api.sql.SqlExecuteDao" id="sqlExecuteDao" />
+</beans>

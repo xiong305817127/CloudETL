@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.basedata.dao.SystemConfigDAO">
+    <resultMap id="BaseResultMap"
+               type="com.idatrix.resource.basedata.po.SystemConfigPO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="file_root_ids" property="fileRootIds" jdbcType="VARCHAR" />
+        <result column="file_root" property="fileRoot" jdbcType="VARCHAR" />
+        <result column="origin_file_root_ids" property="originFileRootIds" jdbcType="VARCHAR" />
+        <result column="origin_file_root" property="originFileRoot" jdbcType="VARCHAR" />
+        <result column="db_upload_size" property="dbUploadSize" jdbcType="INTEGER" />
+        <result column="file_upload_size" property="fileUploadSize" jdbcType="INTEGER" />
+        <result column="import_interval" property="importInterval" jdbcType="INTEGER" />
+        <result column="dept_staff_role" property="deptStaffRole" jdbcType="BIGINT" />
+        <result column="dept_admin_role" property="deptAdminRole" jdbcType="BIGINT" />
+        <result column="center_admin_role" property="centerAdminRole" jdbcType="BIGINT" />
+        <result column="sub_approver_role" property="subApproverRole" jdbcType="BIGINT" />
+
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, file_root, origin_file_root,file_root_ids,origin_file_root_ids, db_upload_size, file_upload_size,
+        import_interval, dept_staff_role, dept_admin_role,  center_admin_role, sub_approver_role,
+        creator, create_time,  modifier, modify_time
+    </sql>
+
+    <select id="getAdaptByRentId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        FROM rc_sysconfig
+        where creator like '${rentInfo}%'
+    </select>
+
+    <select id="getByCreatorName" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_sysconfig
+        where creator=#{creator}
+    </select>
+
+
+    <select id="getById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_sysconfig
+        where id=#{id}
+    </select>
+
+    <select id="getLastestSysConfig" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_sysconfig
+        order by modify_time desc LIMIT 1;
+    </select>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        delete from rc_sysconfig
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteByCreator" parameterType="java.lang.String">
+        delete from rc_sysconfig
+        where creator=#{creator}
+    </delete>
+
+    <insert id="insert" parameterType="com.idatrix.resource.catalog.po.ResourceColumnPO" useGeneratedKeys="true" keyProperty="id">
+        insert into rc_sysconfig (
+        origin_file_root_ids,file_root_ids,
+        file_root, origin_file_root, db_upload_size, file_upload_size,
+        import_interval, dept_staff_role, dept_admin_role,
+        center_admin_role, sub_approver_role,
+        creator, create_time,  modifier, modify_time)
+        values ( #{originFileRootIds}, #{fileRootIds},
+        #{fileRoot},#{originFileRoot}, #{dbUploadSize},#{fileUploadSize},
+        #{importInterval}, #{deptStaffRole},#{deptAdminRole},
+        #{centerAdminRole},  #{subApproverRole},
+       #{creator}, #{createTime}, #{modifier}, #{modifyTime})
+    </insert>
+
+
+    <update id="updateById" parameterType="com.idatrix.resource.catalog.po.ResourceColumnPO">
+        update rc_sysconfig
+        set id = #{id},
+        file_root = #{fileRoot},
+        origin_file_root_ids = #{originFileRootIds},
+        file_root_ids = #{fileRootIds},
+        origin_file_root = #{originFileRoot},
+        db_upload_size = #{dbUploadSize},
+        file_upload_size = #{fileUploadSize},
+        import_interval = #{importInterval},
+        dept_staff_role = #{deptStaffRole},
+        dept_admin_role = #{deptAdminRole},
+        center_admin_role = #{centerAdminRole},
+        sub_approver_role = #{subApproverRole},
+        creator = #{creator},
+        create_time = #{createTime},
+        modifier = #{modifier},
+        modify_time = #{modifyTime}
+        where id = #{id}
+    </update>
+</mapper>

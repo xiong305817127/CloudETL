@@ -1,0 +1,69 @@
+# 服务器
+server:
+  port: 8080
+
+# 主配置
+spring:
+  # 子模块配置文件
+  profiles:
+    active: mybatis,config
+    #name或者id相同的bean
+  main:
+    allow-bean-definition-overriding: true
+  aop:
+    proxy-target-class: true
+
+  # 主数据源
+  datasource:
+    url: jdbc:mysql://10.0.0.85:3306/dbproxy?useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: admin
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    openMulti: true
+    idle-timeout: 30000
+    # 多数据源
+    multi:
+    - key: dbproxy
+      url: jdbc:mysql://10.0.0.85:3306/dbproxy?useUnicode=true&characterEncoding=UTF-8
+      username: root
+      password: admin
+      # 配置druid连接池
+      driver-class-name: com.mysql.jdbc.Driver
+      type: com.alibaba.druid.pool.DruidDataSource
+    - key: datalab
+      url: jdbc:mysql://10.0.0.85:3306/datalab?useUnicode=true&characterEncoding=UTF-8
+      username: root
+      password: admin
+      driver-class-name: com.mysql.jdbc.Driver
+
+  # 要写入的PID文件的位置.默认不配置在项目根目录中生成pid文件。
+  pid:
+    file: src/main/resources/application.pid
+
+  #dubbo配置
+  dubbo:
+    application:
+      id: idatrix-db-proxy
+      name: idatrix-db-proxy
+    registry:
+      protocol: zookeeper
+      address: 10.0.0.83:2181,10.0.0.84:2181,10.0.0.85:2181
+    protocols:
+    - name: dubbo
+      port: 20881
+    - name: hessian
+      port: 20980
+    provider:
+      retries: 0                           # 服务调用重试次数，服务发布者不给重试，让服务调用者自己重试
+    consumer:
+      timeout: 3000
+      check: false                         # 服务启动时检查被调用服务是否可用
+      retries: 0                           # 服务调用重试次数
+
+
+# 日志
+logging:
+  config: classpath:logback.xml
+  level:
+    com.ys.idatrix.db.dao.mapper : debug

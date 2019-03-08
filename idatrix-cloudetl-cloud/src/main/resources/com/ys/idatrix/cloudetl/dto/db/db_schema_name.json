@@ -1,0 +1,4 @@
+{
+    "connection": "db connection name",
+    "schema": "database name"
+}

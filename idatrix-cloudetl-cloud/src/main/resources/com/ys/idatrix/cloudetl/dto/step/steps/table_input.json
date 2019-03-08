@@ -1,0 +1,9 @@
+{
+    "connection": "db connection name",
+    "sql": "sql text",
+    "limit": "",
+    "executeEachRow": false,
+    "variablesActive": false,
+    "lazyConversionActive": false,
+    "lookup": "step name"
+}

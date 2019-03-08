@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+	 
+    <groupId>com.ys</groupId>
+    <artifactId>idatrix-cloudetl</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+  
+    <name>idatrix-cloudetl-parent</name>
+  
+	  <modules>
+	    <module>idatrix-cloudetl-core</module>
+	    <module>idatrix-cloudetl-engine</module>
+	    <module>idatrix-cloudetl-cloud</module>
+	    
+	    <module>idatrix-cloudetl-service-api</module>
+	    <module>idatrix-cloudetl-service</module>
+	  </modules>
+
+  
+  
+  	<repositories>
+		<repository>
+			<id>idatrix-reposi</id>
+			<name>pentaho Repository</name>
+			<url>http://10.0.0.100:8081/nexus/content/groups/public/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<layout>default</layout>
+		</repository>
+	</repositories>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>project-snapshots</id>
+			<url>http://10.0.0.100:8081/nexus/content/repositories/project-snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>project-releases</id>
+			<url>http://10.0.0.100:8081/nexus/content/repositories/project-releases/</url>
+		</repository>
+	</distributionManagement>
+  
+  
+</project>

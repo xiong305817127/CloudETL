@@ -1,0 +1,46 @@
+# 自定义参数
+custom:
+  #security
+  security:
+    enabled: false
+    hadoop:
+      impersonate: false
+    kerberos:
+      timeout: 3
+      kbr5conf: D:\\95-kerberos\\krb5-sz\\10.0.0.84\\krb5.conf
+      hdfs:
+        principal: hdfs/ysbdh04.gdbd.com@GDBD.COM
+        keytab: D:\\95-kerberos\\keytab-sz\\10.0.0.84\\hdfs.service.keytab
+      hive:
+        principal: hive/ysbdh04.gdbd.com@GDBD.COM
+        keytab: D:\\95-kerberos\\keytab-sz\\10.0.0.84\\hive.service.keytab
+      hbase:
+        principal: hbase/ysbdh04.gdbd.com@GDBD.COM
+        keytab: D:\\95-kerberos\\keytab-sz\\10.0.0.84\\hbase.service.keytab
+
+  # hdfs 默认超级用户
+  hdfs:
+    super-user: hdfs
+
+  # HBase Op
+  hbase:
+    zk:
+      port: 2181
+      quorum: ysbdh03.gdbd.com,ysbdh04.gdbd.com,ysbdh05.gdbd.com
+      znode: /hbase-unsecure
+
+  # Hive Spark sql
+  spark:
+    thrift:
+      server: ysbdh04.gdbd.com
+      port: 10015
+
+  # ES http 节点
+  es:
+    enabled: true
+    http-nodes: ysbdh05.gdbd.com:9205
+
+  # SQL执行允许的DB类型及操作类型
+  sql:
+    support-operator: mysql::select|insert|delete|update;hive::select;hbase::select|upsert|delete;oracle::select;dm7::select;postgresql::select
+

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.catalog.dao.DeptLimitedDAO">
+    <resultMap id="BaseResultMap"
+               type="com.idatrix.resource.catalog.po.DeptLimitedPO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="resource_id" property="resourceId" jdbcType="BIGINT" />
+        <result column="dept_id" property="deptId" jdbcType="BIGINT" />
+        <result column="status" property="status" jdbcType="VARCHAR" />
+
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="updater" property="updater" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, resource_id, dept_id, status, creator, create_time, updater, update_time
+    </sql>
+
+    <select id="getByResourceId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from rc_dept_limited
+        where resource_id = #{resourceId}
+    </select>
+    <select id="getByDeptId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from rc_dept_limited
+        where dept_id = #{deptId}
+    </select>
+    <select id="getDeptArrayByResource" resultType="java.lang.Long" parameterType="java.lang.Long">
+        select
+        dept_id
+        from rc_dept_limited
+        where resource_id = #{resourceId}
+    </select>
+    <delete id="deleteById" parameterType="java.lang.Long">
+        delete from rc_dept_limited
+        where id = #{id}
+    </delete>
+    <delete id="deleteByResourceId" parameterType="java.lang.Long">
+        delete from rc_dept_limited
+        where resource_id = #{resourceId}
+    </delete>
+
+    <insert id="insert" parameterType="com.idatrix.resource.catalog.po.DeptLimitedPO" useGeneratedKeys="true" keyProperty="id">
+        insert into rc_dept_limited (
+        resource_id, dept_id, status,
+        creator, create_time, updater, update_time)
+        values ( #{resourceId},#{deptId},#{status},
+         #{creator},#{createTime},#{updater},#{updateTime})
+    </insert>
+
+    <update id="updateById" parameterType="com.idatrix.resource.catalog.po.DeptLimitedPO">
+        update rc_dept_limited
+        set id = #{id},
+        resource_id = #{resourceId},
+        dept_id = #{deptId},
+        status = #{status},
+        creator = #{creator},
+        create_time = #{createTime},
+        updater = #{updater},
+        update_time = #{updateTime}
+        where id = #{id}
+    </update>
+
+</mapper>

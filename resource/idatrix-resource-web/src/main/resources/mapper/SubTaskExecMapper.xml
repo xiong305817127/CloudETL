@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.taskmanage.dao.SubTaskExecDAO">
+    <resultMap id="BaseResultMap" type="com.idatrix.resource.taskmanage.po.SubTaskExecPO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="etl_subscribe_id" property="etlSubscribeId" jdbcType="VARCHAR" />
+        <result column="etl_exec_id" property="etlExecId" jdbcType="VARCHAR" />
+        <result column="etl_running_id" property="etlRunningId" jdbcType="VARCHAR" />
+
+        <result column="sub_task_id" property="subTaskId" jdbcType="VARCHAR" />
+        <result column="task_type" property="taskType" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="VARCHAR" />
+
+        <result column="start_time" property="startTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="end_time" property="endTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="import_count" property="importCount" jdbcType="BIGINT" />
+
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, etl_subscribe_id, etl_exec_id, etl_running_id,
+        sub_task_id, task_type, status, start_time, end_time,
+        import_count, creator, create_time, modifier, modify_time
+    </sql>
+
+
+    <select id="getTotalImport" resultType="java.lang.Long">
+        select
+            SUM(import_count)
+        from rc_sub_task_exec
+        where etl_subscribe_id=#{subscribeId}
+    </select>
+
+    <select id="getByEtlSubscribeAndRunningId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_sub_task_exec
+        where etl_subscribe_id=#{subscribeId} and etl_running_id=#{runningId}
+    </select>
+
+    <select id="getExecInfoByTaskId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_sub_task_exec
+        where sub_task_id = #{taskId}
+        ORDER BY modify_time DESC
+    </select>
+
+
+    <select id="getById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_sub_task_exec
+        where id = #{id}
+    </select>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        delete from rc_sub_task_exec
+        where id = #{id}
+    </delete>
+
+
+    <insert id="insert" parameterType="com.idatrix.resource.taskmanage.po.SubTaskExecPO">
+        insert into rc_sub_task_exec (
+        id, etl_subscribe_id, etl_exec_id, etl_running_id,
+        sub_task_id, task_type, status, start_time, end_time,
+        import_count, creator, create_time, modifier, modify_time)
+        values
+        (#{id}, #{etlSubscribeId}, #{etlExecId},#{etlRunningId},
+        #{subTaskId}, #{taskType},#{status},#{startTime},#{endTime},
+        #{importCount}, #{creator}, #{createTime}, #{modifier}, #{modifyTime})
+    </insert>
+
+    <update id="updateById" parameterType="com.idatrix.resource.taskmanage.po.SubTaskExecPO">
+        update rc_sub_task_exec
+        set id = #{id},
+        etl_subscribe_id = #{etlSubscribeId},
+        etl_exec_id = #{etlExecId},
+        etl_running_id = #{etlRunningId},
+        sub_task_id = #{subTaskId},
+        task_type = #{taskType},
+        status = #{status},
+        start_time = #{startTime},
+        end_time = #{endTime},
+        import_count = #{importCount},
+        creator = #{creator},
+        create_time = #{createTime},
+        modifier = #{modifier},
+        modify_time = #{modifyTime}
+        where id = #{id} and etl_running_id =#{etlRunningId}
+    </update>
+
+
+</mapper>

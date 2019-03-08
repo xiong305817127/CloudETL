@@ -1,0 +1,7 @@
+[
+    {
+        "name": "db connection name",
+        "type": "db type",
+        "testStatus": "db connection test status"
+    }
+]

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.exchange.dao.ExchangeSubscribeTaskDAO">
+    <resultMap id="BaseResultMap"
+               type="com.idatrix.resource.exchange.po.ExchangeSubscribeTaskPO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="seq" property="seq" jdbcType="BIGINT" />
+        <result column="sub_no" property="subNo" jdbcType="VARCHAR" />
+        <result column="subscribe_id" property="subscribeId" jdbcType="BIGINT" />
+        <result column="resource_code" property="resourceCode" jdbcType="VARCHAR" />
+        <result column="subscribe_dept_id" property="subscribeDeptId" jdbcType="BIGINT" />
+        <result column="subscribe_dept_name" property="subscribeDeptName" jdbcType="VARCHAR" />
+        <result column="end_time" property="endDate" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="create_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+        id, seq, sub_no, subscribe_id, resource_code,
+         subscribe_dept_id, subscribe_dept_name,
+        end_time, creator, create_time, modifier, modify_time
+    </sql>
+
+    <select id="getMaxSubscribeSeq" resultType="java.lang.Long">
+        select ifnull(MAX(seq), 0) as seq
+        from rc_exchange_task
+    </select>
+
+
+    <insert id="insert" parameterType="com.idatrix.resource.exchange.po.ExchangeSubscribeTaskPO"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into rc_exchange_task (
+        seq, sub_no, subscribe_id, resource_code,
+         subscribe_dept_id, subscribe_dept_name,
+        end_time, creator, create_time, modifier, modify_time)
+        values (#{seq}, #{subNo}, #{subscribeId}, #{resourceCode},
+         #{subscribeDeptId}, #{subscribeDeptName},
+         #{endTime}, #{creator}, #{createTime}, #{modifier}, #{modifyTime})
+    </insert>
+
+    <select id="selectByResourceCode"  resultMap="BaseResultMap" >
+        select
+        <include refid="Base_Column_List" />
+        from rc_exchange_task
+        where 1=1 and resource_code=#{resourceCode}
+        order by modify_time ASC
+    </select>
+
+    <select id="getBySubNo"  resultMap="BaseResultMap" >
+        select
+        <include refid="Base_Column_List" />
+        from rc_exchange_task
+        where sub_no=#{subNo}
+        limit 1
+    </select>
+
+    <select id="getById"  resultMap="BaseResultMap" >
+        select
+        <include refid="Base_Column_List" />
+        from rc_exchange_task
+        where id=#{id}
+        limit 1
+    </select>
+
+
+    <update id="updateResourceFile" parameterType="com.idatrix.resource.datareport.po.ResourceFilePO">
+        update rc_exchange_task
+        set id = #{id},
+        seq = #{seq},
+        sub_no = #{subNo},
+        subscribe_id = #{subscribeId},
+        resource_code = #{resourceCode},
+        subscribe_dept_id = #{subscribeDeptId},
+        subscribe_dept_name = #{subscribeDeptName},
+        end_time = #{endTime},
+        creator = #{creator},
+        create_time = #{createTime},
+        modifier = #{modifier},
+        modify_time = #{modifyTime}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE from rc_exchange_task
+        where id = #{id}
+    </delete>
+</mapper>

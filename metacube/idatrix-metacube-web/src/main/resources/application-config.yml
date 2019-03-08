@@ -1,0 +1,15 @@
+om:
+  ambari_cluster_url: http://ysbdh03.gdbd.com:8080/api/v1/clusters/sz
+  url: http://ysbdh03.gdbd.com:8080/api/v1/clusters/sz/configurations/service_config_versions?service_name.in(CLUSTERINFO)&is_current=true
+  username: query_clusterinfo
+  password: query_clusterinfo
+
+sso:
+  enabled: true
+  serverBaseUrl: http://10.0.0.84
+  serverInnerAddress: http://10.0.0.84
+
+#密码加解密
+encry:
+   key: 12345678
+   encode: UTF-8

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.servicelog.dao.ServiceLogDAO">
+    <resultMap id="BaseResultMap" type="com.idatrix.resource.servicelog.po.ServiceLogPO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="service_name" property="serviceName" jdbcType="VARCHAR" />
+        <result column="service_type" property="serviceType" jdbcType="VARCHAR" />
+        <result column="service_code" property="serviceCode" jdbcType="VARCHAR" />
+        <result column="caller_dept_id" property="callerDeptId" jdbcType="BIGINT" />
+        <result column="caller_dept_code" property="callerDeptCode" jdbcType="VARCHAR" />
+        <result column="caller_dept_name" property="callerDeptName" jdbcType="VARCHAR" />
+        <result column="exec_time" property="execTime" jdbcType="INTEGER" />
+        <result column="is_success" property="isSuccess" jdbcType="INTEGER" />
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, service_name, service_type, service_code, caller_dept_id, caller_dept_code, caller_dept_name, exec_time,
+        is_success, creator, create_time, modifier, modify_time
+    </sql>
+
+    <select id="getServiceLogById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from rc_service_log
+        where id = #{id}
+    </select>
+
+    <select id="getServiceLogInfoByCondition" parameterType="hashmap" resultMap="BaseResultMap" >
+        select
+          <include refid="Base_Column_List" />
+        from rc_service_log
+        where 1=1
+        <if test="serviceCode!=null">
+            and service_code like '%${serviceCode}%'
+        </if>
+        <if test="serviceName!=null">
+            and service_name like '%${serviceName}%'
+        </if>
+        <if test="serviceType!=null">
+            and service_type = #{serviceType}
+        </if>
+        <if test="callerDeptName!=null">
+            and caller_dept_name like '%${callerDeptName}%'
+        </if>
+        <if test="isSuccess!=null">
+            and is_success = #{isSuccess}
+        </if>
+        <if test="startTime!=null and startTime!=''">
+            <![CDATA[
+                 and UNIX_TIMESTAMP(create_time) >= UNIX_TIMESTAMP(#{startTime})
+            ]]>
+        </if>
+        <if test="endTime!=null and endTime!=''">
+            <![CDATA[
+                 and UNIX_TIMESTAMP(create_time) <= UNIX_TIMESTAMP(#{endTime})
+            ]]>
+        </if>
+        order by create_time desc
+    </select>
+</mapper>

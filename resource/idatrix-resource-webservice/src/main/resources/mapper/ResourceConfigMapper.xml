@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.webservice.dao.ResourceConfigDAO">
+  <resultMap id="BaseResultMap"
+    type="com.idatrix.resource.webservice.po.ResourceConfigPO">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="catalog_code" property="catalogCode" jdbcType="VARCHAR"/>
+    <result column="catalog_full_name" property="catalogFullName" jdbcType="VARCHAR"/>
+    <result column="seq_num" property="seqNum" jdbcType="VARCHAR"/>
+    <result column="code" property="code" jdbcType="VARCHAR"/>
+    <result column="name" property="name" jdbcType="VARCHAR"/>
+    <result column="remark" property="remark" jdbcType="VARCHAR"/>
+    <result column="dept_name" property="deptName" jdbcType="VARCHAR"/>
+    <result column="dept_code" property="deptCode" jdbcType="VARCHAR"/>
+    <result column="dept_name_ids" property="deptNameIds" jdbcType="VARCHAR"/>
+    <result column="resource_abstract" property="resourceAbstract" jdbcType="VARCHAR"/>
+    <result column="keyword" property="keyword" jdbcType="VARCHAR"/>
+    <result column="format_type" property="formatType" jdbcType="TINYINT"/>
+    <result column="format_info" property="formatInfo" jdbcType="VARCHAR"/>
+    <result column="format_info_extend" property="formatInfoExtend" jdbcType="VARCHAR"/>
+    <result column="share_type" property="shareType" jdbcType="TINYINT"/>
+    <result column="share_condition" property="shareCondition" jdbcType="VARCHAR"/>
+    <result column="share_method" property="shareMethod" jdbcType="TINYINT"/>
+    <result column="open_type" property="openType" jdbcType="TINYINT"/>
+    <result column="open_condition" property="openCondition" jdbcType="VARCHAR"/>
+    <result column="refresh_cycle" property="refreshCycle" jdbcType="TINYINT"/>
+    <result column="pub_date" property="pubDate" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+    <result column="relation_code" property="relationCode" jdbcType="VARCHAR"/>
+    <result column="bind_table_id" property="bindTableId" jdbcType="BIGINT"/>
+    <result column="bind_service_id" property="bindServiceId" jdbcType="BIGINT"/>
+    <result column="lib_table_id" property="libTableId" jdbcType="VARCHAR"/>
+    <result column="status" property="status" jdbcType="VARCHAR"/>
+
+    <result column="creator" property="creator" jdbcType="VARCHAR"/>
+    <result column="create_time" property="createTime" javaType="java.util.Date"
+      jdbcType="TIMESTAMP"/>
+    <result column="updater" property="updater" jdbcType="VARCHAR"/>
+    <result column="update_time" property="updateTime" javaType="java.util.Date"
+      jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id,catalog_code,catalog_full_name,seq_num,code,name,remark,dept_name,dept_code,dept_name_ids,resource_abstract,keyword,format_type,
+    format_info,format_info_extend,share_type,share_condition,share_method,open_type,open_condition,refresh_cycle,
+    pub_date,relation_code,bind_table_id,bind_service_id,lib_table_id,status,create_time,creator,update_time,updater
+  </sql>
+
+  <select id="getConfigById" resultMap="BaseResultMap"
+    parameterType="java.lang.Long">
+    select
+    <include refid="Base_Column_List"/>
+    FROM rc_resource
+    where id = #{id}
+  </select>
+
+</mapper>

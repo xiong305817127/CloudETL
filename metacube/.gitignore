@@ -1,0 +1,9 @@
+.idea/
+*/target/
+**.iml
+*/logs/*
+**/.settings
+**/.project
+**/.classpath
+/idatrix-metacube-api/bin
+/idatrix-metacube-web/application.pid

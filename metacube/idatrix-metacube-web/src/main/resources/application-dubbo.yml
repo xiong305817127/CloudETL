@@ -1,0 +1,19 @@
+spring:
+  dubbo:
+    application:
+      id: idatrix-metadata
+      name: idatrix-metadata
+    registry:                             # zookeeper注册中心的地址
+      protocol: zookeeper
+      address: 10.0.0.83:2181,10.0.0.84:2181,10.0.0.85:2181
+    protocol:
+      name: dubbo
+      port: 20889
+      serialization: dubbo
+    provider:
+      retries: 0                           # 服务调用重试次数，服务发布者不给重试，让服务调用者自己重试
+    consumer:
+      timeout: 30000
+      check: false                         # 服务启动时检查被调用服务是否可用
+      retries: 2                           # 服务调用重试次数
+    scan: com.ys.idatrix.metacube.api.service

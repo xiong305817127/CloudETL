@@ -1,0 +1,17 @@
+[
+        {
+            "stepName": "step name",
+            "copy": "",
+            "linesRead": "",
+            "linesWritten": "",
+            "linesInput": "",
+            "linesOutput": "",
+            "linesUpdated": "",
+            "linesRejected": "",
+            "errors": "",
+            "statusDescription": "",
+            "seconds": "",
+            "speed": "",
+            "priority": ""
+        }
+]

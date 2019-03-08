@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.SnapshotTableIdxMysqlMapper">
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableIdxMysql">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="version" property="version" jdbcType="INTEGER"/>
+        <result column="index_id" property="indexId" jdbcType="BIGINT"/>
+        <result column="index_name" property="indexName" jdbcType="VARCHAR"/>
+        <result column="column_ids" property="columnIds" jdbcType="VARCHAR"/>
+        <result column="subdivision" property="subdivision" jdbcType="VARCHAR"/>
+        <result column="index_type" property="indexType" jdbcType="VARCHAR"/>
+        <result column="index_method" property="indexMethod" jdbcType="VARCHAR"/>
+        <result column="location" property="location" jdbcType="INTEGER"/>
+        <result column="table_id" property="tableId" jdbcType="BIGINT"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, version, index_id, index_name, column_ids, subdivision, index_type, index_method,
+    location, table_id, creator, create_time, modifier, modify_time
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from mc_snapshot_table_idx_mysql
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from mc_snapshot_table_idx_mysql
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableIdxMysql">
+    insert into mc_snapshot_table_idx_mysql (id, version, index_id,
+      index_name, column_ids, subdivision, 
+      index_type, index_method, location, 
+      table_id, creator, create_time, 
+      modifier, modify_time)
+    values (#{id,jdbcType=BIGINT}, #{version,jdbcType=INTEGER}, #{indexId,jdbcType=BIGINT},
+      #{indexName,jdbcType=VARCHAR}, #{columnIds,jdbcType=VARCHAR}, #{subdivision,jdbcType=VARCHAR}, 
+      #{indexType,jdbcType=VARCHAR}, #{indexMethod,jdbcType=VARCHAR}, #{location,jdbcType=INTEGER}, 
+      #{tableId,jdbcType=BIGINT}, #{creator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{modifier,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP})
+  </insert>
+    <insert id="insertSelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableIdxMysql">
+        insert into mc_snapshot_table_idx_mysql
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="version != null">
+                version,
+            </if>
+            <if test="indexId != null">
+                index_id,
+            </if>
+            <if test="indexName != null">
+                index_name,
+            </if>
+            <if test="columnIds != null">
+                column_ids,
+            </if>
+            <if test="subdivision != null">
+                subdivision,
+            </if>
+            <if test="indexType != null">
+                index_type,
+            </if>
+            <if test="indexMethod != null">
+                index_method,
+            </if>
+            <if test="location != null">
+                location,
+            </if>
+            <if test="tableId != null">
+                table_id,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="modifier != null">
+                modifier,
+            </if>
+            <if test="modifyTime != null">
+                modify_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="version != null">
+                #{version,jdbcType=INTEGER},
+            </if>
+            <if test="indexId != null">
+                #{indexId,jdbcType=BIGINT},
+            </if>
+            <if test="indexName != null">
+                #{indexName,jdbcType=VARCHAR},
+            </if>
+            <if test="columnIds != null">
+                #{columnIds,jdbcType=VARCHAR},
+            </if>
+            <if test="subdivision != null">
+                #{subdivision,jdbcType=VARCHAR},
+            </if>
+            <if test="indexType != null">
+                #{indexType,jdbcType=VARCHAR},
+            </if>
+            <if test="indexMethod != null">
+                #{indexMethod,jdbcType=VARCHAR},
+            </if>
+            <if test="location != null">
+                #{location,jdbcType=INTEGER},
+            </if>
+            <if test="tableId != null">
+                #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective"
+            parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableIdxMysql">
+        update mc_snapshot_table_idx_mysql
+        <set>
+            <if test="version != null">
+                version = #{version,jdbcType=INTEGER},
+            </if>
+            <if test="indexId != null">
+                index_id = #{indexId,jdbcType=BIGINT},
+            </if>
+            <if test="indexName != null">
+                index_name = #{indexName,jdbcType=VARCHAR},
+            </if>
+            <if test="columnIds != null">
+                column_ids = #{columnIds,jdbcType=VARCHAR},
+            </if>
+            <if test="subdivision != null">
+                subdivision = #{subdivision,jdbcType=VARCHAR},
+            </if>
+            <if test="indexType != null">
+                index_type = #{indexType,jdbcType=VARCHAR},
+            </if>
+            <if test="indexMethod != null">
+                index_method = #{indexMethod,jdbcType=VARCHAR},
+            </if>
+            <if test="location != null">
+                location = #{location,jdbcType=INTEGER},
+            </if>
+            <if test="tableId != null">
+                table_id = #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                modifier = #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableIdxMysql">
+    update mc_snapshot_table_idx_mysql
+    set version = #{version,jdbcType=INTEGER},
+      index_id = #{indexId,jdbcType=BIGINT},
+      index_name = #{indexName,jdbcType=VARCHAR},
+      column_ids = #{columnIds,jdbcType=VARCHAR},
+      subdivision = #{subdivision,jdbcType=VARCHAR},
+      index_type = #{indexType,jdbcType=VARCHAR},
+      index_method = #{indexMethod,jdbcType=VARCHAR},
+      location = #{location,jdbcType=INTEGER},
+      table_id = #{tableId,jdbcType=BIGINT},
+      creator = #{creator,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modifier = #{modifier,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO mc_snapshot_table_idx_mysql (
+        version,
+        index_id,
+        index_name,
+        column_ids,
+        subdivision,
+        index_type,
+        index_method,
+        location,
+        table_id,
+        creator,
+        create_time,
+        modifier,
+        modify_time
+        )
+        VALUES
+        <foreach collection ="list" item="idx" index= "index" separator =",">
+            (
+            #{idx.version,jdbcType=INTEGER}, #{idx.indexId, jdbcType=BIGINT}, #{idx.indexName,jdbcType=VARCHAR},
+            #{idx.columnIds,jdbcType=VARCHAR}, #{idx.subdivision,jdbcType=VARCHAR}, #{idx.indexType,jdbcType=VARCHAR},
+            #{idx.indexMethod,jdbcType=VARCHAR}, #{idx.location,jdbcType=INTEGER}, #{idx.tableId,jdbcType=BIGINT},
+            #{idx.creator,jdbcType=VARCHAR}, #{idx.createTime,jdbcType=TIMESTAMP}, #{idx.modifier,jdbcType=VARCHAR},
+            #{idx.modifyTime,jdbcType=TIMESTAMP}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectListByTableIdAndVersion" resultMap="BaseResultMap">
+        SELECT
+          <include refid="Base_Column_List" />
+        FROM mc_snapshot_table_idx_mysql
+        WHERE table_id = #{tableId, jdbcType=BIGINT} AND version = #{version, jdbcType=INTEGER}
+    </select>
+
+</mapper>

@@ -1,0 +1,94 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.ys</groupId>
+	<artifactId>idatrix-db</artifactId>
+	<packaging>pom</packaging>
+	<version>2.0.0-SNAPSHOT</version>
+
+	<modules>
+		<module>idatrix-db-api</module>
+		<module>idatrix-db-dto</module>
+		<module>idatrix-db-dao</module>
+		<module>idatrix-db-core</module>
+		<module>idatrix-db-proxy</module>
+	</modules>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.1.2.RELEASE</version>
+		<relativePath/>
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.8</java.version>
+		<druid-spring-boot-start.version>1.1.10</druid-spring-boot-start.version>
+		<dubbo-spring-boot-start.version>2.0.0</dubbo-spring-boot-start.version>
+		<mybatis-spring-boot-starter.version>1.3.2</mybatis-spring-boot-starter.version>
+		<oracle-jdbc.version>12.2.0.1</oracle-jdbc.version>
+		<mysql-java.version>8.0.13</mysql-java.version>
+		<dm-jdbc.version>dm7.17</dm-jdbc.version>
+		<postgresql-jdbc.version>9.4.1208-jdbc42-atlassian-hosted</postgresql-jdbc.version>
+		<db2-jdbc.version>1.8</db2-jdbc.version>
+		<hibernate-validator.version>6.0.14.Final</hibernate-validator.version>
+		<dbutils.version>1.7</dbutils.version>
+		<pagehelper.version>1.2.10</pagehelper.version>
+		<zkclient.version>0.11</zkclient.version>
+		<hessian.version>4.0.7-u</hessian.version>
+		<pdfbox.version>2.0.8</pdfbox.version>
+		<lombok.version>1.16.18</lombok.version>
+		<fastjson.version>1.2.54</fastjson.version>
+		<guava.version>23.0</guava.version>
+		<commons-collections.version>3.2</commons-collections.version>
+		<commons-lang3.version>3.8.1</commons-lang3.version>
+		<hadoop.version>2.7.3</hadoop.version>
+		<hbase.version>1.2.5</hbase.version>
+	</properties>
+
+	<dependencies>
+		<!-- getter、setting 自动生成 -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!--fastjson-->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>${fastjson.version}</version>
+		</dependency>
+
+		<!--工具API依赖-->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>${commons-collections.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons-lang3.version}</version>
+		</dependency>
+
+	</dependencies>
+
+	<!-- <build>
+         <plugins>
+             <plugin>
+                 <groupId>org.springframework.boot</groupId>
+                 <artifactId>spring-boot-maven-plugin</artifactId>
+             </plugin>
+         </plugins>
+     </build>-->
+</project>

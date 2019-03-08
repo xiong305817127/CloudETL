@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.subscribe.dao.SubscribeDAO">
+  <resultMap id="BaseResultMap" type="com.idatrix.resource.subscribe.po.SubscribePO">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="seq" property="seq" jdbcType="BIGINT"/>
+    <result column="sub_no" property="subNo" jdbcType="VARCHAR"/>
+    <result column="resource_id" property="resourceId" jdbcType="BIGINT"/>
+    <result column="dept_id" property="deptId" jdbcType="BIGINT"/>
+    <result column="dept_name" property="deptName" jdbcType="VARCHAR"/>
+    <result column="subscribe_user_name" property="subscribeUserName" jdbcType="VARCHAR"/>
+    <result column="subscribe_reason" property="subscribeReason" jdbcType="VARCHAR"/>
+    <result column="end_date" property="endDate" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+    <result column="share_method" property="shareMethod" jdbcType="TINYINT"/>
+    <result column="status" property="status" jdbcType="VARCHAR"/>
+    <result column="approver" property="approver" jdbcType="VARCHAR"/>
+    <result column="approver_name" property="approverName" jdbcType="VARCHAR"/>
+    <result column="suggestion" property="suggestion" jdbcType="VARCHAR"/>
+    <result column="approve_time" property="approveTime" javaType="java.util.Date"
+      jdbcType="TIMESTAMP"/>
+    <result column="service_url" property="serviceUrl" jdbcType="VARCHAR"/>
+    <result column="sub_key" property="subKey" jdbcType="VARCHAR"/>
+    <result column="creator" property="creator" jdbcType="VARCHAR"/>
+    <result column="create_time" property="createTime" javaType="java.util.Date"
+      jdbcType="TIMESTAMP"/>
+    <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+    <result column="modify_time" property="modifyTime" javaType="java.util.Date"
+      jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <resultMap id="StatisticsResultMap"
+    type="com.idatrix.resource.catalog.po.StatisticsPO">
+    <result column="count" property="count" jdbcType="BIGINT"/>
+    <result column="month" property="monthStr" jdbcType="VARCHAR"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, seq, sub_no, resource_id, dept_id, dept_name, subscribe_user_name,
+    subscribe_reason, end_date, share_method, status,
+    approver, approver_name, suggestion, approve_time,
+    service_url, sub_key, creator, create_time,
+    modifier, modify_time
+  </sql>
+
+
+  <select id="getStatisticsByStatusAndNums" resultMap="StatisticsResultMap">
+    SELECT
+    DATE_FORMAT(modify_time, '%Y-%m') as month,
+    count(id) as count
+    FROM
+    rc_subscribe
+    WHERE modify_time>DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01') , INTERVAL #{num} MONTH)
+    and next_status = #{status}
+    GROUP BY month
+    ORDER BY month DESC;
+  </select>
+
+  <select id="getBySubNo" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from rc_subscribe
+    where sub_no=#{subNo}
+  </select>
+
+  <select id="getByDeptId" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from rc_subscribe
+    where dept_id=#{deptId}
+  </select>
+
+
+  <select id="getMaxSubscribeSeq" resultType="java.lang.Long">
+    select
+      ifnull(MAX(seq), 0)
+      as seq
+    from rc_subscribe
+  </select>
+
+  <select id="getById" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from rc_subscribe
+    where id=#{id}
+  </select>
+
+  <select id="getBySubscribeId" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from rc_subscribe
+    where dept_id=#{deptId}
+  </select>
+
+
+  <select id="getByResourceIdAndProposer" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from rc_subscribe
+    where resource_id=#{resourceId} and creator=#{proposer}
+  </select>
+
+  <select id="queryByCondition" resultMap="BaseResultMap" parameterType="hashmap">
+    select
+    rs.id as id, rs.seq as seq, rs.sub_no as sub_no, rs.resource_id as resource_id, rs.dept_id as
+    dept_id, rs.dept_name as dept_name,
+    rs.approver as subscribe_user_name, rs.subscribe_reason as subscribe_reason,
+    rs.end_date as end_date, rs.share_method as share_method, rs.status as status,
+    rs.approver as approver, rs.approver_name as approver_name, rs.suggestion as suggestion,
+    rs.approve_time as approve_time, rs.service_url as service_url, rs.sub_key as sub_key,
+    rs.creator as creator, rs.create_time as create_time,
+    rs.modifier as modifier, rs.modify_time as modify_time
+    from rc_subscribe rs LEFT JOIN
+    rc_resource rr ON rs.resource_id=rr.id
+    where 1=1
+    <if test="code!=null">
+      and rr.code like '${code}%'
+    </if>
+    <if test="name!=null">
+      AND MATCH (rr.`name`, rr.dept_name) AGAINST ('*${name}*' IN BOOLEAN MODE)
+    </if>
+    <if test="deptName!=null">
+      AND MATCH (rr.`name`, rr.dept_name) AGAINST ('*${deptName}*' IN BOOLEAN MODE)
+    </if>
+    <if test="deptCode!=null">
+      and rr.dept_code like '${deptCode}%'
+    </if>
+    <if test="shareMethod!=null">
+      and rs.share_method = #{shareMethod}
+    </if>
+    <if test="subStatus!=null">
+      and rs.status=#{subStatus}
+    </if>
+    <if test="maintainStatus!=null">
+      and rs.status!=#{maintainStatus}
+    </if>
+    <if test="startTime!=null and endTime!=null">
+      and rs.create_time &gt;= #{startTime} and rs.create_time &lt; #{endTime}
+    </if>
+    <if test="approveStartTime!=null and approveEndTime!=null">
+      and rs.approve_time &gt;= #{approveStartTime} and rs.approve_time &lt; #{approveEndTime}
+    </if>
+    <if test="subDeptName!=null">
+      and rr.dept_name like '%${subDeptName}%'
+    </if>
+    <if test="user!=null">
+      and rs.creator=#{user}
+      order by rs.create_time DESC
+    </if>
+    <if test="processedApprove!=null and approver!=null">
+      and rs.approver=#{approver}
+      and rs.status != "wait_approve"
+      order by rs.approve_time DESC
+    </if>
+    <if test="approver!=null and processedApprove==null">
+      and rs.approver=#{approver}
+      and rs.status = "wait_approve"
+      order by rs.create_time DESC
+    </if>
+    <if test="user==null and approver==null and processedApprove==null">
+      order by rs.create_time DESC
+    </if>
+  </select>
+
+
+  <delete id="deleteById" parameterType="java.lang.Long">
+    delete from rc_subscribe
+    where id = #{id}
+  </delete>
+
+  <insert id="insert" parameterType="com.idatrix.resource.subscribe.po.SubscribeDbioPO"
+    useGeneratedKeys="true" keyProperty="id">
+    insert into rc_subscribe (
+    id, seq, sub_no, resource_id, dept_id, dept_name, subscribe_user_name,
+    subscribe_reason, end_date, share_method, status,
+    approver, approver_name, suggestion, approve_time,
+    service_url, sub_key, creator, create_time,
+    modifier, modify_time)
+    values (#{id}, #{seq}, #{subNo},
+    #{resourceId},#{deptId},#{deptName},#{subscribeUserName},#{subscribeReason},
+    #{endDate}, #{shareMethod},#{status},#{approver},#{approverName},
+    #{suggestion},#{approveTime}, #{serviceUrl}, #{subKey},
+    #{creator}, #{createTime}, #{modifier}, #{modifyTime})
+  </insert>
+
+
+  <update id="updateById" parameterType="com.idatrix.resource.subscribe.po.SubscribeDbioPO">
+    update rc_subscribe
+    set id = #{id}, seq=#{seq}, sub_no=#{subNo}, resource_id = #{resourceId},
+    dept_id = #{deptId}, dept_name = #{deptName},
+    subscribe_user_name = #{subscribeUserName},
+    subscribe_reason = #{subscribeReason}, end_date = #{endDate},
+    share_method = #{shareMethod}, status = #{status},
+    approver = #{approver}, approver_name = #{approverName},
+    suggestion = #{suggestion}, approve_time = #{approveTime},
+    service_url = #{serviceUrl}, sub_key = #{subKey},
+    creator = #{creator}, create_time = #{createTime}, modifier = #{modifier},
+    modify_time = #{modifyTime}
+    where id = #{id}
+  </update>
+</mapper>

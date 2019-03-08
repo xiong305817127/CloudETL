@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.EsFieldMapper">
+
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.EsFieldPO">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="index_id" property="indexId" jdbcType="BIGINT"/>
+        <result column="field_name" property="fieldName" jdbcType="VARCHAR"/>
+        <result column="field_type" property="fieldType" jdbcType="VARCHAR"/>
+        <result column="analyzer" property="analyzer" jdbcType="VARCHAR"/>
+        <result column="is_index" property="canIndex" jdbcType="BIT"/>
+        <result column="is_store" property="canStore" jdbcType="BIT"/>
+        <result column="is_all" property="canAll" jdbcType="BIT"/>
+        <result column="is_source" property="canSource" jdbcType="BIT"/>
+        <result column="location" property="location" jdbcType="INTEGER"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+      id, index_id, field_name, field_type, analyzer, is_index, is_store, is_all,
+      is_source, location, creator, create_time, modifier, modify_time
+    </sql>
+
+    <select id="selectByPK" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from mc_es_field
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <delete id="deleteByPK" parameterType="java.lang.Long">
+      delete from mc_es_field
+      where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <delete id="deleteByIndexId" parameterType="java.lang.Long">
+      delete from mc_es_field
+      where index_id = #{indexId,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true"
+            parameterType="com.ys.idatrix.metacube.metamanage.domain.EsFieldPO">
+        insert into mc_es_field (
+          index_id,
+          field_name,
+          field_type,
+          analyzer,
+          is_index,
+          is_store,
+          is_all,
+          is_source,
+          location,
+          creator,
+          create_time
+          )values (
+          #{indexId,jdbcType=BIGINT},
+          #{fieldName,jdbcType=VARCHAR},
+          #{fieldType,jdbcType=VARCHAR},
+          #{analyzer,jdbcType=VARCHAR},
+          #{canIndex,jdbcType=BIT},
+          #{canStore,jdbcType=BIT},
+          #{canAll,jdbcType=BIT},
+          #{canSource,jdbcType=BIT},
+          #{location,jdbcType=INTEGER},
+          #{creator,jdbcType=VARCHAR},
+          NOW()
+         )
+    </insert>
+
+    <!--批量添加-->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO mc_es_field (
+        index_id,
+        field_name,
+        field_type,
+        analyzer,
+        is_index,
+        is_store,
+        is_all,
+        is_source,
+        location,
+        creator,
+        create_time
+        )
+        VALUES
+        <foreach collection="list" item="field" index="index" separator=",">
+            (
+            #{field.indexId,jdbcType=BIGINT},
+            #{field.fieldName,jdbcType=VARCHAR},
+            #{field.fieldType,jdbcType=VARCHAR},
+            #{field.analyzer,jdbcType=VARCHAR},
+            #{field.canIndex,jdbcType=BIT},
+            #{field.canStore,jdbcType=BIT},
+            #{field.canAll,jdbcType=BIT},
+            #{field.canSource,jdbcType=BIT},
+            #{field.location,jdbcType=INTEGER},
+            #{field.creator,jdbcType=VARCHAR},
+            NOW()
+            )
+        </foreach>
+    </insert>
+
+    <!--选择项添加-->
+    <insert id="insertSelective" keyProperty="id" useGeneratedKeys="true"
+            parameterType="com.ys.idatrix.metacube.metamanage.domain.EsFieldPO">
+        insert into mc_es_field
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="indexId != null">
+                index_id,
+            </if>
+            <if test="fieldName != null">
+                field_name,
+            </if>
+            <if test="fieldType != null">
+                field_type,
+            </if>
+            <if test="analyzer != null">
+                analyzer,
+            </if>
+            <if test="canIndex != null">
+                is_index,
+            </if>
+            <if test="canStore != null">
+                is_store,
+            </if>
+            <if test="canAll != null">
+                is_all,
+            </if>
+            <if test="canSource != null">
+                is_source,
+            </if>
+            <if test="location != null">
+                location,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="modifier != null">
+                modifier,
+            </if>
+            <if test="modifyTime != null">
+                modify_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="indexId != null">
+                #{indexId,jdbcType=BIGINT},
+            </if>
+            <if test="fieldName != null">
+                #{fieldName,jdbcType=VARCHAR},
+            </if>
+            <if test="fieldType != null">
+                #{fieldType,jdbcType=VARCHAR},
+            </if>
+            <if test="analyzer != null">
+                #{analyzer,jdbcType=VARCHAR},
+            </if>
+            <if test="canIndex != null">
+                #{canIndex,jdbcType=BIT},
+            </if>
+            <if test="canStore != null">
+                #{canStore,jdbcType=BIT},
+            </if>
+            <if test="canAll != null">
+                #{canAll,jdbcType=BIT},
+            </if>
+            <if test="canSource != null">
+                #{canSource,jdbcType=BIT},
+            </if>
+            <if test="location != null">
+                #{location,jdbcType=INTEGER},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.EsFieldPO">
+        update mc_es_field
+        <set>
+            <if test="fieldName != null">
+                field_name = #{fieldName,jdbcType=VARCHAR},
+            </if>
+            <if test="fieldType != null">
+                field_type = #{fieldType,jdbcType=VARCHAR},
+            </if>
+            <if test="analyzer != null">
+                analyzer = #{analyzer,jdbcType=VARCHAR},
+            </if>
+            <if test="canIndex != null">
+                is_index = #{canIndex,jdbcType=BIT},
+            </if>
+            <if test="canStore != null">
+                is_store = #{canStore,jdbcType=BIT},
+            </if>
+            <if test="canAll != null">
+                is_all = #{canAll,jdbcType=BIT},
+            </if>
+            <if test="canSource != null">
+                is_source = #{canSource,jdbcType=BIT},
+            </if>
+            <if test="location != null">
+                location = #{location,jdbcType=INTEGER},
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                modifier = #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+
+    <!--根据索引id查询所有字段-->
+    <select id="queryFieldsByIndexId" resultMap="BaseResultMap">
+
+        select
+        <include refid="Base_Column_List"/>
+        from mc_es_field
+        where index_id = #{indexId}
+
+    </select>
+
+
+</mapper>

@@ -1,0 +1,94 @@
+{
+    "acceptingFilenames": false,
+    "passingThruFields": false,
+    "acceptingField": "",
+    "acceptingStepName": "",
+    "inputFiles": [
+        {
+            "fileName": "",
+            "fileMask": "",
+            "excludeFileMask": "",
+            "fileRequired": "",
+            "includeSubfolders": ""
+        }
+    ],
+    "content": {
+        "separator": "",
+        "enclosure": "",
+        "breakInEnclosureAllowed": false,
+        "escapeCharacter": "",
+        "header": false,
+        "nrHeaderLines": 0,
+        "footer": false,
+        "nrFooterLines": 0,
+        "lineWrapped": false,
+        "nrWraps": 0,
+        "layoutPaged": false,
+        "nrLinesPerPage": 0,
+        "nrLinesDocHeader": 0,
+        "noEmptyLines": false,
+        "includeFilename": false,
+        "filenameField": "",
+        "includeRowNumber": false,
+        "rowNumberByFile": false,
+        "rowNumberField": "",
+        "fileFormat": "",
+        "encoding": "",
+        "rowLimit": 0,
+        "fileType": "",
+        "fileCompression": "",
+        "dateFormatLenient": false,
+        "dateFormatLocale": ""
+    },
+    "errorHandling": {
+        "errorIgnored": false,
+        "skipBadFiles": false,
+        "fileErrorField": "",
+        "fileErrorMessageField": "",
+        "errorLineSkipped": false,
+        "errorCountField": "",
+        "errorFieldsField": "",
+        "errorTextField": "",
+        "warningFilesDestinationDirectory": "",
+        "warningFilesExtension": "",
+        "errorFilesDestinationDirectory": "",
+        "errorFilesExtension": "",
+        "lineNumberFilesDestinationDirectory": "",
+        "lineNumberFilesExtension": ""
+    },
+    "filters": [
+        {
+            "filterString": "",
+            "filterPosition": "",
+            "filterIsLastLine": "",
+            "filterIsPositive": ""
+        }
+    ],
+    "fields": [
+        {
+            "name": "",
+            "type": "",
+            "format": "",
+            "currency": "",
+            "decimal": "",
+            "group": "",
+            "nullif": "",
+            "ifnull": "",
+            "position": "",
+            "length": "",
+            "precision": "",
+            "trim_type": "",
+            "repeat": false
+        }
+    ],
+    "additionalOutputFields": {
+        "shortFilenameField": "",
+        "pathField": "",
+        "hiddenField": "",
+        "lastModificationField": "",
+        "uriField": "",
+        "rootUriField": "",
+        "extensionField": "",
+        "sizeField": ""
+    }
+}

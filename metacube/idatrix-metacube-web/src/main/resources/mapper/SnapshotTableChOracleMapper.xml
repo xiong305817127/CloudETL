@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.SnapshotTableChOracleMapper">
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableChOracle">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="versions" property="versions" jdbcType="INTEGER"/>
+        <result column="ch_id" property="chId" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="check_sql" property="checkSql" jdbcType="VARCHAR"/>
+        <result column="is_enabled" property="isEnabled" jdbcType="BIT"/>
+        <result column="table_id" property="tableId" jdbcType="BIGINT"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, versions, ch_id, name, check_sql, is_enabled, table_id, creator, create_time, 
+    modifier, modify_time
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from mc_snapshot_table_ck_oracle
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from mc_snapshot_table_ck_oracle
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableChOracle">
+    insert into mc_snapshot_table_ck_oracle (id, versions, ch_id, 
+      name, check_sql, is_enabled, 
+      table_id, creator, create_time, 
+      modifier, modify_time)
+    values (#{id,jdbcType=BIGINT}, #{versions,jdbcType=INTEGER}, #{chId,jdbcType=BIGINT}, 
+      #{name,jdbcType=VARCHAR}, #{checkSql,jdbcType=VARCHAR}, #{isEnabled,jdbcType=BIT}, 
+      #{tableId,jdbcType=BIGINT}, #{creator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{modifier,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP})
+  </insert>
+    <insert id="insertSelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableChOracle">
+        insert into mc_snapshot_table_ck_oracle
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="versions != null">
+                versions,
+            </if>
+            <if test="chId != null">
+                ch_id,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="checkSql != null">
+                check_sql,
+            </if>
+            <if test="isEnabled != null">
+                is_enabled,
+            </if>
+            <if test="tableId != null">
+                table_id,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="modifier != null">
+                modifier,
+            </if>
+            <if test="modifyTime != null">
+                modify_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="versions != null">
+                #{versions,jdbcType=INTEGER},
+            </if>
+            <if test="chId != null">
+                #{chId,jdbcType=BIGINT},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="checkSql != null">
+                #{checkSql,jdbcType=VARCHAR},
+            </if>
+            <if test="isEnabled != null">
+                #{isEnabled,jdbcType=BIT},
+            </if>
+            <if test="tableId != null">
+                #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective"
+            parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableChOracle">
+        update mc_snapshot_table_ck_oracle
+        <set>
+            <if test="versions != null">
+                versions = #{versions,jdbcType=INTEGER},
+            </if>
+            <if test="chId != null">
+                ch_id = #{chId,jdbcType=BIGINT},
+            </if>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="checkSql != null">
+                check_sql = #{checkSql,jdbcType=VARCHAR},
+            </if>
+            <if test="isEnabled != null">
+                is_enabled = #{isEnabled,jdbcType=BIT},
+            </if>
+            <if test="tableId != null">
+                table_id = #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                modifier = #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableChOracle">
+    update mc_snapshot_table_ck_oracle
+    set versions = #{versions,jdbcType=INTEGER},
+      ch_id = #{chId,jdbcType=BIGINT},
+      name = #{name,jdbcType=VARCHAR},
+      check_sql = #{checkSql,jdbcType=VARCHAR},
+      is_enabled = #{isEnabled,jdbcType=BIT},
+      table_id = #{tableId,jdbcType=BIGINT},
+      creator = #{creator,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modifier = #{modifier,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <insert id="batchInsert" parameterType="java.util.List" >
+        INSERT INTO mc_snapshot_table_ck_oracle (
+            versions,
+            ch_id,
+            NAME,
+            check_sql,
+            is_enabled,
+            table_id,
+            creator,
+            create_time,
+            modifier,
+            modify_time
+        )
+        VALUES
+        <foreach collection="list" item="ch" index="index" separator=",">
+            (
+            #{ch.versions,jdbcType=INTEGER}, #{ch.chId,jdbcType=BIGINT},
+            #{ch.name,jdbcType=VARCHAR}, #{ch.checkSql,jdbcType=VARCHAR}, #{ch.isEnabled,jdbcType=BIT},
+            #{ch.tableId,jdbcType=BIGINT}, #{ch.creator,jdbcType=VARCHAR}, #{ch.createTime,jdbcType=TIMESTAMP},
+            #{ch.modifier,jdbcType=VARCHAR}, #{ch.modifyTime,jdbcType=TIMESTAMP})
+        </foreach>
+    </insert>
+
+    <select id="selectByTableIdAndVersion" resultMap="BaseResultMap" >
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM mc_snapshot_table_ck_oracle WHERE table_id = #{tableId,jdbcType=BIGINT} AND versions = #{versions,jdbcType=INTEGER}
+    </select>
+
+</mapper>

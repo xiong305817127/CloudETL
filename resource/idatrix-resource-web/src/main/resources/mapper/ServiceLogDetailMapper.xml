@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.servicelog.dao.ServiceLogDetailDAO">
+    <resultMap id="BaseResultMap" type="com.idatrix.resource.servicelog.po.ServiceLogDetailPO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+        <result column="input" property="input" jdbcType="BLOB"  typeHandler="org.apache.ibatis.type.BlobTypeHandler"/>
+        <result column="output" property="output" jdbcType="BLOB"  typeHandler="org.apache.ibatis.type.BlobTypeHandler"/>
+        <result column="error_message" property="errorMessage" jdbcType="VARCHAR" />
+        <result column="error_stack" property="errorStack"  jdbcType="BLOB"  typeHandler="org.apache.ibatis.type.BlobTypeHandler" />
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, parent_id, input, output, error_message, error_stack, creator, create_time, modifier, modify_time
+    </sql>
+
+    <select id="getServiceLogDetailByParentId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from rc_service_log_detail
+        where parent_id = #{parentId}
+    </select>
+</mapper>

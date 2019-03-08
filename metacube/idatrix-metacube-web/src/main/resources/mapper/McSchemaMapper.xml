@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.McSchemaMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.McSchemaPO">
+        <id column="id" property="id"/>
+        <result column="db_id" property="dbId"/>
+        <result column="service_name" property="serviceName"/>
+        <result column="name" property="name"/>
+        <result column="name_cn" property="nameCn"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="org_code" property="orgCode"/>
+        <result column="remark" property="remark"/>
+        <result column="type" property="type"/>
+        <result column="status" property="status"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="creator" property="creator"/>
+        <result column="create_time" property="createTime"/>
+        <result column="modifier" property="modifier"/>
+        <result column="modify_time" property="modifyTime"/>
+        <result column="renter_id" property="renterId"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, db_id, service_name, name, name_cn, username, password, org_code, remark, type, status,
+        creator, create_time, modifier, modify_time, renter_id
+    </sql>
+
+    <sql id="Association_Query_Column_List">
+        ms.id AS id,
+        ms.db_id as db_id,
+        ms.service_name as service_name,
+        ms.name as name,
+        ms.name_cn as name_cn,
+        ms.username as username,
+        ms.password as password,
+        ms.org_code as org_code,
+        ms.remark as remark,
+        ms.type as type,
+        ms.status as status,
+        ms.creator as creator,
+        ms.create_time as create_time,
+        ms.modifier as modifier,
+        ms.modify_time as modify_time,
+        ms.renter_id as renter_id
+    </sql>
+
+    <!-- 权限控制条件 -->
+    <sql id="ACCESS_CONTROL_CONDITION">
+        <if test="orgCode != null and creator != null">
+            AND ( find_in_set( #{orgCode}, org_code ) OR creator = #{creator} )
+        </if>
+    </sql>
+
+    <insert id="insert" keyProperty="id"
+            parameterType="com.ys.idatrix.metacube.metamanage.domain.McSchemaPO"
+            useGeneratedKeys="true">
+        INSERT into mc_schema
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="dbId !=null ">db_id,
+            </if>
+            <if test="serviceName !=null and serviceName != ''">service_name,
+            </if>
+            <if test="name !=null and name != ''">name,
+            </if>
+            <if test="nameCn !=null and nameCn != ''">name_cn,
+            </if>
+            <if test="username !=null and username != ''">username,
+            </if>
+            <if test="password !=null and password != ''">password,
+            </if>
+            <if test="orgCode !=null and orgCode != ''">org_code,
+            </if>
+            <if test="remark !=null and remark != ''">remark,
+            </if>
+            <if test="type !=null and type != ''">type,
+            </if>
+            <if test="status !=null ">status,
+            </if>
+            <if test="creator !=null and creator != ''">creator,
+            </if>
+            <if test="createTime != null">create_time,
+            </if>
+            <if test="modifier != null and modifier != ''">modifier,
+            </if>
+            <if test="modifyTime != null ">modify_time,
+            </if>
+            <if test="renterId != null ">renter_id,
+            </if>
+        </trim>
+
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="dbId !=null ">#{dbId},
+            </if>
+            <if test="serviceName !=null and serviceName != ''">#{serviceName},
+            </if>
+            <if test="name !=null and name != ''">#{name},
+            </if>
+            <if test="nameCn !=null and nameCn != ''">#{nameCn},
+            </if>
+            <if test="username !=null and username != ''">#{username},
+            </if>
+            <if test="password !=null and password != ''">#{password},
+            </if>
+            <if test="orgCode !=null and orgCode != ''">#{orgCode},
+            </if>
+            <if test="remark !=null and remark != ''">#{remark},
+            </if>
+            <if test="type !=null and type != ''">#{type},
+            </if>
+            <if test="status !=null ">#{status},
+            </if>
+            <if test="creator !=null and creator != ''">#{creator},
+            </if>
+            <if test="createTime !=null ">#{createTime},
+            </if>
+            <if test="modifier != null and modifier != ''">#{modifier},
+            </if>
+            <if test="modifyTime !=null ">#{modifyTime},
+            </if>
+            <if test="renterId !=null ">#{renterId},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.ys.idatrix.metacube.metamanage.domain.McSchemaPO">
+        UPDATE mc_schema
+        <set>
+            <if test="serviceName !=null and serviceName != ''">
+                service_name=#{serviceName},
+            </if>
+            <if test="nameCn !=null and nameCn != ''">
+                name_cn = #{nameCn},
+            </if>
+            <if test="username !=null and username != ''">
+                username = #{username},
+            </if>
+            <if test="password !=null and password != ''">
+                password = #{password},
+            </if>
+            <if test="orgCode !=null and orgCode != ''">
+                org_code = #{orgCode},
+            </if>
+            <if test="remark !=null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="status !=null ">
+                status = #{status},
+            </if>
+            <if test="modifier !=null ">
+                modifier = #{modifier},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted}
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="count" resultType="java.lang.Integer">
+        SELECT
+        COUNT(*)
+        FROM
+        mc_server s
+        LEFT JOIN mc_database db ON s.id = db.server_id
+        LEFT JOIN mc_schema `schema` ON db.id = `schema`.db_id
+        WHERE
+        db.id = #{dbId}
+        AND `schema`.`name` = #{schemaName}
+        AND s.is_deleted = 0
+        AND db.is_deleted = 0
+        AND `schema`.is_deleted = 0
+    </select>
+
+    <select id="getSchemaPOById" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+        mc_schema
+        WHERE
+        id = #{id}
+        AND is_deleted = 0
+    </select>
+
+    <!-- 查询服务器列表 -->
+    <select id="listByPage"
+            parameterType="com.ys.idatrix.metacube.metamanage.vo.request.SchemaSearchVO"
+            resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_schema
+        <where>
+            <choose>
+                <!-- 已删除列表 -->
+                <when test="deleted">
+                    is_deleted = 1
+                </when>
+                <otherwise>
+                    is_deleted = 0
+                </otherwise>
+            </choose>
+
+            <include refid="ACCESS_CONTROL_CONDITION"/>
+
+            <if test="dbId != null">
+                AND db_id = #{dbId}
+            </if>
+            <if test="renterId != null ">
+                AND renter_id = #{renterId}
+            </if>
+        </where>
+    </select>
+
+    <select id="listByCreatorAndOrgCode"
+            parameterType="com.ys.idatrix.metacube.metamanage.vo.request.SchemaSearchVO"
+            resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_schema
+        <where>
+            is_deleted = 0
+            <include refid="ACCESS_CONTROL_CONDITION"/>
+        </where>
+    </select>
+
+    <select id="listSchemaByDatabaseIds" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_schema
+        <where>
+            is_deleted = 0
+            <if test="dbIds != null and dbIds.size() > 0">
+                AND db_id IN
+                <foreach close=")" collection="dbIds" item="dbId" open="(" separator=",">
+                    #{dbId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="listSchemaBySchemaIds" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_schema
+        <where>
+            is_deleted = 0
+            <if test="dbIds != null and dbIds.size() > 0">
+                AND id IN
+                <foreach close=")" collection="ids" item="id" open="(" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_schema
+        WHERE
+        is_deleted = 0
+        AND id = #{id, jdbcType=BIGINT}
+    </select>
+
+    <select id="findByDbIdAndSchemaName" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_schema
+        WHERE
+        is_deleted = 0
+        AND db_id = #{dbId}
+        AND name = #{schemaName}
+    </select>
+    <select id="querySchemaInfo" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Association_Query_Column_List"/>
+        FROM
+        mc_schema ms
+        INNER JOIN mc_database md ON ms.db_id = md.id
+        WHERE
+        ms.is_deleted = 0
+        AND md.is_deleted = 0
+        AND md.type = #{databaseType}
+        AND ( find_in_set( #{orgCode}, ms.org_code ) OR ms.creator = #{creator} )
+    </select>
+
+    <select id="listSchema" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Association_Query_Column_List"/>
+        FROM
+        mc_schema ms
+        INNER JOIN mc_database md ON ms.db_id = md.id
+        <where>
+            ms.is_deleted = 0
+            AND md.is_deleted = 0
+            <if test="renterId != null ">
+                AND ms.renter_id = #{renterId}
+            </if>
+            <if test="orgCode != null">
+                AND find_in_set(#{orgCode}, ms.org_code )
+            </if>
+            <if test="dbTypeList != null and dbTypeList.size() > 0">
+                AND md.type IN
+                <foreach close=")" collection="dbTypeList" item="dbType" open="(" separator=",">
+                    #{dbType}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration PUBLIC "-//APACHE//DTD LOG4J 1.2//EN" "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+	
+	  <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender"> 	  
+	  	<layout class="org.apache.log4j.PatternLayout"> 	   
+	  		<param name="ConversionPattern" value="[%d{dd/MM/yy hh:mm:ss:sss}] %5p %c{2}: %m%n" /> 	  
+	  	</layout>  	
+	  </appender>
+	  
+    <!-- =============================================================================== -->
+    <!-- 可配置多个appender来对应不同的输出：如文件输出、sql输出、控制台输出、邮件输出等 -->
+    <!--    [控制台STDOUT]  -->
+    <!-- =============================================================================== -->
+    <appender name="STDOUT" class="org.apache.log4j.ConsoleAppender">  <!-- name提供给logger或者root调用 -->
+        <param name="encoding" value="UTF-8"/>  <!-- 保存字符集 -->
+        <param name="target" value="System.out"/>  <!-- 输出到控制台 -->
+        <layout class="org.apache.log4j.PatternLayout"> <!-- layout表示输出方式，可以多种，class值区分，PatternLayout表示自定义格式 -->
+            <!--<param name="ConversionPattern"
+                   value="%d{ISO8601} 耗时：%r [日志来自：%-40.40c{3} 日志类型: %-5p 日志内容：%m]%n"/> --> <!-- 输出格式，后面解释 -->
+            <param name="ConversionPattern" value="[%d{dd/MM/yy hh:mm:ss:sss}] %5p %c{2}: %m%n" />
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="levelMin" value="debug"/>
+            <param name="levelMax" value="fatal"/>
+            <param name="AcceptOnMatch" value="true"/>
+        </filter>
+    </appender>
+
+    <!-- ===================================================================== -->
+    <!--    [公共Appender] 这个class表示输入到文件，并且按日期生成新文件     -->
+    <!-- ===================================================================== -->
+    <appender name="DEFAULT-APPENDER" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File"
+               value="logs/idatrix-servicebase-web-all.log"/>  <!-- ${idatrix-servicebase-web.root}项目根路径，自动获得，不用配置，可自己在web.xml中配置 -->
+        <param name="Append" value="true"/>  <!-- 是否项目重启继续保存之前日志 -->
+        <param name="encoding" value="UTF-8"/>
+        <param name="threshold" value="all"/> <!-- 记录所有类型日志，记录它和比它等级高的日志all<debug -->
+        <param name="DatePattern" value="'.'yyyy-MM-dd'.log'"/>  <!-- 日期格式  例子：idatrix-db-all.log.2017-06-15.log-->
+        <layout class="org.apache.log4j.PatternLayout">  <!-- 输出方式 -->
+            <param name="ConversionPattern" value="%d{ISO8601} 耗时：%r [日志来自：%-40.40c{3} 日志类型: %-5p 日志内容：%m]%n"/>
+        </layout>
+    </appender>
+
+    <!-- ===================================================================== -->
+    <!--    [error日志APPENDER]     -->
+    <!-- ===================================================================== -->
+    <appender name="ERROR-APPENDER" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="logs/idatrix-servicebase-web-error.log"/>
+        <param name="Append" value="true"/>
+        <param name="encoding" value="UTF-8"/>
+        <param name="DatePattern" value="'.'yyyy-MM-dd'.log'"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} 耗时：%r [日志来自：%-40.40c{3} 日志类型: %-5p 日志内容：%m]%n"/>
+        </layout>
+        <!-- 我只想记录error日志，就做如下设置 -->
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMax" value="fatal"/>
+            <param name="LevelMin" value="error"/>
+        </filter>
+    </appender>
+
+    <!-- ===================================================================== -->
+    <!--    [info日志APPENDER]     -->
+    <!-- ===================================================================== -->
+    <appender name="INFO-APPENDER"
+              class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="logs/idatrix-servicebase-web-info.log"/>
+        <param name="Append" value="false"/>
+        <param name="encoding" value="UTF-8"/>
+        <param name="DatePattern" value="'.'yyyy-MM-dd'.log'"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} 耗时：%r [日志来自：%-40.40c{3} 日志类型: %-5p 日志内容：%m]%n"/>
+        </layout>
+        <!-- 我只想记录info日志，就做如下设置 -->
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMax" value="info"/>
+            <param name="LevelMin" value="info"/>
+        </filter>
+    </appender>
+
+
+    <!-- 指定logger的设置，additivity指示是否遵循缺省的继承机制-->
+    <logger name="com.alibaba.dubbo" additivity="false">
+        <level value ="WARN" />
+        <appender-ref ref="fileAppender" />
+    </logger>
+    <logger name="org.apache.zookeeper" additivity="false">
+        <level value ="WARN" />
+        <appender-ref ref="fileAppender" />
+    </logger>
+
+    <logger name="com.alibaba.dubbo" additivity="false">
+        <level value ="WARN" />
+        <appender-ref ref="fileAppender" />
+    </logger>
+
+    <!--打印mybatis语句的配置-->
+    <logger name="com.idatrix.resource">
+        <level value="debug"></level>
+    </logger>
+
+    <logger name="com.ibatis" additivity="true">
+        <level value="DEBUG" />
+    </logger>
+    <logger name="java.sql.Connection" additivity="true">
+        <level value="DEBUG" />
+    </logger>
+    <logger name="java.sql.Statement" additivity="true">
+        <level value="DEBUG" />
+    </logger>
+    <logger name="java.sql.PreparedStatement" additivity="true">
+        <level value="DEBUG" />
+    </logger>
+    <logger name="java.sql.ResultSet" additivity="true">
+        <level value="DEBUG" />
+    </logger>
+
+
+    <!-- =============================================================================== -->
+    <!-- root 所有logger的基类，记录所有的日志。没有定义的logger将会使用root logger    -->
+    <!-- =============================================================================== -->
+    <root>
+        <level value="INFO" />
+            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="DEFAULT-APPENDER"/>
+    </root>
+</log4j:configuration>

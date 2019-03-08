@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.catalog.dao.ResourceConfigDAO">
+  <resultMap id="BaseResultMap"
+    type="com.idatrix.resource.catalog.po.ResourceConfigPO">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="catalog_code" property="catalogCode" jdbcType="VARCHAR"/>
+    <result column="catalog_full_name" property="catalogFullName" jdbcType="VARCHAR"/>
+    <result column="seq_num" property="seqNum" jdbcType="VARCHAR"/>
+    <result column="code" property="code" jdbcType="VARCHAR"/>
+    <result column="name" property="name" jdbcType="VARCHAR"/>
+    <result column="remark" property="remark" jdbcType="VARCHAR"/>
+    <result column="dept_name" property="deptName" jdbcType="VARCHAR"/>
+    <result column="dept_code" property="deptCode" jdbcType="VARCHAR"/>
+    <result column="dept_name_ids" property="deptNameIds" jdbcType="VARCHAR"/>
+    <result column="resource_abstract" property="resourceAbstract" jdbcType="VARCHAR"/>
+    <result column="keyword" property="keyword" jdbcType="VARCHAR"/>
+    <result column="format_type" property="formatType" jdbcType="TINYINT"/>
+    <result column="format_info" property="formatInfo" jdbcType="VARCHAR"/>
+    <result column="format_info_extend" property="formatInfoExtend" jdbcType="VARCHAR"/>
+    <result column="share_type" property="shareType" jdbcType="TINYINT"/>
+    <result column="share_condition" property="shareCondition" jdbcType="VARCHAR"/>
+    <result column="share_method" property="shareMethod" jdbcType="TINYINT"/>
+    <result column="open_type" property="openType" jdbcType="TINYINT"/>
+    <result column="open_condition" property="openCondition" jdbcType="VARCHAR"/>
+    <result column="refresh_cycle" property="refreshCycle" jdbcType="TINYINT"/>
+    <result column="pub_date" property="pubDate" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+    <result column="relation_code" property="relationCode" jdbcType="VARCHAR"/>
+    <result column="bind_table_id" property="bindTableId" jdbcType="BIGINT"/>
+    <result column="bind_service_id" property="bindServiceId" jdbcType="BIGINT"/>
+    <result column="lib_table_id" property="libTableId" jdbcType="VARCHAR"/>
+    <result column="status" property="status" jdbcType="VARCHAR"/>
+
+    <result column="creator" property="creator" jdbcType="VARCHAR"/>
+    <result column="create_time" property="createTime" javaType="java.util.Date"
+      jdbcType="TIMESTAMP"/>
+    <result column="updater" property="updater" jdbcType="VARCHAR"/>
+    <result column="update_time" property="updateTime" javaType="java.util.Date"
+      jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id,catalog_code,catalog_full_name,seq_num,code,name,remark,dept_name,dept_code,dept_name_ids,resource_abstract,keyword,format_type,
+    format_info,format_info_extend,share_type,share_condition,share_method,open_type,open_condition,refresh_cycle,
+    pub_date,relation_code,bind_table_id,bind_service_id,lib_table_id,status,create_time,creator,update_time,updater
+  </sql>
+
+
+
+
+  <select id="getByNameOrCode" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    FROM rc_resource
+    where catalog_code=#{catalogCode} and (name=#{name} OR seq_num=#{seqNum} )
+  </select>
+
+  <select id="getConfigById" resultMap="BaseResultMap"
+    parameterType="java.lang.Long">
+    select
+    <include refid="Base_Column_List"/>
+    FROM rc_resource
+    where id = #{id}
+  </select>
+
+    <select id="getConfigByResourceCode" resultMap="BaseResultMap"
+            parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List"/>
+        FROM rc_resource
+        where code = #{resourceCode}
+    </select>
+
+
+  <select id="getAllResourceConfig" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    FROM rc_resource
+  </select>
+
+  <select id="getConfigByUser" resultMap="BaseResultMap"
+    parameterType="java.lang.String">
+    select
+    <include refid="Base_Column_List"/>
+    FROM rc_resource
+    where creator = #{creator}
+  </select>
+
+  <select id="queryByCondition" resultMap="BaseResultMap" parameterType="hashmap">
+    select
+    <include refid="Base_Column_List"/>
+    FROM rc_resource
+    where 1=1 and creator=#{creator}
+    <if test="name!=null">
+      AND MATCH (`name`, dept_name) AGAINST ('*${name}*' IN BOOLEAN MODE)
+    </if>
+    <if test="code!=null">
+      and code LIKE '${code}%'
+    </if>
+    <if test="dept_name!=null">
+      AND MATCH (`name`, dept_name) AGAINST ('*${dept_name}*' IN BOOLEAN MODE)
+    </if>
+    <if test="status!=null">
+      and status=#{status}
+    </if>
+    <if test="dept_code!=null">
+      and dept_code LIKE '${dept_code}%'
+    </if>
+    order by update_time DESC
+  </select>
+
+  <select id="getPublishedResourcesByCondition" resultMap="BaseResultMap"
+    parameterType="com.idatrix.resource.catalog.vo.request.ResourceCatalogSearchVO">
+    select
+    <include refid="Base_Column_List"/>
+    FROM rc_resource
+    <where>
+      <if test="status != null">
+        status = #{status}
+      </if>
+      <if test="name!=null">
+        AND MATCH (`name`, dept_name) AGAINST ('*${name}*' IN BOOLEAN MODE)
+      </if>
+      <if test="deptName!=null">
+        AND MATCH (`name`, dept_name) AGAINST ('*${deptName}*' IN BOOLEAN MODE)
+      </if>
+      <if test="code!=null">
+        AND code LIKE '${code}%'
+      </if>
+      <if test="deptCode!=null">
+        AND dept_code LIKE '${deptCode}%'
+      </if>
+      <if test="catalogCode!=null">
+        AND catalog_code LIKE '${catalogCode}%'
+      </if>
+      <if test="resourceIds != null">
+        AND id in
+        <foreach collection="resourceIds" item="id" index="index" open="(" close=")" separator=",">
+          #{id}
+        </foreach>
+      </if>
+    </where>
+    ORDER BY pub_date desc
+  </select>
+
+  <select id="queryLibResourceByCondition" resultMap="BaseResultMap" parameterType="hashmap">
+    select
+    <include refid="Base_Column_List"/>
+    FROM rc_resource r
+    LEFT JOIN rc_catalog_resource cr ON r.id = cr.resource_id
+    where cr.catalog_id=#{catalogId} and status="pub_success"
+    <if test="name!=null">
+      AND MATCH (`name`, dept_name) AGAINST ('*${name}*' IN BOOLEAN MODE)
+    </if>
+    <if test="code!=null">
+      and code LIKE '${code}%'
+    </if>
+    <if test="dept_name!=null">
+      AND MATCH (`name`, dept_name) AGAINST ('*${dept_name}*' IN BOOLEAN MODE)
+    </if>
+
+    <if test="dept_code!=null">
+      and dept_code LIKE '${dept_code}%'
+    </if>
+    order by r.update_time DESC
+  </select>
+
+  <delete id="deleteById" parameterType="java.lang.Long">
+    delete FROM rc_resource
+    where id = #{id}
+  </delete>
+
+  <insert id="insert" parameterType="com.idatrix.resource.catalog.po.ResourceConfigPO"
+    useGeneratedKeys="true" keyProperty="id">
+    insert into rc_resource ( catalog_code,catalog_full_name,seq_num,
+    code,name,remark,dept_name,dept_code,dept_name_ids,resource_abstract,
+    keyword,format_type, format_info,format_info_extend,
+    share_type,share_condition,share_method,open_type,
+    open_condition,refresh_cycle,pub_date,relation_code,
+    bind_table_id,lib_table_id,bind_service_id,status,
+    creator, create_time,update_time,updater)
+    values ( #{catalogCode},#{catalogFullName},#{seqNum}, #{code},
+    #{name}, #{remark},#{deptName}, #{deptCode}, #{deptNameIds},#{resourceAbstract},
+    #{keyword}, #{formatType},#{formatInfo}, #{formatInfoExtend}, #{shareType},
+    #{shareCondition}, #{shareMethod},#{openType}, #{openCondition}, #{refreshCycle},
+    #{pubDate}, #{relationCode},#{bindTableId}, #{libTableId},#{bindServiceId}, #{status},
+    #{creator}, #{createTime}, #{updateTime}, #{updater})
+  </insert>
+
+
+  <update id="updateById" parameterType="com.idatrix.resource.catalog.po.ResourceConfigPO">
+    update rc_resource
+    set id=#{id}, catalog_code=#{catalogCode},
+    catalog_full_name=#{catalogFullName},
+    seq_num=#{seqNum}, code=#{code}, name=#{name}, remark=#{remark},
+    dept_name=#{deptName}, dept_code=#{deptCode}, dept_name_ids=#{deptNameIds},
+    resource_abstract=#{resourceAbstract},
+    keyword=#{keyword},format_type=#{formatType}, format_info=#{formatInfo},
+    format_info_extend=#{formatInfoExtend}, share_type=#{shareType},
+    share_condition=#{shareCondition},
+    share_method=#{shareMethod},open_type=#{openType},open_condition=#{openCondition},
+    refresh_cycle=#{refreshCycle},pub_date=#{pubDate},relation_code=#{relationCode},
+    bind_table_id=#{bindTableId}, lib_table_id=#{libTableId},
+    bind_service_id=#{bindServiceId},status=#{status},
+    create_time = #{createTime},creator = #{creator},
+    update_time = #{updateTime}, updater = #{updater}
+    where id = #{id}
+  </update>
+</mapper>

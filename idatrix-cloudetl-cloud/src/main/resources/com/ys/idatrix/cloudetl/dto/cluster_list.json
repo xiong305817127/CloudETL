@@ -1,0 +1,9 @@
+[
+    {
+        "name": "cluster schema name",
+        "dynamic": false,
+        "slaveServers": [
+            {"name": "slave server name"}
+        ]
+    }
+]

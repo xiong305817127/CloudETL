@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.exchange.dao.ExchangeSubscribeInfoDAO">
+    <resultMap id="BaseResultMap"
+               type="com.idatrix.resource.exchange.po.ExchangeSubscribeInfoPO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="subscribe_id" property="subscribeId" jdbcType="VARCHAR" />
+        <result column="resource_type" property="resourceType" jdbcType="VARCHAR" />
+        <result column="resource_code" property="resourceCode" jdbcType="VARCHAR" />
+        <result column="subscribe_dept_info" property="subscribeDeptInfo" jdbcType="VARCHAR" />
+        <result column="subscribe_dept_info_name" property="subscribeDeptName" jdbcType="VARCHAR" />
+        <result column="end_time" property="endDate" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="db_ip" property="dbIp" jdbcType="VARCHAR" />
+        <result column="db_port" property="dbPort" jdbcType="BIGINT" />
+        <result column="db_type" property="dbType" jdbcType="VARCHAR" />
+        <result column="db_user" property="dbUser" jdbcType="VARCHAR" />
+        <result column="db_password" property="dbPassword" jdbcType="VARCHAR" />
+        <result column="db_name" property="dbName" jdbcType="VARCHAR" />
+        <result column="db_schema_name" property="dbSchemaName" jdbcType="VARCHAR" />
+        <result column="db_table_name" property="dbTableName" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="VARCHAR" />
+        <result column="exec_info" property="execInfo" jdbcType="VARCHAR" />
+
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="create_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+        id, subscribe_id, resource_code, resource_type, subscribe_dept_info, subscribe_dept_info_name, end_time, db_ip,
+        db_port, db_type, db_user, db_password,  db_name, db_schema_name, db_table_name,
+        status, exec_info, creator, create_time, modifier, modify_time
+    </sql>
+
+    <insert id="insert" parameterType="com.idatrix.resource.exchange.po.ExchangeSubscribeInfoPO"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into rc_exchange_info (
+        id, subscribe_id, resource_code, resource_type, subscribe_dept_info,
+        subscribe_dept_info_name, end_time, db_ip,
+        db_port, db_type, db_user, db_password,  db_name, db_schema_name, db_table_name,
+        status, exec_info, creator, create_time, modifier, modify_time)
+        values (#{id}, #{subscribeId}, #{resourceCode},#{resourceType},
+        #{subscribeDeptInfo},  #{subscribeDeptName},
+         #{endTime}, #{dbIp}, #{dbPort}, #{dbType}, #{dbUser}, #{dbPassword},
+         #{dbName}, #{dbSchemaName}, #{dbTableName}, #{status}, #{execInfo},
+         #{creator}, #{createTime}, #{modifier}, #{modifyTime})
+    </insert>
+
+    <select id="selectByResourceCode"  resultMap="BaseResultMap" parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List" />
+        from rc_exchange_info
+        where 1=1 and resource_code=#{resourceCode}
+        order by modify_time ASC
+    </select>
+
+    <select id="getResourceFileById" parameterType="java.lang.Long" resultMap="BaseResultMap" >
+        select
+        <include refid="Base_Column_List" />
+        from rc_exchange_info
+        where id = #{id}
+    </select>
+
+    <update id="updateById" parameterType="com.idatrix.resource.exchange.po.ExchangeSubscribeInfoPO">
+        update rc_exchange_info
+        set id = #{id},
+        subscribe_id = #{subscribeId},
+        resource_code = #{resourceCode},
+        resource_type = #{resourceType},
+        subscribe_dept_info = #{subscribeDeptInfo},
+        subscribe_dept_info_name = #{subscribeDeptName},
+        end_time = #{endTime},
+        db_port = #{dbPort},
+        db_type = #{dbType},
+        db_user = #{dbUser},
+        db_password = #{dbPassword},
+        db_name = #{dbName},
+        db_schema_name = #{dbSchemaName},
+        db_table_name = #{dbTableName},
+        status = #{status},
+        exec_info = #{execInfo},
+        creator = #{creator},
+        create_time = #{createTime},
+        modifier = #{modifier},
+        modify_time = #{modifyTime}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE from rc_exchange_info
+        where id = #{id}
+    </delete>
+</mapper>

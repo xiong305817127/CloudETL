@@ -1,0 +1,14 @@
+{
+    "name": "db connection name",
+    "type": "",
+    "access": "",
+    "hostname": "",
+    "port": "",
+    "databaseName": "",
+    "username": "",
+    "password": "",
+    "url": "",
+    "driver": "",
+    "sqlServerInstance": "",
+    "useIntegratedSecurity": true
+}

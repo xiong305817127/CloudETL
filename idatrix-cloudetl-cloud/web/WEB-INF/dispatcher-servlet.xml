@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jaxws="http://cxf.apache.org/jaxws" xmlns:cxf="http://cxf.apache.org/core"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- 和web无关的配置 -->
+	<!-- <import resource="idatrix-cloud-etl.xml" />  -->
+	
+	<!-- 和web有关的配置 -->
+	<context:component-scan base-package="com.ys.idatrix.cloudetl.web" />
+	<mvc:annotation-driven />
+
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+	     <property name="maxUploadSize" value="${upload.file.max.size}" />
+	     <property name="maxInMemorySize" value="4096" />
+	     <property name="defaultEncoding" value="UTF-8"></property>
+	</bean>
+	
+	<mvc:resources mapping="/*" location="/reactjs/" />
+	<mvc:view-controller path="/" view-name="redirect:/index.html" />	
+	
+	<mvc:cors>
+    	<mvc:mapping path="/**" allow-credentials="true"  allowed-origins="*" allowed-methods="GET, POST, DELETE, PUT, PATCH, OPTIONS"/>
+	</mvc:cors>
+	
+</beans>

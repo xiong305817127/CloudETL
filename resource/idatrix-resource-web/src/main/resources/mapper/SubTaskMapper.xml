@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.taskmanage.dao.SubTaskDAO">
+    <resultMap id="BaseResultMap" type="com.idatrix.resource.taskmanage.po.SubTaskPO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="sub_task_id" property="subTaskId" jdbcType="VARCHAR" />
+        <result column="src_meta_id" property="srcMetaId" jdbcType="BIGINT" />
+        <result column="dest_meta_id" property="destMetaId" jdbcType="BIGINT" />
+        <result column="etl_subscribe_id" property="etlSubscribeId" jdbcType="VARCHAR" />
+        <result column="task_type" property="taskType" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="VARCHAR" />
+
+        <result column="last_run_time" property="lastRunTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="import_count" property="importCount" jdbcType="BIGINT" />
+        <result column="end_time" property="endTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <resultMap id="SubTaskResultMap" type="com.idatrix.resource.taskmanage.po.SubTaskOverviewPO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="sub_task_id" property="subTaskId" jdbcType="VARCHAR" />
+        <result column="etl_subscribe_id" property="etlSubscribeId" jdbcType="VARCHAR" />
+        <result column="end_time" property="endTime" javaType="java.util.Date" jdbcType="TIMESTAMP"  />
+
+        <result column="resource_id" property="resourceId" jdbcType="BIGINT" />
+        <result column="resource_name" property="resourceName" jdbcType="VARCHAR" />
+        <result column="resource_code" property="code" jdbcType="VARCHAR" />
+        <result column="task_type" property="taskType" jdbcType="VARCHAR" />
+        <result column="task_status" property="taskStatus" jdbcType="VARCHAR" />
+        <result column="last_run_time" property="lastRunTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="user" property="subscribeUser" jdbcType="VARCHAR" />
+        <result column="suscribe_dept_name" property="subscribeDept" jdbcType="VARCHAR" />
+        <result column="provide_dept_name" property="provideDept" jdbcType="VARCHAR" />
+        <result column="data_count" property="dataCount" jdbcType="BIGINT" />
+        <result column="user" property="subscribeUser" jdbcType="VARCHAR" />
+
+    </resultMap>
+
+    <resultMap id="TaskInfoResultMap" type="com.idatrix.resource.taskmanage.vo.DescribeInfoVO">
+        <id column="month" property="month" jdbcType="VARCHAR" />
+        <result column="task_count" property="taskCount" jdbcType="BIGINT" />
+        <result column="data_count" property="dateCount" jdbcType="BIGINT" />
+    </resultMap>
+
+   <sql id="Base_Column_List">
+        id, sub_task_id, src_meta_id, dest_meta_id, etl_subscribe_id, task_type, status, end_time, last_run_time, import_count,
+        creator, create_time, modifier, modify_time
+    </sql>
+
+    <select id="getTaskInfoByMonth" parameterType="java.lang.Long" resultMap="TaskInfoResultMap">
+        SELECT
+        DATE_FORMAT(create_time, '%Y%m') as month,
+        SUM(import_count) as data_count,
+        COUNT(id) as task_count
+        FROM
+        rc_sub_task
+        WHERE create_time>DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01') , INTERVAL #{num} MONTH)
+        GROUP BY month
+        ORDER BY month DESC;
+    </select>
+
+    <select id="queryOverview" resultMap="SubTaskResultMap"  parameterType="hashmap">
+        select
+            rct.id as id,
+            rct.sub_task_id as sub_task_id,
+            rct.etl_subscribe_id as etl_subscribe_id,
+            tmp.end_time as end_time,
+            tmp.resource_id as resource_id,
+            tmp.resource_name as resource_name,
+            tmp.resource_code as resource_code,
+            rct.task_type as task_type,
+            rct.status as task_status,
+            rct.last_run_time as last_run_time,
+            rct.creator as user,
+            tmp.subscribe_id as subscribe_id,
+            tmp.suscribe_dept_name as suscribe_dept_name,
+            tmp.provide_dept_name as provide_dept_name,
+            rct.import_count as data_count
+        from rc_sub_task rct INNER JOIN (
+            SELECT
+                rs.id as subscribe_id, rs.dept_name as suscribe_dept_name, rs.dept_id as suscribe_dept_id,
+                rr.id as resource_id, rr.dept_name as provide_dept_name, rr.code as resource_code, rr.name as resource_name,
+                rs.end_date as end_time
+            FROM rc_subscribe rs INNER JOIN rc_resource rr ON rs.resource_id=rr.id)tmp
+        ON rct.id=tmp.subscribe_id
+        where 1=1
+        <if test="subTaskId!=null">
+            and rct.sub_task_id like '%${subTaskId}%'
+        </if>
+        <if test="code!=null">
+            and tmp.resource_code like '%${code}%'
+        </if>
+        <if test="taskStatus!=null">
+            and rct.status = #{taskStatus}
+        </if>
+        <if test="subDeptName!=null">
+            and tmp.suscribe_dept_name like '%${subDeptName}%'
+        </if>
+        <if test="provideDept!=null">
+            and tmp.provide_dept_name like '%${provideDept}%'
+        </if>
+        order by rct.last_run_time desc
+    </select>
+
+
+
+    <select id="getTaskCount" resultType="java.lang.Long">
+        select
+          count(id)
+        from rc_sub_task
+    </select>
+
+    <select id="getBySubscribe" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_sub_task
+        where etl_subscribe_id = #{etlSubscribeId}
+    </select>
+
+    <select id="getBySubTaskId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_sub_task
+        where sub_task_id = #{subTaskId}
+    </select>
+
+    <select id="getByStatus" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_sub_task
+        where status = #{status}
+    </select>
+
+    <select id="getById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_sub_task
+        where id = #{id}
+    </select>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        delete from rc_sub_task
+        where id = #{id}
+    </delete>
+
+
+    <insert id="insert" parameterType="com.idatrix.resource.taskmanage.po.SubTaskPO" useGeneratedKeys="true" keyProperty="id">
+        insert into rc_sub_task ( sub_task_id, src_meta_id, dest_meta_id, etl_subscribe_id, task_type,
+        status, end_time, last_run_time, import_count,
+        creator, create_time, modifier, modify_time)
+        values
+        (#{subTaskId}, #{srcMetaId}, #{destMetaId},
+         #{etlSubscribeId}, #{taskType}, #{status},#{endTime}, #{lastRunTime},#{importCount},
+         #{creator}, #{createTime}, #{modifier}, #{modifyTime})
+    </insert>
+
+    <update id="updateById" parameterType="com.idatrix.resource.taskmanage.po.SubTaskPO">
+        update rc_sub_task
+        set id = #{id},
+        sub_task_id = #{subTaskId},
+        etl_subscribe_id = #{etlSubscribeId},
+        src_meta_id =#{srcMetaId},
+        dest_meta_id=#{destMetaId},
+        task_type = #{taskType},
+        status = #{status},
+        end_time =#{endTime},
+        last_run_time = #{lastRunTime},
+        import_count = #{importCount},
+        creator = #{creator},
+        create_time = #{createTime},
+        modifier = #{modifier},
+        modify_time = #{modifyTime}
+        where id = #{id}
+    </update>
+
+</mapper>

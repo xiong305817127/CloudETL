@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.TagMapper">
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.Tag">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="tag_name" property="tagName" jdbcType="VARCHAR"/>
+        <result column="renter_id" property="renterId" jdbcType="BIGINT"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="is_deleted" property="isDeleted" jdbcType="BIT"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, tag_name, renter_id, creator, create_time, is_deleted
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from mc_tag
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from mc_tag
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com.ys.idatrix.metacube.metamanage.domain.Tag">
+    insert into mc_tag (id, tag_name, renter_id, 
+      creator, create_time, is_deleted
+      )
+    values (#{id,jdbcType=BIGINT}, #{tagName,jdbcType=VARCHAR}, #{renterId,jdbcType=BIGINT}, 
+      #{creator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{isDeleted,jdbcType=BIT}
+      )
+  </insert>
+    <insert id="insertSelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.Tag">
+        insert into mc_tag
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="tagName != null">
+                tag_name,
+            </if>
+            <if test="renterId != null">
+                renter_id,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="isDeleted != null">
+                is_deleted,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="tagName != null">
+                #{tagName,jdbcType=VARCHAR},
+            </if>
+            <if test="renterId != null">
+                #{renterId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isDeleted != null">
+                #{isDeleted,jdbcType=BIT},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.Tag">
+        update mc_tag
+        <set>
+            <if test="tagName != null">
+                tag_name = #{tagName,jdbcType=VARCHAR},
+            </if>
+            <if test="renterId != null">
+                renter_id = #{renterId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted,jdbcType=BIT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.ys.idatrix.metacube.metamanage.domain.Tag">
+    update mc_tag
+    set tag_name = #{tagName,jdbcType=VARCHAR},
+      renter_id = #{renterId,jdbcType=BIGINT},
+      creator = #{creator,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      is_deleted = #{isDeleted,jdbcType=BIT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <select id="findByTag" resultType="java.lang.Integer">
+        SELECT
+        count(*)
+        FROM
+        mc_tag
+        WHERE is_deleted = 0
+        <if test="renterId != null">
+            AND renter_id = #{renterId,jdbcType=BIGINT}
+        </if>
+        <if test="creator != null">
+            AND creator = #{creator,jdbcType=VARCHAR}
+        </if>
+        <if test="tagName != null">
+            AND tag_name = #{tagName,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <select id="findTagListByUserId" resultMap="BaseResultMap">
+        SELECT
+          <include refid="Base_Column_List" />
+        FROM
+          mc_tag
+        WHERE
+          is_deleted = 0 AND creator = #{userId,jdbcType=VARCHAR}
+    </select>
+
+    <select id="findTagListByRenterId" resultType="java.lang.String" >
+        SELECT
+          DISTINCT tag_name
+        FROM
+            mc_tag
+        WHERE
+            renter_id = #{renterId}
+    </select>
+
+</mapper>

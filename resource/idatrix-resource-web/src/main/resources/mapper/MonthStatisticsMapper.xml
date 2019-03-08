@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.catalog.dao.MonthStatisticsDAO">
+    <resultMap id="BaseResultMap"
+               type="com.idatrix.resource.catalog.po.MonthStatisticsPO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="month" property="month" jdbcType="VARCHAR" />
+        <result column="sub_count" property="subCount" jdbcType="INTEGER" />
+        <result column="pub_count" property="pubCount" jdbcType="INTEGER" />
+        <result column="reg_count" property="regCount" jdbcType="INTEGER" />
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+
+    </resultMap>
+
+    <resultMap id="StatisticsResultMap"
+               type="com.idatrix.resource.catalog.po.StatisticsPO">
+        <result column="month" property="month" jdbcType="VARCHAR" />
+        <result column="sub_count" property="subCount" jdbcType="INTEGER" />
+        <result column="pub_count" property="pubCount" jdbcType="INTEGER" />
+        <result column="reg_count" property="regCount" jdbcType="INTEGER" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,  month, sub_count, pub_count, reg_count, creator, create_time,
+        modifier, modify_time
+    </sql>
+
+    <select id="getRecentMonth" resultMap="StatisticsResultMap" >
+
+          SELECT
+                reg_success.reg_month AS MONTH,
+                reg_success.reg_count AS reg_count,
+                ifnull( pub_sub.pub_count, 0 ) AS pub_count,
+                ifnull( pub_sub.sub_count, 0 ) AS sub_count
+            FROM
+                (
+            SELECT
+                DATE_FORMAT( update_time, '%Y%m' ) AS reg_month,
+                count( id ) AS reg_count
+            FROM
+                rc_resource
+            WHERE
+                update_time > DATE_SUB( DATE_FORMAT( CURDATE( ), '%Y-%m-01' ), INTERVAL #{months} MONTH )
+                AND ( STATUS = "wait_pub_approve" OR `status` = "pub_success" OR `status` = "recall" OR `status` = "reg_success" )
+            GROUP BY
+                reg_month
+            ORDER BY
+                reg_month DESC
+                ) reg_success
+                LEFT JOIN (
+            SELECT
+                pub_success.pub_month AS pub_month,
+                pub_success.pub_count AS pub_count,
+                sub_success.sub_month AS sub_month,
+                sub_success.sub_count AS sub_count
+            FROM
+                (
+            SELECT
+                DATE_FORMAT( update_time, '%Y%m' ) AS pub_month,
+                count( id ) AS pub_count
+            FROM
+                rc_resource
+            WHERE
+                update_time > DATE_SUB( DATE_FORMAT( CURDATE( ), '%Y-%m-01' ), INTERVAL #{months} MONTH )
+                AND STATUS = "pub_success"
+            GROUP BY
+                pub_month
+            ORDER BY
+                pub_month DESC
+                ) pub_success
+                LEFT JOIN (
+            SELECT
+                DATE_FORMAT( modify_time, '%Y%m' ) AS sub_month,
+                count( id ) AS sub_count
+            FROM
+                rc_subscribe
+            WHERE
+                modify_time > DATE_SUB( DATE_FORMAT( CURDATE( ), '%Y-%m-01' ), INTERVAL #{months} MONTH )
+                AND STATUS = "success"
+            GROUP BY
+                sub_month
+            ORDER BY
+                sub_month DESC
+                ) sub_success ON pub_success.pub_month = sub_success.sub_month
+                ) pub_sub ON pub_sub.pub_month = reg_success.reg_month
+            GROUP BY
+                reg_success.reg_month;
+     </select>
+
+
+
+    <select id="getByMonth" resultMap="BaseResultMap" >
+        select
+        <include refid="Base_Column_List" />
+        from rc_month_statistics
+        where month=#{month};
+    </select>
+
+    <select id="getAllCount" resultMap="BaseResultMap" >
+        select
+        id,  month, SUM(sub_count) as sub_count , SUM(pub_count) as pub_count,
+        SUM(reg_count) as reg_count,creator,create_time, modifier, modify_time
+        from rc_month_statistics;
+    </select>
+
+    <select id="getMonthlyTotalAmount" resultMap="BaseResultMap" parameterType="INTEGER" >
+        select
+        month, SUM(sub_count) as sub_count , SUM(pub_count) as pub_count, SUM(reg_count) as reg_count
+        from rc_month_statistics
+        GROUP BY month order by STR_TO_DATE(month,"%Y%m") DESC LIMIT #{count}
+    </select>
+
+    <delete id="deleteByResourceId" parameterType="java.lang.Long">
+        delete from rc_month_statistics
+        where resource_id = #{resourceId}
+    </delete>
+
+    <insert id="insert" parameterType="com.idatrix.resource.catalog.po.MonthStatisticsPO">
+        insert into rc_month_statistics (
+         month, sub_count, pub_count, reg_count,
+         creator, create_time,
+         modifier, modify_time)
+        values (
+         #{month},#{subCount},#{pubCount},#{regCount},
+         #{creator},#{createTime},
+         #{modifier},#{modifyTime})
+    </insert>
+
+    <update id="updateById" parameterType="com.idatrix.resource.catalog.po.MonthStatisticsPO">
+        update rc_month_statistics
+        set id = #{id},
+        month = #{month},
+        sub_count = #{subCount},
+        pub_count = #{pubCount},
+        reg_count = #{regCount},
+        creator = #{creator},
+        create_time =#{createTime},
+        modifier = #{modifier},
+        modify_time = #{modifyTime}
+        where id = #{id}
+    </update>
+
+
+
+</mapper>

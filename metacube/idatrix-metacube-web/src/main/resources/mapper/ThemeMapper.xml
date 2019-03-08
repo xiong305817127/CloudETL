@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.ThemeMapper" >
+  <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.Theme" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="theme_code" property="themeCode" jdbcType="VARCHAR" />
+    <result column="use_count" property="useCount" jdbcType="INTEGER" />
+    <result column="renter_id" property="renterId" jdbcType="BIGINT" />
+    <result column="is_deleted" property="isDeleted" jdbcType="BIT" />
+    <result column="creator" property="creator" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, name, theme_code, use_count, renter_id, is_deleted, creator, create_time, modifier, 
+    modify_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from mc_theme
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from mc_theme
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.ys.idatrix.metacube.metamanage.domain.Theme" >
+    insert into mc_theme (id, name, theme_code, 
+      use_count, renter_id, is_deleted, 
+      creator, create_time, modifier, 
+      modify_time)
+    values (#{id,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR}, #{themeCode,jdbcType=VARCHAR}, 
+      #{useCount,jdbcType=INTEGER}, #{renterId,jdbcType=BIGINT}, #{isDeleted,jdbcType=BIT}, 
+      #{creator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifier,jdbcType=VARCHAR}, 
+      #{modifyTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.Theme" >
+    insert into mc_theme
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="themeCode != null" >
+        theme_code,
+      </if>
+      <if test="useCount != null" >
+        use_count,
+      </if>
+      <if test="renterId != null" >
+        renter_id,
+      </if>
+      <if test="isDeleted != null" >
+        is_deleted,
+      </if>
+      <if test="creator != null" >
+        creator,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="modifier != null" >
+        modifier,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="themeCode != null" >
+        #{themeCode,jdbcType=VARCHAR},
+      </if>
+      <if test="useCount != null" >
+        #{useCount,jdbcType=INTEGER},
+      </if>
+      <if test="renterId != null" >
+        #{renterId,jdbcType=BIGINT},
+      </if>
+      <if test="isDeleted != null" >
+        #{isDeleted,jdbcType=BIT},
+      </if>
+      <if test="creator != null" >
+        #{creator,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifier != null" >
+        #{modifier,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.Theme" >
+    update mc_theme
+    <set >
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="themeCode != null" >
+        theme_code = #{themeCode,jdbcType=VARCHAR},
+      </if>
+      <if test="useCount != null" >
+        use_count = #{useCount,jdbcType=INTEGER},
+      </if>
+      <if test="renterId != null" >
+        renter_id = #{renterId,jdbcType=BIGINT},
+      </if>
+      <if test="isDeleted != null" >
+        is_deleted = #{isDeleted,jdbcType=BIT},
+      </if>
+      <if test="creator != null" >
+        creator = #{creator,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifier != null" >
+        modifier = #{modifier,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.ys.idatrix.metacube.metamanage.domain.Theme" >
+    update mc_theme
+    set name = #{name,jdbcType=VARCHAR},
+      theme_code = #{themeCode,jdbcType=VARCHAR},
+      use_count = #{useCount,jdbcType=INTEGER},
+      renter_id = #{renterId,jdbcType=BIGINT},
+      is_deleted = #{isDeleted,jdbcType=BIT},
+      creator = #{creator,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modifier = #{modifier,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+
+  <select id="search" parameterType="com.ys.idatrix.metacube.metamanage.vo.request.SearchVO" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM
+    mc_theme
+    WHERE
+    is_deleted = 0
+    <if test="renterId != null">
+      AND renter_id = #{renterId,jdbcType=BIGINT}
+    </if>
+    <if test="keyword != null">
+      AND (
+      name LIKE CONCAT("%", #{keyword, jdbcType=VARCHAR}, "%")
+      OR theme_code LIKE CONCAT("%", #{keyword, jdbcType=VARCHAR}, "%")
+      )
+    </if>
+  </select>
+
+  <select id="findByNameOrCode" resultType="java.lang.Integer">
+    SELECT
+    count(*)
+    FROM
+    mc_theme
+    WHERE
+    is_deleted = 0
+    <if test="id != null">
+      AND id != #{id, jdbcType=BIGINT}
+    </if>
+    <if test="name != null">
+      AND name = #{name, jdbcType=VARCHAR}
+    </if>
+    <if test="code != null">
+      AND theme_code = #{code, jdbcType=VARCHAR}
+    </if>
+  </select>
+
+  <update id="delete" parameterType="java.util.List">
+    UPDATE mc_theme
+    SET is_deleted = 1
+    WHERE
+    id in
+    <foreach collection="list" item="id" separator="," open="(" close=")">
+      #{id}
+    </foreach>
+  </update>
+
+  <update id="progressiveIncrease">
+      UPDATE mc_theme SET use_count = use_count+1 WHERE id = #{id}
+  </update>
+
+  <update id="decreaseProgressively">
+    UPDATE mc_theme SET use_count = use_count-1 WHERE id = #{id}
+  </update>
+
+</mapper>

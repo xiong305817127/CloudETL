@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.McDatabaseMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.McDatabasePO">
+        <id column="id" property="id"/>
+        <result column="server_id" property="serverId"/>
+        <result column="type" property="type"/>
+        <result column="belong" property="belong"/>
+        <result column="port" property="port"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="creator" property="creator"/>
+        <result column="create_time" property="createTime"/>
+        <result column="modifier" property="modifier"/>
+        <result column="modify_time" property="modifyTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        db.id, db.server_id, db.type, db.belong, db.port, db.username, db.password, db.is_deleted,
+        db.creator, db.create_time,
+        db.modifier, db.modify_time
+    </sql>
+
+    <select id="getDatabase" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_server s
+        LEFT JOIN mc_database db ON s.id = db.server_id
+        WHERE s.ip = #{ip}
+        AND s.is_deleted = 0
+        AND db.type = #{type}
+        AND db.is_deleted = 0
+        AND db.renter_id = #{renterId}
+    </select>
+
+    <insert id="insert" keyProperty="id"
+            parameterType="com.ys.idatrix.metacube.metamanage.domain.McDatabasePO"
+            useGeneratedKeys="true">
+        INSERT into mc_database
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="serverId !=null">server_id,
+            </if>
+            <if test="type !=null ">type,
+            </if>
+            <if test="belong !=null ">belong,
+            </if>
+            <if test="port !=null ">port,
+            </if>
+            <if test="username !=null ">username,
+            </if>
+            <if test="password !=null ">password,
+            </if>
+            <if test="creator !=null ">creator,
+            </if>
+            <if test="createTime !=null ">create_time,
+            </if>
+            <if test="modifier !=null ">modifier,
+            </if>
+            <if test="modifyTime !=null ">modify_time,
+            </if>
+            <if test="renterId !=null ">renter_id,
+            </if>
+        </trim>
+
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="serverId !=null ">#{serverId},
+            </if>
+            <if test="type !=null ">#{type},
+            </if>
+            <if test="belong !=null ">#{belong},
+            </if>
+            <if test="port !=null ">#{port},
+            </if>
+            <if test="username !=null ">#{username},
+            </if>
+            <if test="password !=null ">#{password},
+            </if>
+            <if test="creator !=null ">#{creator},
+            </if>
+            <if test="createTime !=null ">#{createTime},
+            </if>
+            <if test="modifier !=null ">#{modifier},
+            </if>
+            <if test="modifyTime !=null ">#{modifyTime},
+            </if>
+            <if test="renterId !=null ">#{renterId},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.ys.idatrix.metacube.metamanage.domain.McServerPO">
+        UPDATE mc_database
+        <set>
+            <if test="belong !=null ">
+                belong=#{belong},
+            </if>
+            <if test="port !=null ">
+                port = #{port},
+            </if>
+            <if test="username !=null and username !=''">
+                username = #{username},
+            </if>
+            <if test="password !=null and password !=''">
+                password = #{password},
+            </if>
+            <if test="modifier !=null ">
+                modifier = #{modifier},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted}
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="listDatabaseByServerIds" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_database db
+        <where>
+            db.is_deleted = 0
+            <if test="serverIds != null and serverIds.size() > 0">
+                AND db.server_id IN
+                <foreach close=")" collection="serverIds" item="serverId" open="(" separator=",">
+                    #{serverId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="listDatabaseByDbIds"
+            resultType="com.ys.idatrix.metacube.metamanage.vo.request.DatabaseServerAggregationVO">
+        SELECT
+        s.id serverId,
+        s.ip ip,
+        s.`name` serverName,
+        s.hostname hostname,
+        db.id databaseId,
+        db.type databaseType,
+        db.`port` `port`
+        FROM
+        mc_server s
+        LEFT JOIN mc_database db ON s.id = db.server_id
+        <where>
+            s.is_deleted = 0
+            AND db.is_deleted = 0
+            <if test="dbIds != null and dbIds.size() > 0">
+                AND db.id IN
+                <foreach close=")" collection="dbIds" item="dbId" open="(" separator=",">
+                    #{dbId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="listPlatformDatabase" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_database db
+        <where>
+            db.is_deleted = 0
+            <if test="renterId != null">
+                AND db.renter_id = #{renterId}
+            </if>
+            <if test="typeList != null and typeList.size() > 0">
+                AND db.type IN
+                <foreach close=")" collection="typeList" item="type" open="(" separator=",">
+                    #{type}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getDatabaseById" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_database db
+        WHERE db.is_deleted = 0
+        AND db.id = #{id}
+    </select>
+
+    <select id="getDatasourceInfoById" parameterType="java.lang.Long"
+            resultType="com.ys.idatrix.metacube.metamanage.vo.response.DatasourceVO">
+        SELECT
+        s.ip,
+        db.`port`,
+        db.type,
+        db.username,
+        db.`password`
+        FROM
+        mc_server s
+        LEFT JOIN
+        mc_database db ON s.id = db.server_id
+        WHERE db.id = #{id}
+    </select>
+
+</mapper>

@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.TablePkOracleMapper">
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.TablePkOracle">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="sequence_name" property="sequenceName" jdbcType="VARCHAR"/>
+        <result column="sequence_status" property="sequenceStatus" jdbcType="INTEGER"/>
+        <result column="table_id" property="tableId" jdbcType="BIGINT"/>
+        <result column="is_deleted" property="isDeleted" jdbcType="BIT"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, name, sequence_name, sequence_status, table_id, is_deleted, creator, create_time, 
+    modifier, modify_time
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from mc_table_pk_oracle
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from mc_table_pk_oracle
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com.ys.idatrix.metacube.metamanage.domain.TablePkOracle">
+    insert into mc_table_pk_oracle (id, name, sequence_name, 
+      sequence_status, table_id, is_deleted, 
+      creator, create_time, modifier, 
+      modify_time)
+    values (#{id,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR}, #{sequenceName,jdbcType=VARCHAR}, 
+      #{sequenceStatus,jdbcType=INTEGER}, #{tableId,jdbcType=BIGINT}, #{isDeleted,jdbcType=BIT}, 
+      #{creator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifier,jdbcType=VARCHAR}, 
+      #{modifyTime,jdbcType=TIMESTAMP})
+  </insert>
+    <insert id="insertSelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.TablePkOracle">
+        insert into mc_table_pk_oracle
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="sequenceName != null">
+                sequence_name,
+            </if>
+            <if test="sequenceStatus != null">
+                sequence_status,
+            </if>
+            <if test="tableId != null">
+                table_id,
+            </if>
+            <if test="isDeleted != null">
+                is_deleted,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="modifier != null">
+                modifier,
+            </if>
+            <if test="modifyTime != null">
+                modify_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="sequenceName != null">
+                #{sequenceName,jdbcType=VARCHAR},
+            </if>
+            <if test="sequenceStatus != null">
+                #{sequenceStatus,jdbcType=INTEGER},
+            </if>
+            <if test="tableId != null">
+                #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="isDeleted != null">
+                #{isDeleted,jdbcType=BIT},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.TablePkOracle">
+        update mc_table_pk_oracle
+        <set>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="sequenceName != null">
+                sequence_name = #{sequenceName,jdbcType=VARCHAR},
+            </if>
+            <if test="sequenceStatus != null">
+                sequence_status = #{sequenceStatus,jdbcType=INTEGER},
+            </if>
+            <if test="tableId != null">
+                table_id = #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted,jdbcType=BIT},
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                modifier = #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.ys.idatrix.metacube.metamanage.domain.TablePkOracle">
+    update mc_table_pk_oracle
+    set name = #{name,jdbcType=VARCHAR},
+      sequence_name = #{sequenceName,jdbcType=VARCHAR},
+      sequence_status = #{sequenceStatus,jdbcType=INTEGER},
+      table_id = #{tableId,jdbcType=BIGINT},
+      is_deleted = #{isDeleted,jdbcType=BIT},
+      creator = #{creator,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modifier = #{modifier,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <select id="find" parameterType="com.ys.idatrix.metacube.metamanage.domain.TablePkOracle" resultType="java.lang.Integer">
+        SELECT
+            COUNT(*)
+        FROM
+            mc_table_pk_oracle pk
+        LEFT JOIN mc_metadata tb ON pk.table_id = tb.id
+        WHERE pk.is_deleted = 0
+        <if test="id != null">
+            AND pk.id != #{id,jdbcType=BIGINT}
+        </if>
+        <if test="tableId != null">
+            AND tb.schema_id = (
+            SELECT
+              schema_id
+            FROM
+              mc_metadata
+            WHERE
+              id = #{tableId,jdbcType=BIGINT}
+            )
+        </if>
+        <if test="name != null">
+            AND pk.name = #{name,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <select id="findByTableId" resultMap="BaseResultMap">
+        SELECT
+          <include refid="Base_Column_List" />
+        FROM
+        mc_table_pk_oracle
+        WHERE is_deleted = 0 AND table_id = #{tableId,jdbcType=BIGINT}
+    </select>
+
+    <update id="deleteByTableId" >
+      UPDATE mc_table_pk_oracle
+      SET is_deleted = 1
+      WHERE table_id = #{tableId,jdbcType=BIGINT}
+    </update>
+
+</mapper>

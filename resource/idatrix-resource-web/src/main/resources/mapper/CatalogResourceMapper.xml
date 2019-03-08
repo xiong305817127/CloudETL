@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.catalog.dao.CatalogResourceDAO">
+    <resultMap id="BaseResultMap"
+               type="com.idatrix.resource.catalog.po.CatalogResourcePO">
+        <id column="catalog_id" property="catalogId" jdbcType="BIGINT" />
+        <result column="resource_id" property="resourceId" jdbcType="BIGINT" />
+        <result column="depth" property="depth" jdbcType="INTEGER" />
+      </resultMap>
+
+    <sql id="Base_Column_List">
+        catalog_id, resource_id, depth
+    </sql>
+
+    <select id="getAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_catalog_resource
+    </select>
+    <select id="getByResourceId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from rc_catalog_resource
+        where resource_id = #{resourceId}
+    </select>
+    <select id="getByCatalogId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from rc_catalog_resource
+        where catalog_id = #{catalogId}
+    </select>
+    <select id="getCatalogListByResourceId" resultType="java.lang.Long" parameterType="java.lang.Long">
+        select
+        catalog_id
+        from rc_catalog_resource
+        where resource_id = #{resourceId}
+    </select>
+
+
+
+    <delete id="deleteByResourceId" parameterType="java.lang.Long">
+        delete from rc_catalog_resource
+        where resource_id = #{resourceId}
+    </delete>
+
+    <insert id="insert" parameterType="com.idatrix.resource.catalog.po.CatalogResourcePO">
+        insert into rc_catalog_resource (
+        resource_id, catalog_id, depth)
+        values ( #{resourceId},#{catalogId},#{depth})
+    </insert>
+
+</mapper>

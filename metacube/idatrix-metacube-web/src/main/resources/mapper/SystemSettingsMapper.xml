@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.SystemSettingsMapper">
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.SystemSettings">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="data_centre_admin" property="dataCentreAdmin" jdbcType="VARCHAR"/>
+        <result column="database_admin" property="databaseAdmin" jdbcType="VARCHAR"/>
+        <result column="root_path" property="rootPath" jdbcType="VARCHAR"/>
+        <result column="is_gather" property="isGather" jdbcType="BIT"/>
+        <result column="gather_time" property="gatherTime" jdbcType="TIMESTAMP"/>
+        <result column="time_type" property="timeType" jdbcType="INTEGER"/>
+        <result column="day" property="day" jdbcType="INTEGER"/>
+        <result column="hour" property="hour" jdbcType="INTEGER"/>
+        <result column="column_show_count" property="columnShowCount" jdbcType="INTEGER"/>
+        <result column="renter_id" property="renterId" jdbcType="BIGINT"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, data_centre_admin, database_admin, root_path, is_gather, gather_time, time_type, 
+    day, hour, column_show_count, renter_id, creator, create_time, modifier, modify_time
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from mc_system_settings
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from mc_system_settings
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com.ys.idatrix.metacube.metamanage.domain.SystemSettings">
+    insert into mc_system_settings (id, data_centre_admin, database_admin, 
+      root_path, is_gather, gather_time, 
+      time_type, day, hour, 
+      column_show_count, renter_id, creator, 
+      create_time, modifier, modify_time
+      )
+    values (#{id,jdbcType=BIGINT}, #{dataCentreAdmin,jdbcType=VARCHAR}, #{databaseAdmin,jdbcType=VARCHAR}, 
+      #{rootPath,jdbcType=VARCHAR}, #{isGather,jdbcType=BIT}, #{gatherTime,jdbcType=TIMESTAMP}, 
+      #{timeType,jdbcType=INTEGER}, #{day,jdbcType=INTEGER}, #{hour,jdbcType=INTEGER}, 
+      #{columnShowCount,jdbcType=INTEGER}, #{renterId,jdbcType=BIGINT}, #{creator,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifier,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+    <insert id="insertSelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.SystemSettings">
+        insert into mc_system_settings
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="dataCentreAdmin != null">
+                data_centre_admin,
+            </if>
+            <if test="databaseAdmin != null">
+                database_admin,
+            </if>
+            <if test="rootPath != null">
+                root_path,
+            </if>
+            <if test="isGather != null">
+                is_gather,
+            </if>
+            <if test="gatherTime != null">
+                gather_time,
+            </if>
+            <if test="timeType != null">
+                time_type,
+            </if>
+            <if test="day != null">
+                day,
+            </if>
+            <if test="hour != null">
+                hour,
+            </if>
+            <if test="columnShowCount != null">
+                column_show_count,
+            </if>
+            <if test="renterId != null">
+                renter_id,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="modifier != null">
+                modifier,
+            </if>
+            <if test="modifyTime != null">
+                modify_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="dataCentreAdmin != null">
+                #{dataCentreAdmin,jdbcType=VARCHAR},
+            </if>
+            <if test="databaseAdmin != null">
+                #{databaseAdmin,jdbcType=VARCHAR},
+            </if>
+            <if test="rootPath != null">
+                #{rootPath,jdbcType=VARCHAR},
+            </if>
+            <if test="isGather != null">
+                #{isGather,jdbcType=BIT},
+            </if>
+            <if test="gatherTime != null">
+                #{gatherTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="timeType != null">
+                #{timeType,jdbcType=INTEGER},
+            </if>
+            <if test="day != null">
+                #{day,jdbcType=INTEGER},
+            </if>
+            <if test="hour != null">
+                #{hour,jdbcType=INTEGER},
+            </if>
+            <if test="columnShowCount != null">
+                #{columnShowCount,jdbcType=INTEGER},
+            </if>
+            <if test="renterId != null">
+                #{renterId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.SystemSettings">
+        update mc_system_settings
+        <set>
+            <if test="dataCentreAdmin != null">
+                data_centre_admin = #{dataCentreAdmin,jdbcType=VARCHAR},
+            </if>
+            <if test="databaseAdmin != null">
+                database_admin = #{databaseAdmin,jdbcType=VARCHAR},
+            </if>
+            <if test="rootPath != null">
+                root_path = #{rootPath,jdbcType=VARCHAR},
+            </if>
+            <if test="isGather != null">
+                is_gather = #{isGather,jdbcType=BIT},
+            </if>
+            <if test="gatherTime != null">
+                gather_time = #{gatherTime,jdbcType=TIMESTAMP},
+            </if>
+            time_type = #{timeType,jdbcType=INTEGER},
+            day = #{day,jdbcType=INTEGER},
+            hour = #{hour,jdbcType=INTEGER},
+            <if test="columnShowCount != null">
+                column_show_count = #{columnShowCount,jdbcType=INTEGER},
+            </if>
+            <if test="renterId != null">
+                renter_id = #{renterId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                modifier = #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.ys.idatrix.metacube.metamanage.domain.SystemSettings">
+    update mc_system_settings
+    set data_centre_admin = #{dataCentreAdmin,jdbcType=VARCHAR},
+      database_admin = #{databaseAdmin,jdbcType=VARCHAR},
+      root_path = #{rootPath,jdbcType=VARCHAR},
+      is_gather = #{isGather,jdbcType=BIT},
+      gather_time = #{gatherTime,jdbcType=TIMESTAMP},
+      time_type = #{timeType,jdbcType=INTEGER},
+      day = #{day,jdbcType=INTEGER},
+      hour = #{hour,jdbcType=INTEGER},
+      column_show_count = #{columnShowCount,jdbcType=INTEGER},
+      renter_id = #{renterId,jdbcType=BIGINT},
+      creator = #{creator,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modifier = #{modifier,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <select id="findSystemSetByRenterId" resultMap="BaseResultMap" >
+        SELECT * FROM mc_system_settings WHERE renter_id = #{renterId,jdbcType=BIGINT}
+    </select>
+
+</mapper>

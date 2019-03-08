@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.McServerMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.McServerPO">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="use" property="use"/>
+        <result column="ip" property="ip"/>
+        <result column="hostname" property="hostname"/>
+        <result column="org_code" property="orgCode"/>
+        <result column="location" property="location"/>
+        <result column="contact" property="contact"/>
+        <result column="contact_number" property="contactNumber"/>
+        <result column="remark" property="remark"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="creator" property="creator"/>
+        <result column="create_time" property="createTime"/>
+        <result column="modifier" property="modifier"/>
+        <result column="modify_time" property="modifyTime"/>
+        <result column="renter_id" property="renterId"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        s.id, s.name, s.`use`, s.ip as ip, s.hostname, s.org_code, s.location, s.contact,
+        s.contact_number, s.remark, s.creator, s.create_time, s.modifier, s.modify_time, s.renter_id
+    </sql>
+
+    <insert id="insert" keyProperty="id"
+            parameterType="com.ys.idatrix.metacube.metamanage.domain.McServerPO"
+            useGeneratedKeys="true">
+        INSERT into mc_server
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name !=null">name,
+            </if>
+            <if test="use !=null ">`use`,
+            </if>
+            <if test="ip !=null and ip != ''">ip,
+            </if>
+            <if test="hostname !=null and hostname != ''">hostname,
+            </if>
+            <if test="orgCode !=null and orgCode != ''">org_code,
+            </if>
+            <if test="location !=null and location != ''">location,
+            </if>
+            <if test="contact !=null and contact != ''">contact,
+            </if>
+            <if test="contactNumber !=null and contactNumber != ''">contact_number,
+            </if>
+            <if test="remark !=null and remark != ''">remark,
+            </if>
+            <if test="creator !=null ">creator,
+            </if>
+            <if test="createTime !=null ">create_time,
+            </if>
+            <if test="modifier !=null ">modifier,
+            </if>
+            <if test="modifyTime !=null ">modify_time,
+            </if>
+            <if test="renterId !=null ">renter_id,
+            </if>
+        </trim>
+
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name !=null ">#{name},
+            </if>
+            <if test="use !=null ">#{use},
+            </if>
+            <if test="ip !=null ">#{ip},
+            </if>
+            <if test="hostname !=null ">#{hostname},
+            </if>
+            <if test="orgCode !=null and orgCode != ''">#{orgCode},
+            </if>
+            <if test="location !=null and location != ''">#{location},
+            </if>
+            <if test="contact !=null and contact != ''">#{contact},
+            </if>
+            <if test="contactNumber !=null and contactNumber != ''">#{contactNumber},
+            </if>
+            <if test="remark !=null and remark != ''">#{remark},
+            </if>
+            <if test="creator !=null ">#{creator},
+            </if>
+            <if test="createTime !=null ">#{createTime},
+            </if>
+            <if test="modifier !=null ">#{modifier},
+            </if>
+            <if test="modifyTime !=null ">#{modifyTime},
+            </if>
+            <if test="renterId !=null ">#{renterId},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="update" parameterType="com.ys.idatrix.metacube.metamanage.domain.McServerPO">
+        UPDATE mc_server
+        <set>
+            <if test="name !=null and name != ''">
+                name=#{name},
+            </if>
+            <if test="use !=null ">
+                `use` = #{use},
+            </if>
+            <if test="ip !=null and ip != ''">
+                ip = #{ip},
+            </if>
+            <if test="hostname !=null and hostname != ''">
+                hostname = #{hostname},
+            </if>
+            <if test="orgCode !=null and orgCode != ''">
+                org_code = #{orgCode},
+            </if>
+            <if test="location !=null and location != ''">
+                location = #{location},
+            </if>
+            <if test="contact !=null and contact != ''">
+                contact = #{contact},
+            </if>
+            <if test="contactNumber !=null and contactNumber != ''">
+                contact_number = #{contactNumber},
+            </if>
+            <if test="remark !=null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="modifier !=null ">
+                modifier = #{modifier},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted}
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="getServerPOById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_server s
+        WHERE s.id = #{id} AND s.is_deleted = 0
+    </select>
+
+    <select id="getServerPOByIp" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_server s
+        WHERE s.ip = #{ip} AND s.is_deleted = 0
+    </select>
+
+    <select id="getServerPOByIpAndRenterId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_server s
+        <where>
+            s.is_deleted = 0
+            <if test="ip != null and ip !='' ">
+                AND s.ip = #{ip}
+            </if>
+            <if test="renterId != null">
+                AND s.renter_id = #{renterId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询服务器列表 -->
+    <select id="list"
+            parameterType="com.ys.idatrix.metacube.metamanage.vo.request.ServerSearchVO"
+            resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_server s
+        LEFT JOIN mc_database db ON s.id = db.server_id
+        <where>
+            <choose>
+                <!-- 已删除列表 -->
+                <when test="deleted">
+                    s.is_deleted = 1
+                </when>
+                <otherwise>
+                    s.is_deleted = 0
+                </otherwise>
+            </choose>
+            <if test="renterId != null ">
+                AND s.renter_id = #{renterId}
+            </if>
+            <if test="ip != null and ip != ''">
+                AND s.ip = #{ip}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                MATCH (s.`name`) AGAINST (
+                '*${keyword}*' IN BOOLEAN MODE
+                )
+                OR s.ip LIKE "${keyword}%"
+                )
+            </if>
+            <if test="useList != null and useList.size() > 0">
+                AND s.`use` IN
+                <foreach close=")" collection="useList" item="use" open="(" separator=",">
+                    #{use}
+                </foreach>
+            </if>
+            <if test="typeList != null and typeList.size() > 0">
+                AND db.type IN
+                <foreach close=")" collection="typeList" item="type" open="(" separator=",">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="belongList != null and belongList.size() > 0">
+                AND db.belong IN
+                <foreach close=")" collection="belongList" item="belong" open="(" separator=",">
+                    #{belong}
+                </foreach>
+            </if>
+            <if test="orgList != null and orgList.size() > 0">
+                AND s.org_code IN
+                <foreach close=")" collection="orgList" item="org" open="(" separator=",">
+                    #{org}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY s.id
+    </select>
+</mapper>

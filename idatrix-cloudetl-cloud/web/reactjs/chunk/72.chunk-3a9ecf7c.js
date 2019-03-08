@@ -1,0 +1,1 @@
+webpackJsonp([72],{443:function(e,t,u){"use strict";Object.defineProperty(t,"__esModule",{value:!0});var i=u(9),a=function(e){return e&&e.__esModule?e:{default:e}}(i);t.default={namespace:"debugdetail",state:{visible:!1},reducers:{changeView:function(e,t){return(0,a.default)({},e,{visible:t.visible})}}},e.exports=t.default}});

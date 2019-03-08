@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.catalog.dao.ResourceApproveDAO">
+  <resultMap id="BaseResultMap"
+    type="com.idatrix.resource.catalog.po.ResourceApprovePO">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="resource_id" property="resourceId" jdbcType="BIGINT"/>
+    <result column="approver" property="approver" jdbcType="VARCHAR"/>
+    <result column="approver_name" property="approverName" jdbcType="VARCHAR"/>
+    <result column="current_status" property="currentStatus" jdbcType="VARCHAR"/>
+    <result column="next_status" property="nextStatus" jdbcType="VARCHAR"/>
+    <result column="approve_action" property="approveAction" jdbcType="VARCHAR"/>
+    <result column="suggestion" property="suggestion" jdbcType="VARCHAR"/>
+    <result column="approve_time" property="approveTime" javaType="java.util.Date"
+      jdbcType="TIMESTAMP"/>
+    <result column="active_flag" property="activeFlag" jdbcType="TINYINT"/>
+
+    <result column="creator" property="creator" jdbcType="VARCHAR"/>
+    <result column="create_time" property="createTime" javaType="java.util.Date"
+      jdbcType="TIMESTAMP"/>
+    <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+    <result column="modify_time" property="modifyTime" javaType="java.util.Date"
+      jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <resultMap id="StatisticsResultMap"
+    type="com.idatrix.resource.catalog.po.StatisticsPO">
+    <result column="count" property="count" jdbcType="BIGINT"/>
+    <result column="month" property="monthStr" jdbcType="VARCHAR"/>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, resource_id, approver, approver_name, current_status, next_status, approve_action,
+    suggestion, approve_time, active_flag,
+    creator, create_time, modifier, modify_time
+  </sql>
+
+  <select id="getStatisticsByStatusAndNums" resultMap="StatisticsResultMap">
+    SELECT
+    DATE_FORMAT(modify_time, '%Y-%m') as month,
+    count(id) as count
+    FROM
+    rc_resource_approve
+    WHERE modify_time>DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01') , INTERVAL #{num} MONTH)
+    and next_status = #{status}
+    GROUP BY month
+    ORDER BY month DESC;
+  </select>
+
+  <select id="getMaintainResource" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from rc_resource_approve
+    where resource_id = #{resourceId}
+    <if test="approver!=null">
+      and approver=#{approver}
+    </if>
+    <if test="currentStatus!=null">
+      and current_status = #{currentStatus}
+    </if>
+    <if test="nextStatus!=null">
+      and next_status = #{nextStatus}
+    </if>
+    and active_flag = 0
+    order by modify_time DESC limit 1
+  </select>
+
+  <select id="getWaitApproveByResourceId" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from rc_resource_approve
+    where resource_id = #{resourceId} and active_flag = 1
+    order by modify_time DESC limit 1
+  </select>
+
+  <select id="getApproveHistoryByResourceId" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from rc_resource_approve
+    where resource_id = #{resourceId} and active_flag=0
+    order by approve_time DESC
+  </select>
+
+  <select id="getApproveById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select
+    <include refid="Base_Column_List"/>
+    from rc_resource_approve
+    where id = #{id}
+  </select>
+
+  <select id="getMaintainResourceByCondition" resultMap="BaseResultMap">
+    SELECT
+    rra.id as id, rra.resource_id as resource_id, rr.update_time as modify_time,
+    rr.update_time as approve_time, rra.approver_name as approver_name,
+    rra.approver as approver, rra.current_status as current_status, rra.next_status as next_status,
+    rra.approve_action as approve_action, rra.suggestion as suggestion
+    from rc_resource rr
+    INNER JOIN (select * from rc_resource_approve r where 1=1
+    <if test="currentStatus!=null">
+      and current_status=#{currentStatus}
+    </if>
+    group by r.resource_id) rra
+    on rr.id=rra.resource_id
+    <if test="activeFlag!=null">
+      and rra.active_flag=#{activeFlag}
+    </if>
+    <if test="code!=null">
+      and rr.code like '${code}%'
+    </if>
+    <if test="name!=null">
+      AND MATCH (rr.`name`, rr.dept_name) AGAINST ('*${name}*' IN BOOLEAN MODE)
+    </if>
+    <if test="dept_name!=null">
+      AND MATCH (rr.`name`, rr.dept_name) AGAINST ('*${dept_name}*' IN BOOLEAN MODE)
+    </if>
+    <if test="dept_code!=null">
+      and rr.dept_code like '${dept_code}%'
+    </if>
+    <if test="status!=null">
+      and rr.status in (${status})
+    </if>
+    order by rr.update_time DESC
+  </select>
+
+  <!--<select id="getMaintainResourceByCondition" resultMap="BaseResultMap">
+      select
+          <include refid="Base_Column_List" />
+      FROM (select id,status from rc_resource
+      where 1=1
+          <if test="name!=null">
+              and name like '%${name}%'
+          </if>
+          <if test="code!=null">
+              and code like '%${code}%'
+          </if>
+          <if test="dept_name!=null">
+              and dept_name like '%${dept_name}%'
+          </if>
+          <if test="dept_code!=null">
+              and dept_code like '%${dept_code}%'
+          </if>) rr
+      INNER JOIN (
+          SELECT MAX(a.approve_time) AS approve_time, id, resource_id, approver, approver_name, current_status, next_status, approve_action, suggestion, active_flag,
+            creator, create_time, modifier, modify_time
+          FROM rc_resource_approve a
+          WHERE a.active_flag=#{activeFlag}
+          GROUP BY a.resource_id
+          ORDER BY a.approve_time DESC) b
+      ON rr.id=b.resource_id AND rr.status in (#{status})
+      <if test="currentStatus!=null">
+          and b.current_status = #{currentStatus}
+      </if>
+      ORDER BY b.approve_time DESC;
+  </select>-->
+
+
+  <!--<select id="getApproveByCondition" resultMap="BaseResultMap" parameterType="java.lang.Long">
+      select
+        id, resource_id, approver, approver_name, current_status, next_status, approve_action, suggestion, max(approve_time) as approve_time, active_flag,
+        creator, create_time, modifier, modify_time
+      from rc_resource_approve
+      where approver = #{approver}
+      and active_flag=#{activeFlag}
+      <if test="currentStatus!=null">
+        and current_status = #{currentStatus}
+      </if>
+      and resource_id IN
+        (select id from rc_resource
+          where 1=1
+          <if test="name!=null">
+            and name like '%${name}%'
+          </if>
+          <if test="code!=null">
+              and code like '%${code}%'
+          </if>
+          <if test="dept_name!=null">
+              and dept_name like '%${dept_name}%'
+          </if>
+          <if test="dept_code!=null">
+              and dept_code like '%${dept_code}%'
+          </if>)
+      group by resource_id
+      order by approve_time DESC
+  </select>-->
+
+  <select id="getApproveByCondition" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM (SELECT * FROM rc_resource_approve ORDER BY approve_time DESC) r
+    WHERE approver = #{approver}
+    and active_flag=#{activeFlag}
+    <if test="currentStatus!=null">
+      and current_status = #{currentStatus}
+    </if>
+    and resource_id IN
+    (select id from rc_resource
+    where 1=1
+    <if test="code!=null">
+      and code like '${code}%'
+    </if>
+    <if test="name!=null">
+      AND MATCH (`name`, dept_name) AGAINST ('*${name}*' IN BOOLEAN MODE)
+    </if>
+    <if test="dept_name!=null">
+      AND MATCH (`name`, dept_name) AGAINST ('*${dept_name}*' IN BOOLEAN MODE)
+    </if>
+    <if test="dept_code!=null">
+      and dept_code like '${dept_code}%'
+    </if>)
+    GROUP BY r.resource_id
+    ORDER BY r.approve_time DESC
+  </select>
+
+  <delete id="deleteById" parameterType="java.lang.Long">
+    delete from rc_resource_approve
+    where id = #{id}
+  </delete>
+
+  <delete id="deleteByResourceId" parameterType="java.lang.Long">
+    delete from rc_resource_approve
+    where resource_id = #{resourceId}
+  </delete>
+
+  <insert id="insert" parameterType="com.idatrix.resource.catalog.po.ResourceApprovePO"
+    useGeneratedKeys="true" keyProperty="id">
+    insert into rc_resource_approve (
+    resource_id, approver, approver_name, current_status,
+    next_status, approve_action, suggestion, approve_time, active_flag,
+    creator, create_time, modifier, modify_time)
+    values ( #{resourceId}, #{approver}, #{approverName},
+    #{currentStatus}, #{nextStatus}, #{approveAction},
+    #{suggestion}, #{approveTime}, #{activeFlag},
+    #{creator}, #{createTime}, #{modifier}, #{modifyTime})
+  </insert>
+
+
+  <update id="updateById" parameterType="com.idatrix.resource.catalog.po.ResourceApprovePO">
+    update rc_resource_approve
+    set id = #{id},
+    resource_id = #{resourceId},
+    approver = #{approver},
+    approver_name = #{approverName},
+    current_status = #{currentStatus},
+    next_status = #{nextStatus},
+    approve_action = #{approveAction},
+    suggestion = #{suggestion},
+    approve_time = #{approveTime},
+    active_flag = #{activeFlag},
+    creator = #{creator},
+    create_time = #{createTime},
+    modifier = #{modifier},
+    modify_time = #{modifyTime}
+    where id = #{id}
+  </update>
+</mapper>

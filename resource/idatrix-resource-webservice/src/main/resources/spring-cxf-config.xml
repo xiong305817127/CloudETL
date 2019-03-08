@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- START SNIPPET: beans -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:jaxws="http://cxf.apache.org/jaxws"
+	   xsi:schemaLocation=" http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+
+	<jaxws:server address="/idatrixWebService"
+				  serviceClass="com.idatrix.resource.webservice.webservice.ISubscribeSearchService">
+		<jaxws:serviceBean>
+			<!-- 项目中使用@Component 注解来完成IOC容器的装配 -->
+			<ref bean="subscribeSearchWebservice" />
+		</jaxws:serviceBean>
+	</jaxws:server>
+
+</beans>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ys.idatrix.db.dao.mapper.ESDicChangeMapper">
+
+	<!-- find by tenantId and status=2(已刷新) -->
+	<select id="existTable" resultType="java.lang.Integer">
+		select count(1) from es_dic_chg
+		where tenant_id = #{tenantId}
+		and status = 2
+	</select>
+</mapper>

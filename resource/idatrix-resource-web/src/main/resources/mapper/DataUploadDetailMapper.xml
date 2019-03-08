@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.datareport.dao.DataUploadDetailDAO">
+    <resultMap id="BaseResultMap"
+               type="com.idatrix.resource.datareport.po.DataUploadDetailPO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+        <result column="origin_file_name" property="originFileName" jdbcType="VARCHAR" />
+        <result column="pub_file_name" property="pubFileName" jdbcType="VARCHAR" />
+        <result column="file_size" property="fileSize" jdbcType="VARCHAR" />
+        <result column="file_type" property="fileType" jdbcType="VARCHAR" />
+        <result column="file_description" property="fileDescription" jdbcType="VARCHAR" />
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, parent_id, origin_file_name, pub_file_name, file_size, file_type, file_description, creator,
+        create_time, modifier, modify_time
+    </sql>
+
+    <insert id="insertDataUploadDetail" parameterType="com.idatrix.resource.datareport.po.DataUploadDetailPO"
+        useGeneratedKeys="true" keyProperty="id">
+        insert into rc_data_upload_detail (
+        parent_id, origin_file_name, pub_file_name, file_size, file_type, file_description, creator,
+        create_time, modifier, modify_time)
+        values (#{parentId}, #{originFileName}, #{pubFileName}, #{fileSize}, #{fileType},
+        #{fileDescription}, #{creator}, #{createTime}, #{modifier}, #{modifyTime})
+    </insert>
+
+    <insert id="insertDataUploadDetailBatchList" parameterType="java.util.List"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into rc_data_upload_detail (id, parent_id, origin_file_name, pub_file_name, file_size, file_type,
+        file_description, creator, create_time, modifier, modify_time)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id}, #{item.parentId}, #{item.originFileName}, #{item.pubFileName}, #{item.fileSize},
+            #{item.fileType}, #{item.fileDescription}, #{item.creator}, #{item.createTime}, #{item.modifier},
+            #{item.modifyTime})
+        </foreach>
+    </insert>
+
+    <update id="updateDataUploadDetailById" parameterType="com.idatrix.resource.datareport.po.DataUploadDetailPO">
+        update rc_data_upload_detail
+        set id = #{id},
+        <if test="parentId!=null">
+          parent_id = #{parentId},
+        </if>
+        <if test="originFileName!=null">
+          origin_file_name = #{originFileName},
+        </if>
+        <if test="pubFileName!=null">
+          pub_file_name = #{pubFileName},
+        </if>
+        <if test="fileSize!=null">
+          file_size = #{fileSize},
+        </if>
+        <if test="fileType!=null">
+          file_type = #{fileType},
+        </if>
+        <if test="fileDescription!=null">
+          file_description = #{fileDescription},
+        </if>
+        <if test="modifier!=null">
+          modifier = #{modifier},
+        </if>
+        <if test="modifyTime!=null">
+          modify_time = #{modifyTime}
+        </if>
+        where id = #{id}
+    </update>
+
+    <select id="getUploadDetailsByResourceId" resultMap="BaseResultMap"  parameterType="java.lang.Long">
+    SELECT
+        rdud.id AS id,
+        rdud.parent_id AS parent_id,
+        rdud.origin_file_name AS origin_file_name,
+        rdud.pub_file_name AS pub_file_name,
+        rdud.file_size AS file_size,
+        rdud.file_type AS file_type,
+        rdud.file_description AS file_description,
+        rdud.creator AS creator,
+        rdud.create_time AS create_time,
+        rdud.modifier AS modifier,
+        rdud.modify_time AS modify_time
+    FROM
+        ( SELECT * FROM rc_data_upload rdu WHERE rdu.resource_id =#{resourceId} AND rdu.STATUS = "IMPORT_COMPLETE" ) ddu
+        LEFT JOIN rc_data_upload_detail rdud ON ddu.id = rdud.parent_id
+    GROUP BY
+        rdud.pub_file_name
+    </select>
+
+
+
+
+    <select id="getUploadDetailsByParentId" resultMap="BaseResultMap"  parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List" />
+        from rc_data_upload_detail
+        where parent_id = #{parentId}
+    </select>
+
+    <select id="getDataUploadDetailByCondition" resultMap="BaseResultMap"  parameterType="hashmap">
+        SELECT
+        <include refid="Base_Column_List" />
+        from rc_data_upload_detail
+        where pub_file_name = #{pubFileName} and creator = #{creator} and parent_id is NULL
+    </select>
+
+    <delete id="deleteUploadDetailById" parameterType="java.lang.Long">
+        delete from rc_data_upload_detail
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteUploadDetailsByParentId" parameterType="java.lang.Long">
+        delete from rc_data_upload_detail
+        where parent_id = #{parentId}
+    </delete>
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ys.idatrix.db.dao.mapper.DbSqlResultMapper">
+
+	<resultMap id="dbSqlResult" type="com.ys.idatrix.db.domain.DbSqlResult">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="execution_sql" property="sql" jdbcType="VARCHAR" />
+		<result column="execution_id" property="executionId" jdbcType="INTEGER" />
+		<result column="db_type" property="dbType" jdbcType="VARCHAR" />
+		<result column="db_source" property="dbSource" jdbcType="VARCHAR" />
+		<result column="status" property="status" jdbcType="VARCHAR" />
+		<result column="result" property="result" jdbcType="LONGVARCHAR" />
+		<result column="creator" property="creator" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modifier" property="modifier" jdbcType="VARCHAR" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<!-- find by code -->
+	<select id="findByExecutionId" resultMap="dbSqlResult">
+		select * from db_sql_result
+		where execution_id = #{id}
+	</select>
+
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.ys.idatrix.db.domain.DbSqlResult">
+		insert into db_sql_result (execution_sql,execution_id,db_type, db_source,status,result, creator, create_time, modifier, modify_time)
+		values ( 
+		#{sql,jdbcType=VARCHAR},
+		#{executionId,jdbcType=INTEGER},
+		#{dbType,jdbcType=VARCHAR},
+		#{dbSource,jdbcType=INTEGER},
+		#{status,jdbcType=VARCHAR},
+		#{result,jdbcType=LONGVARCHAR},
+		#{creator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
+		#{modifier,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<update id="writeResult" >
+    	update db_sql_result
+   		set status = #{status},
+   		result=#{result},
+		modifier = #{modifier,jdbcType=VARCHAR},
+      	modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+		where id = #{id}
+  </update>
+</mapper>

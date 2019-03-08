@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.webservice.dao.ResourceColumnDAO">
+    <resultMap id="BaseResultMap"
+               type="com.idatrix.resource.webservice.po.ResourceColumnPO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="resource_id" property="resourceId" jdbcType="BIGINT" />
+        <result column="col_name" property="colName" jdbcType="VARCHAR" />
+        <result column="col_seq_num" property="colSeqNum" jdbcType="VARCHAR" />
+        <result column="col_type" property="colType" jdbcType="VARCHAR" />
+        <result column="table_col_code" property="tableColCode" jdbcType="VARCHAR" />
+        <result column="table_col_type" property="tableColType" jdbcType="VARCHAR" />
+        <result column="required_flag" property="requiredFlag" jdbcType="TINYINT" />
+        <result column="unique_flag" property="uniqueFlag" jdbcType="TINYINT" />
+        <result column="date_format" property="dateFormat" jdbcType="VARCHAR" />
+
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, resource_id, col_name, col_seq_num, col_type, table_col_code, table_col_type,
+        required_flag, unique_flag, date_format, creator, create_time,
+        modifier, modify_time
+    </sql>
+
+   
+    <select id="getColumnById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from rc_resource_column
+        where id = #{id}
+    </select>
+
+</mapper>

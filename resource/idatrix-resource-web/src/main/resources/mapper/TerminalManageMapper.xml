@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.terminalmanage.dao.TerminalManageDAO">
+    <resultMap id="BaseResultMap" type="com.idatrix.resource.terminalmanage.po.TerminalManagePO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="dept_id" property="deptId" jdbcType="VARCHAR" />
+        <result column="dept_final_id" property="deptFinalId" jdbcType="VARCHAR" />
+        <result column="dept_code" property="deptCode" jdbcType="VARCHAR" />
+        <result column="dept_name" property="deptName" jdbcType="VARCHAR" />
+        <result column="tm_name" property="tmName" jdbcType="VARCHAR" />
+        <result column="tm_ip" property="tmIP" jdbcType="VARCHAR" />
+        <result column="tm_schema_name" property="schemaName" jdbcType="VARCHAR" />
+        <result column="tm_schema_id" property="schemaId" jdbcType="VARCHAR" />
+        <result column="tm_db_id" property="tmDBId" jdbcType="VARCHAR" />
+        <result column="tm_db_name" property="tmDBName" jdbcType="VARCHAR" />
+        <result column="tm_db_port" property="tmDBPort" jdbcType="VARCHAR" />
+        <result column="tm_db_type" property="tmDBType" jdbcType="VARCHAR" />
+        <result column="sftp_switch_root" property="sftpSwitchRoot" jdbcType="VARCHAR" />
+        <result column="hdfs_switch_root" property="hdfsSwitchRoot" jdbcType="VARCHAR" />
+        <result column="sftp_port" property="sftpPort" jdbcType="VARCHAR" />
+        <result column="sftp_username" property="sftpUsername" jdbcType="VARCHAR" />
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, dept_id, dept_final_id, dept_code, dept_name, tm_name, tm_ip, tm_schema_id, tm_schema_name, tm_db_id, tm_db_name, tm_db_port, tm_db_type, sftp_switch_root,
+        hdfs_switch_root, sftp_port, sftp_username, creator, create_time, modifier, modify_time
+    </sql>
+
+    <insert id="insertTerminalManageRecord" parameterType="com.idatrix.resource.terminalmanage.po.TerminalManagePO"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into rc_tm (
+        dept_id, dept_final_id, dept_code, dept_name, tm_name, tm_ip, tm_schema_id, tm_schema_name,
+        tm_db_id, tm_db_name, tm_db_port, tm_db_type, sftp_switch_root,
+        hdfs_switch_root, sftp_port, sftp_username, creator, create_time, modifier, modify_time)
+        values (#{deptId}, #{deptFinalId}, #{deptCode}, #{deptName}, #{tmName}, #{tmIP}, #{schemaId}, #{schemaName},
+        #{tmDBId}, #{tmDBName}, #{tmDBPort}, #{tmDBType},
+        #{sftpSwitchRoot}, #{hdfsSwitchRoot}, #{sftpPort}, #{sftpUsername},
+        #{creator}, #{createTime}, #{modifier},
+        #{modifyTime})
+    </insert>
+
+    <update id="updateTerminalManageRecord" parameterType="com.idatrix.resource.terminalmanage.po.TerminalManagePO">
+        update rc_tm
+        set id = #{id},
+        dept_id = #{deptId},
+        dept_final_id=#{deptFinalId},
+        dept_code = #{deptCode},
+        dept_name = #{deptName},
+        tm_schema_id =#{schemaId},
+        tm_schema_name = #{schemaName},
+        tm_name = #{tmName},
+        tm_ip = #{tmIP},
+        tm_db_id = #{tmDBId},
+        tm_db_name = #{tmDBName},
+        tm_db_port = #{tmDBPort},
+        sftp_switch_root = #{sftpSwitchRoot},
+        hdfs_switch_root = #{hdfsSwitchRoot},
+        sftp_port = #{sftpPort},
+        modifier = #{modifier},
+        modify_time = #{modifyTime}
+        where id = #{id}
+    </update>
+
+    <select id="getTerminalManageRecordById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from rc_tm
+        where id = #{id}
+    </select>
+
+    <select id="isExistedTerminalManageRecord" resultMap="BaseResultMap" parameterType="hashmap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_tm
+        where dept_final_id = #{deptId}
+        <if  test="id!=null">
+            and id != #{id}
+        </if>
+        LIMIT 1;
+    </select>
+
+    <delete id="deleteTerminalManageRecordById" parameterType="java.lang.Long">
+        delete from rc_tm
+        where id = #{id}
+    </delete>
+
+    <select id="getTerminalManageRecordByCondition" resultMap="BaseResultMap" parameterType="hashmap">
+        select
+        t.id,
+        t.dept_code,
+        t.dept_name,
+        t.tm_name,
+        t.tm_ip,
+        t.tm_db_name,
+        t.tm_schema_id,
+        t.tm_schema_name,
+        t.sftp_switch_root
+        from rc_tm t
+        where 1=1
+        <if test="dbName!=null">
+            and t.tm_db_name like '%${dbName}%'
+        </if>
+        <if test="deptName!=null">
+            and t.dept_name like '%${deptName}%'
+        </if>
+        <if test="userName!=null">
+            and t.creator=#{userName}
+        </if>
+        order by t.create_time desc
+    </select>
+
+    <select id="getTerminalManageRecordByDeptId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from rc_tm
+        where dept_id = #{deptId} or dept_final_id =#{deptId}
+        limit 1
+    </select>
+
+
+</mapper>

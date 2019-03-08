@@ -1,0 +1,26 @@
+{
+    "info": {
+        "name": "trans name",
+        "description": "trans description"
+    }, 
+   "stepList": [
+        {
+            "name": "step name",
+            "type": "step type",
+            "description": "step description",
+            "clusterSchema": "cluster schema",
+            "gui": {
+                "xloc": "x location",
+                "yloc": "y location",
+                "draw": "Y|N"
+            }
+        }
+    ],
+    "hopList": [
+        {
+            "from": "from step name",
+            "to": "to step name",
+            "enabled": true
+        }
+    ]
+}

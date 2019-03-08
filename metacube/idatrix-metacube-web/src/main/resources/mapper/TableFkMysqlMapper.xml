@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.TableFkMysqlMapper">
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.TableFkMysql">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="column_ids" property="columnIds" jdbcType="VARCHAR"/>
+        <result column="reference_schema_id" property="referenceSchemaId" jdbcType="BIGINT"/>
+        <result column="reference_table_id" property="referenceTableId" jdbcType="BIGINT"/>
+        <result column="reference_column" property="referenceColumn" jdbcType="VARCHAR"/>
+        <result column="delete_trigger" property="deleteTrigger" jdbcType="VARCHAR"/>
+        <result column="update_trigger" property="updateTrigger" jdbcType="VARCHAR"/>
+        <result column="location" property="location" jdbcType="INTEGER"/>
+        <result column="table_id" property="tableId" jdbcType="BIGINT"/>
+        <result column="is_deleted" property="isDeleted" jdbcType="BIT"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, name, column_ids, reference_schema_id, reference_table_id, reference_column, 
+    delete_trigger, update_trigger, location, table_id, is_deleted, creator, create_time, 
+    modifier, modify_time
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from mc_table_fk_mysql
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from mc_table_fk_mysql
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com.ys.idatrix.metacube.metamanage.domain.TableFkMysql">
+    insert into mc_table_fk_mysql (id, name, column_ids, 
+      reference_schema_id, reference_table_id, reference_column, 
+      delete_trigger, update_trigger, location, 
+      table_id, is_deleted, creator, 
+      create_time, modifier, modify_time
+      )
+    values (#{id,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR}, #{columnIds,jdbcType=VARCHAR}, 
+      #{referenceSchemaId,jdbcType=BIGINT}, #{referenceTableId,jdbcType=BIGINT}, #{referenceColumn,jdbcType=VARCHAR}, 
+      #{deleteTrigger,jdbcType=VARCHAR}, #{updateTrigger,jdbcType=VARCHAR}, #{location,jdbcType=INTEGER}, 
+      #{tableId,jdbcType=BIGINT}, #{isDeleted,jdbcType=BIT}, #{creator,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifier,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+    <insert id="insertSelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.TableFkMysql">
+        insert into mc_table_fk_mysql
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="columnIds != null">
+                column_ids,
+            </if>
+            <if test="referenceSchemaId != null">
+                reference_schema_id,
+            </if>
+            <if test="referenceTableId != null">
+                reference_table_id,
+            </if>
+            <if test="referenceColumn != null">
+                reference_column,
+            </if>
+            <if test="deleteTrigger != null">
+                delete_trigger,
+            </if>
+            <if test="updateTrigger != null">
+                update_trigger,
+            </if>
+            <if test="location != null">
+                location,
+            </if>
+            <if test="tableId != null">
+                table_id,
+            </if>
+            <if test="isDeleted != null">
+                is_deleted,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="modifier != null">
+                modifier,
+            </if>
+            <if test="modifyTime != null">
+                modify_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="columnIds != null">
+                #{columnIds,jdbcType=VARCHAR},
+            </if>
+            <if test="referenceSchemaId != null">
+                #{referenceSchemaId,jdbcType=BIGINT},
+            </if>
+            <if test="referenceTableId != null">
+                #{referenceTableId,jdbcType=BIGINT},
+            </if>
+            <if test="referenceColumn != null">
+                #{referenceColumn,jdbcType=VARCHAR},
+            </if>
+            <if test="deleteTrigger != null">
+                #{deleteTrigger,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTrigger != null">
+                #{updateTrigger,jdbcType=VARCHAR},
+            </if>
+            <if test="location != null">
+                #{location,jdbcType=INTEGER},
+            </if>
+            <if test="tableId != null">
+                #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="isDeleted != null">
+                #{isDeleted,jdbcType=BIT},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.TableFkMysql">
+        update mc_table_fk_mysql
+        <set>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="columnIds != null">
+                column_ids = #{columnIds,jdbcType=VARCHAR},
+            </if>
+            <if test="referenceSchemaId != null">
+                reference_schema_id = #{referenceSchemaId,jdbcType=BIGINT},
+            </if>
+            <if test="referenceTableId != null">
+                reference_table_id = #{referenceTableId,jdbcType=BIGINT},
+            </if>
+            <if test="referenceColumn != null">
+                reference_column = #{referenceColumn,jdbcType=VARCHAR},
+            </if>
+            <if test="deleteTrigger != null">
+                delete_trigger = #{deleteTrigger,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTrigger != null">
+                update_trigger = #{updateTrigger,jdbcType=VARCHAR},
+            </if>
+            <if test="location != null">
+                location = #{location,jdbcType=INTEGER},
+            </if>
+            <if test="tableId != null">
+                table_id = #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted,jdbcType=BIT},
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                modifier = #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.ys.idatrix.metacube.metamanage.domain.TableFkMysql">
+    update mc_table_fk_mysql
+    set name = #{name,jdbcType=VARCHAR},
+      column_ids = #{columnIds,jdbcType=VARCHAR},
+      reference_schema_id = #{referenceSchemaId,jdbcType=BIGINT},
+      reference_table_id = #{referenceTableId,jdbcType=BIGINT},
+      reference_column = #{referenceColumn,jdbcType=VARCHAR},
+      delete_trigger = #{deleteTrigger,jdbcType=VARCHAR},
+      update_trigger = #{updateTrigger,jdbcType=VARCHAR},
+      location = #{location,jdbcType=INTEGER},
+      table_id = #{tableId,jdbcType=BIGINT},
+      is_deleted = #{isDeleted,jdbcType=BIT},
+      creator = #{creator,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modifier = #{modifier,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <select id="findByTableFkMysql" parameterType="com.ys.idatrix.metacube.metamanage.domain.TableFkMysql" resultType="java.lang.Integer">
+        SELECT
+            count(*)
+        FROM
+            mc_table_fk_mysql fk
+        LEFT JOIN mc_metadata tb ON fk.table_id = tb.id
+        WHERE
+            tb.schema_id = #{schemaId,jdbcType=BIGINT}
+        AND fk.is_deleted = 0
+        <if test="name != null">
+            AND fk.NAME = #{name, jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <select id="findListByTableId" resultMap="BaseResultMap" >
+        SELECT
+          <include refid="Base_Column_List" />
+        FROM
+            mc_table_fk_mysql fk
+        WHERE is_deleted = 0 AND table_id = #{tableId, jdbcType=BIGINT}
+    </select>
+
+    <update id="delete" >
+        update mc_table_fk_mysql SET is_deleted = 1 WHERE id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="deleteByTableId">
+        update mc_table_fk_mysql SET is_deleted = 1 WHERE table_id = #{tableId,jdbcType=BIGINT}
+    </update>
+
+    <select id="selectMaxLocationByTableId" resultType="java.lang.Integer">
+        select IFNULL(max(location), 0) from mc_table_fk_mysql where table_id = #{tableId, jdbcType=BIGINT}
+    </select>
+
+</mapper>

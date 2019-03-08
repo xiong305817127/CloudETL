@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.SnapshotTableSetOracleMapper">
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableSetOracle">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="versions" property="versions" jdbcType="INTEGER"/>
+        <result column="set_id" property="setId" jdbcType="BIGINT"/>
+        <result column="tablespace" property="tablespace" jdbcType="VARCHAR"/>
+        <result column="table_id" property="tableId" jdbcType="BIGINT"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, versions, set_id, tablespace, table_id, creator, create_time, modifier, modify_time
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from mc_snapshot_table_set_oracle
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from mc_snapshot_table_set_oracle
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableSetOracle">
+    insert into mc_snapshot_table_set_oracle (id, versions, set_id, 
+      tablespace, table_id, creator, 
+      create_time, modifier, modify_time
+      )
+    values (#{id,jdbcType=BIGINT}, #{versions,jdbcType=INTEGER}, #{setId,jdbcType=BIGINT}, 
+      #{tablespace,jdbcType=VARCHAR}, #{tableId,jdbcType=BIGINT}, #{creator,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifier,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+    <insert id="insertSelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableSetOracle">
+        insert into mc_snapshot_table_set_oracle
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="versions != null">
+                versions,
+            </if>
+            <if test="setId != null">
+                set_id,
+            </if>
+            <if test="tablespace != null">
+                tablespace,
+            </if>
+            <if test="tableId != null">
+                table_id,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="modifier != null">
+                modifier,
+            </if>
+            <if test="modifyTime != null">
+                modify_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="versions != null">
+                #{versions,jdbcType=INTEGER},
+            </if>
+            <if test="setId != null">
+                #{setId,jdbcType=BIGINT},
+            </if>
+            <if test="tablespace != null">
+                #{tablespace,jdbcType=VARCHAR},
+            </if>
+            <if test="tableId != null">
+                #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective"
+            parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableSetOracle">
+        update mc_snapshot_table_set_oracle
+        <set>
+            <if test="versions != null">
+                versions = #{versions,jdbcType=INTEGER},
+            </if>
+            <if test="setId != null">
+                set_id = #{setId,jdbcType=BIGINT},
+            </if>
+            <if test="tablespace != null">
+                tablespace = #{tablespace,jdbcType=VARCHAR},
+            </if>
+            <if test="tableId != null">
+                table_id = #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                modifier = #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.ys.idatrix.metacube.metamanage.domain.SnapshotTableSetOracle">
+    update mc_snapshot_table_set_oracle
+    set versions = #{versions,jdbcType=INTEGER},
+      set_id = #{setId,jdbcType=BIGINT},
+      tablespace = #{tablespace,jdbcType=VARCHAR},
+      table_id = #{tableId,jdbcType=BIGINT},
+      creator = #{creator,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modifier = #{modifier,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <select id="selectByTableIdAndVersion" resultMap="BaseResultMap" >
+      SELECT
+        <include refid="Base_Column_List" />
+      FROM mc_snapshot_table_set_oracle WHERE table_id = #{tableId,jdbcType=BIGINT} AND versions = #{versions,jdbcType=INTEGER}
+    </select>
+</mapper>

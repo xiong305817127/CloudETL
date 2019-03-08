@@ -1,0 +1,50 @@
+<slave_config>
+  <!-- 
+     Document description...
+     
+     - masters: You can list the slave servers to which this slave has to report back to.
+                If this is a master, we will contact the other masters to get a list of all the slaves in the cluster.
+
+     - report_to_masters : send a message to the defined masters to let them know we exist (Y/N)
+
+     - slaveserver : specify the slave server details of this carte instance.
+                     IMPORTANT : the username and password specified here are used by the master instances to connect to this slave.
+
+  --> 
+
+<!--  master server config -->
+
+	<slaveserver>
+		<name>master1</name>
+		<hostname>masterIp</hostname>
+		<port>9090</port>
+		<username>root</username>
+		<password>123456</password>
+		<master>Y</master>
+	</slaveserver>
+
+
+<!-- slave server config -->
+<!--<slaveserver>
+		<name>slave1</name>
+		<hostname>slaveIp</hostname>
+		<port>8084</port>
+		<username>root</username>
+		<password>123456</password>
+		<master>N</master>
+	</slaveserver>
+		
+	<report_to_masters>Y</report_to_masters>
+	<masters>
+		<slaveserver>
+			<name>master1</name>
+			<hostname>change_To_Master_Ip</hostname>
+			<port>9090</port>
+			<username>root</username>
+			<password>123456</password>
+			<master>Y</master>
+		</slaveserver>
+	</masters>
+ -->
+
+</slave_config>

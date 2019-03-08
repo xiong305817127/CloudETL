@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.webservice.dao.SubscribeDAO">
+    <resultMap id="BaseResultMap" type="com.idatrix.resource.webservice.po.SubscribePO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="seq" property="seq" jdbcType="BIGINT" />
+        <result column="sub_no" property="subNo" jdbcType="VARCHAR" />
+        <result column="resource_id" property="resourceId" jdbcType="BIGINT" />
+        <result column="dept_id" property="deptId" jdbcType="BIGINT" />
+        <result column="dept_name" property="deptName" jdbcType="VARCHAR" />
+        <result column="subscribe_user_name" property="subscribeUserName" jdbcType="VARCHAR" />
+        <result column="subscribe_reason" property="subscribeReason" jdbcType="VARCHAR" />
+        <result column="end_date" property="endDate" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+        <result column="share_method" property="shareMethod" jdbcType="TINYINT" />
+        <result column="status" property="status" jdbcType="VARCHAR" />
+        <result column="approver" property="approver" jdbcType="VARCHAR" />
+        <result column="approver_name" property="approverName" jdbcType="VARCHAR" />
+        <result column="suggestion" property="suggestion" jdbcType="VARCHAR" />
+        <result column="approve_time" property="approveTime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+        <result column="service_url" property="serviceUrl" jdbcType="VARCHAR" />
+        <result column="sub_key" property="subKey" jdbcType="VARCHAR" />
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+
+    <sql id="Base_Column_List">
+        id, seq, sub_no, resource_id, dept_id, dept_name, subscribe_user_name,
+        subscribe_reason, end_date, share_method, status,
+        approver, approver_name, suggestion, approve_time,
+        service_url, sub_key, creator, create_time,
+        modifier, modify_time
+    </sql>
+
+
+
+    <select id="getBySubscribeKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+         select
+            <include refid="Base_Column_List" />
+        from rc_subscribe
+        where sub_key=#{subKey}
+        and status="success"
+    </select>
+</mapper>

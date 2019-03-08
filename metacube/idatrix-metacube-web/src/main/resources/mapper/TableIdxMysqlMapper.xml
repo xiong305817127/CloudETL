@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ys.idatrix.metacube.metamanage.mapper.TableIdxMysqlMapper">
+    <resultMap id="BaseResultMap" type="com.ys.idatrix.metacube.metamanage.domain.TableIdxMysql">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="index_name" property="indexName" jdbcType="VARCHAR"/>
+        <result column="column_ids" property="columnIds" jdbcType="VARCHAR"/>
+        <result column="subdivision" property="subdivision" jdbcType="VARCHAR"/>
+        <result column="index_type" property="indexType" jdbcType="VARCHAR"/>
+        <result column="index_method" property="indexMethod" jdbcType="VARCHAR"/>
+        <result column="location" property="location" jdbcType="INTEGER"/>
+        <result column="table_id" property="tableId" jdbcType="BIGINT"/>
+        <result column="is_deleted" property="isDeleted" jdbcType="BIT"/>
+        <result column="creator" property="creator" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, index_name, column_ids, subdivision, index_type, index_method, location, table_id, 
+    is_deleted, creator, create_time, modifier, modify_time
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from mc_table_idx_mysql
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from mc_table_idx_mysql
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com.ys.idatrix.metacube.metamanage.domain.TableIdxMysql">
+    insert into mc_table_idx_mysql (id, index_name, column_ids, 
+      subdivision, index_type, index_method, 
+      location, table_id, is_deleted, 
+      creator, create_time, modifier, 
+      modify_time)
+    values (#{id,jdbcType=BIGINT}, #{indexName,jdbcType=VARCHAR}, #{columnIds,jdbcType=VARCHAR}, 
+      #{subdivision,jdbcType=VARCHAR}, #{indexType,jdbcType=VARCHAR}, #{indexMethod,jdbcType=VARCHAR}, 
+      #{location,jdbcType=INTEGER}, #{tableId,jdbcType=BIGINT}, #{isDeleted,jdbcType=BIT}, 
+      #{creator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifier,jdbcType=VARCHAR}, 
+      #{modifyTime,jdbcType=TIMESTAMP})
+  </insert>
+    <insert id="insertSelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.TableIdxMysql">
+        insert into mc_table_idx_mysql
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="indexName != null">
+                index_name,
+            </if>
+            <if test="columnIds != null">
+                column_ids,
+            </if>
+            <if test="subdivision != null">
+                subdivision,
+            </if>
+            <if test="indexType != null">
+                index_type,
+            </if>
+            <if test="indexMethod != null">
+                index_method,
+            </if>
+            <if test="location != null">
+                location,
+            </if>
+            <if test="tableId != null">
+                table_id,
+            </if>
+            <if test="isDeleted != null">
+                is_deleted,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="modifier != null">
+                modifier,
+            </if>
+            <if test="modifyTime != null">
+                modify_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="indexName != null">
+                #{indexName,jdbcType=VARCHAR},
+            </if>
+            <if test="columnIds != null">
+                #{columnIds,jdbcType=VARCHAR},
+            </if>
+            <if test="subdivision != null">
+                #{subdivision,jdbcType=VARCHAR},
+            </if>
+            <if test="indexType != null">
+                #{indexType,jdbcType=VARCHAR},
+            </if>
+            <if test="indexMethod != null">
+                #{indexMethod,jdbcType=VARCHAR},
+            </if>
+            <if test="location != null">
+                #{location,jdbcType=INTEGER},
+            </if>
+            <if test="tableId != null">
+                #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="isDeleted != null">
+                #{isDeleted,jdbcType=BIT},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.TableIdxMysql">
+        update mc_table_idx_mysql
+        <set>
+            <if test="indexName != null">
+                index_name = #{indexName,jdbcType=VARCHAR},
+            </if>
+            <if test="columnIds != null">
+                column_ids = #{columnIds,jdbcType=VARCHAR},
+            </if>
+            <if test="subdivision != null">
+                subdivision = #{subdivision,jdbcType=VARCHAR},
+            </if>
+            <if test="indexType != null">
+                index_type = #{indexType,jdbcType=VARCHAR},
+            </if>
+            <if test="indexMethod != null">
+                index_method = #{indexMethod,jdbcType=VARCHAR},
+            </if>
+            <if test="location != null">
+                location = #{location,jdbcType=INTEGER},
+            </if>
+            <if test="tableId != null">
+                table_id = #{tableId,jdbcType=BIGINT},
+            </if>
+            <if test="isDeleted != null">
+                is_deleted = #{isDeleted,jdbcType=BIT},
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifier != null">
+                modifier = #{modifier,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.ys.idatrix.metacube.metamanage.domain.TableIdxMysql">
+    update mc_table_idx_mysql
+    set index_name = #{indexName,jdbcType=VARCHAR},
+      column_ids = #{columnIds,jdbcType=VARCHAR},
+      subdivision = #{subdivision,jdbcType=VARCHAR},
+      index_type = #{indexType,jdbcType=VARCHAR},
+      index_method = #{indexMethod,jdbcType=VARCHAR},
+      location = #{location,jdbcType=INTEGER},
+      table_id = #{tableId,jdbcType=BIGINT},
+      is_deleted = #{isDeleted,jdbcType=BIT},
+      creator = #{creator,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modifier = #{modifier,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+    <select id="findByTableIdxMysql" parameterType="com.ys.idatrix.metacube.metamanage.domain.TableIdxMysql" resultType="java.lang.Integer">
+        SELECT
+            count(*)
+        FROM
+            mc_table_idx_mysql
+        WHERE
+            is_deleted = 0
+        AND table_id = #{tableId,jdbcType=BIGINT}
+        <if test="indexName != null">
+            AND index_name = #{indexName,jdbcType=VARCHAR}
+        </if>
+        <if test="columnIds != null">
+            AND column_ids = #{columnIds,jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <select id="findIndexListByTableId" resultMap="BaseResultMap">
+        SELECT
+            <include refid="Base_Column_List" />
+        FROM
+          mc_table_idx_mysql
+        WHERE is_deleted = 0 AND table_id = #{tableId,jdbcType=BIGINT}
+    </select>
+
+    <select id="findIndexColumnIdsByTable" resultType="java.lang.String">
+        SELECT
+            column_ids
+        FROM
+            mc_table_idx_mysql
+        WHERE
+            is_deleted = 0
+            AND table_id = #{tableId, jdbcType=BIGINT}
+    </select>
+
+    <update id="delete">
+        UPDATE mc_table_idx_mysql SET is_deleted = 1 WHERE id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <select id="findMaxLocationByTable" resultType="java.lang.Integer" >
+        SELECT IFNULL(max(location), 0) FROM mc_table_idx_mysql WHERE table_id = #{tableId, jdbcType=BIGINT}
+    </select>
+
+    <update id="deleteByTableId" >
+        UPDATE mc_table_idx_mysql SET is_deleted = 1 WHERE table_id = #{tableId,jdbcType=BIGINT}
+    </update>
+
+    <select id="selectMaxLocationByTableId" resultType="java.lang.Integer">
+        select IFNULL(max(location), 0) from mc_table_idx_mysql where table_id = #{tableId, jdbcType=BIGINT}
+    </select>
+
+</mapper>

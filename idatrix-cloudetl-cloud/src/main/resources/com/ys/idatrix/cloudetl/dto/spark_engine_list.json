@@ -1,0 +1,7 @@
+[
+    {
+        "name": "spark engine name",
+        "type": "spark engine type",
+        "status": "connected|disconnected"
+    }
+]
