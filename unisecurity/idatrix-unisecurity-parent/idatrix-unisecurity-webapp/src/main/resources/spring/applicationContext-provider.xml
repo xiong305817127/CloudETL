@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-4.0.xsd
+    http://code.alibabatech.com/schema/dubbo
+    http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+	
+    <bean id="userServiceProvider" class="com.idatrix.unisecurity.provider.serivce.UserServiceImpl"></bean>
+
+    <bean id="serverInfoServiceProvider" class="com.idatrix.unisecurity.provider.serivce.ServerInfoServiceImpl"></bean>
+
+    <bean id="organizationServiceProvider" class="com.idatrix.unisecurity.provider.serivce.OrganizationServiceImpl"></bean>
+
+    <!-- 应用名 -->
+    <dubbo:application name="security_provider" />
+
+    <!-- 注册中心地址 -->
+    <dubbo:registry protocol="zookeeper" address="${zookeeper.address}" />
+
+    <!-- 设置在哪个端口号暴露服务 -->
+    <dubbo:protocol name="dubbo" port="${dubbo.port}" host="${host}" />
+
+    <dubbo:service interface="com.idatrix.unisecurity.api.service.UserService" ref="userServiceProvider" />
+    <dubbo:service interface="com.idatrix.unisecurity.api.service.ServerInfoService" ref="serverInfoServiceProvider" />
+    <dubbo:service interface="com.idatrix.unisecurity.api.service.OrganizationService" ref="organizationServiceProvider" />
+
+</beans>

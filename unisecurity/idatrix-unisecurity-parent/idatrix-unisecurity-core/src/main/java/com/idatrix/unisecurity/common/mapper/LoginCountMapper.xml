@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.unisecurity.common.dao.LoginCountMapper">
+    <resultMap id="BaseResultMap" type="com.idatrix.unisecurity.common.domain.LoginCount">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="renter_id" property="renterId" jdbcType="BIGINT"/>
+        <result column="login_time" property="loginTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, user_id, username, renter_id, login_time
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_login_count
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from idatrix_unisecurity_login_count
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" parameterType="com.idatrix.unisecurity.common.domain.LoginCount">
+    insert into idatrix_unisecurity_login_count (id, user_id, username, 
+      renter_id, login_time)
+    values (#{id,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT}, #{username,jdbcType=VARCHAR}, 
+      #{renterId,jdbcType=BIGINT}, #{loginTime,jdbcType=TIMESTAMP})
+  </insert>
+    <insert id="insertSelective" parameterType="com.idatrix.unisecurity.common.domain.LoginCount">
+        insert into idatrix_unisecurity_login_count
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="userId != null">
+                user_id,
+            </if>
+            <if test="username != null">
+                username,
+            </if>
+            <if test="renterId != null">
+                renter_id,
+            </if>
+            <if test="loginTime != null">
+                login_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="userId != null">
+                #{userId,jdbcType=BIGINT},
+            </if>
+            <if test="username != null">
+                #{username,jdbcType=VARCHAR},
+            </if>
+            <if test="renterId != null">
+                #{renterId,jdbcType=BIGINT},
+            </if>
+            <if test="loginTime != null">
+                #{loginTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.idatrix.unisecurity.common.domain.LoginCount">
+        update idatrix_unisecurity_login_count
+        <set>
+            <if test="userId != null">
+                user_id = #{userId,jdbcType=BIGINT},
+            </if>
+            <if test="username != null">
+                username = #{username,jdbcType=VARCHAR},
+            </if>
+            <if test="renterId != null">
+                renter_id = #{renterId,jdbcType=BIGINT},
+            </if>
+            <if test="loginTime != null">
+                login_time = #{loginTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.idatrix.unisecurity.common.domain.LoginCount">
+    update idatrix_unisecurity_login_count
+    set user_id = #{userId,jdbcType=BIGINT},
+      username = #{username,jdbcType=VARCHAR},
+      renter_id = #{renterId,jdbcType=BIGINT},
+      login_time = #{loginTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    
+    <resultMap id="UserLoginCountVOResultMap" type="com.idatrix.unisecurity.user.vo.UserLoginCountVO">
+        <result column="month" property="month" jdbcType="INTEGER" />
+        <result column="count" property="loginUserCount" jdbcType="INTEGER" />
+    </resultMap>
+
+    <select id="findLoginUserCountMonthlyStatistics" resultMap="UserLoginCountVOResultMap" >
+        SELECT
+            MONTH(ulc.login_time) 'month',
+            sum(1) 'count'
+        FROM
+            idatrix_unisecurity_login_count ulc
+            LEFT JOIN idatrix_unisecurity_user u ON ulc.user_id = u.id
+        WHERE u.status = 1
+        AND ulc.renter_id = #{renterId}
+        AND YEAR(ulc.login_time) = #{year}
+        GROUP BY month
+        ORDER BY month ASC
+    </select>
+
+    <select id="findWeekLoginCountMoreThanThreeUserCount" resultType="java.lang.Integer">
+        SELECT count(1) FROM (
+            SELECT
+                ulc.username
+            FROM
+                idatrix_unisecurity_login_count ulc
+            LEFT JOIN idatrix_unisecurity_user u ON ulc.user_id = u.id
+            WHERE u.status = 1
+            AND YEARWEEK(date_format(ulc.login_time,'%Y-%m-%d')) = YEARWEEK(now())
+            AND ulc.renter_id = #{renterId}
+            GROUP BY ulc.username HAVING COUNT(1) > 3
+        ) a
+    </select>
+
+    <select id="findMonthLoginCountMoreThanTenUserCount" resultType="java.lang.Integer">
+        SELECT count(1) FROM (
+            SELECT
+              ulc.username
+            FROM
+              idatrix_unisecurity_login_count ulc
+            LEFT JOIN idatrix_unisecurity_user u ON ulc.user_id = u.id
+            WHERE u.status = 1
+            AND DATE_FORMAT(ulc.login_time, '%Y%m') = DATE_FORMAT(now(), '%Y%m')
+            AND ulc.renter_id = #{renterId}
+            GROUP BY ulc.username HAVING COUNT(1) > 10
+        ) u
+    </select>
+
+    <select id="findWeekUseSystemUserCount" resultType="java.lang.Integer" >
+      SELECT count(1) FROM (
+            SELECT
+                ulc.username
+            FROM
+                idatrix_unisecurity_login_count ulc
+            LEFT JOIN idatrix_unisecurity_user u ON ulc.user_id = u.id
+            WHERE u.status = 1
+            AND YEARWEEK(date_format(ulc.login_time,'%Y-%m-%d')) = YEARWEEK(now()) AND ulc.renter_id = #{renterId}
+            GROUP BY ulc.username
+        ) u
+    </select>
+
+    <select id="findMonthUseSystemUserCount" resultType="java.lang.Integer">
+        SELECT count(1) FROM (
+            SELECT
+                ulc.username
+            FROM
+                idatrix_unisecurity_login_count ulc
+            LEFT JOIN idatrix_unisecurity_user u ON ulc.user_id = u.id
+            WHERE u.status = 1
+            AND DATE_FORMAT(ulc.login_time, '%Y%m') = DATE_FORMAT(now(), '%Y%m')
+            AND ulc.renter_id = #{renterId}
+            GROUP BY ulc.username
+        ) u
+    </select>
+
+    <resultMap id="DeptUserLoginCountVOResultMap" type="com.idatrix.unisecurity.user.vo.DeptUserLoginCountVO">
+        <result column="ascription_dept_name" property="deptName" jdbcType="VARCHAR" />
+        <result column="count" property="loginUserCount" jdbcType="INTEGER" />
+    </resultMap>
+
+    <select id="findMonthLoginUserRankingList" resultMap="DeptUserLoginCountVOResultMap" >
+        select u.ascription_dept_name, count(1) 'count' from(
+            SELECT
+                o.ascription_dept_name,
+                ulc.username
+            FROM
+                idatrix_unisecurity_login_count ulc
+            LEFT JOIN idatrix_unisecurity_user u ON ulc.username = u.username
+            LEFT JOIN (
+                SELECT
+                    o.id dept_id,
+                    IFNULL(ad.dept_name, o.dept_name) ascription_dept_name
+                FROM
+                    idatrix_unisecurity_organization o
+                LEFT JOIN idatrix_unisecurity_organization ad ON o.ascription_dept_id = ad.id
+            ) o on u.dept_id = o.dept_id
+            WHERE u.status = 1 AND o.ascription_dept_name is not null
+            AND DATE_FORMAT(ulc.login_time, '%Y%m') = DATE_FORMAT(now(), '%Y%m')
+            AND ulc.renter_id = #{renterId}
+            GROUP BY o.ascription_dept_name, ulc.username
+        ) u group by u.ascription_dept_name ORDER BY count desc LIMIT 0, 10
+    </select>
+
+    <select id="findSumLoginUserCountRankingList" resultMap="DeptUserLoginCountVOResultMap" >
+        select u.ascription_dept_name, count(1) 'count' from(
+            SELECT
+                o.ascription_dept_name,
+                ulc.username
+            FROM
+                idatrix_unisecurity_login_count ulc
+            LEFT JOIN idatrix_unisecurity_user u ON ulc.username = u.username
+            LEFT JOIN (
+                SELECT
+                    o.id dept_id,
+                    IFNULL(ad.dept_name, o.dept_name) ascription_dept_name
+                FROM
+                    idatrix_unisecurity_organization o
+                LEFT JOIN idatrix_unisecurity_organization ad ON o.ascription_dept_id = ad.id
+            ) o on u.dept_id = o.dept_id
+            WHERE u.status = 1 AND o.ascription_dept_name is not null
+            AND ulc.renter_id = #{renterId}
+            GROUP BY o.ascription_dept_name, ulc.username
+        ) u group by u.ascription_dept_name ORDER BY count desc LIMIT 0, 10
+    </select>
+
+</mapper>

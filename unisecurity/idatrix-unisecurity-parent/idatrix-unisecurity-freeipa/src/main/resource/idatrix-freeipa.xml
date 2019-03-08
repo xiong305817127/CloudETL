@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+	<bean id="rangerBasicInfoModel" class="com.idatrix.unisecurity.freeipa.common.RangerBasicInfoModel">
+		<constructor-arg name="username" value="admin" />
+		<constructor-arg name="passwd" value="admin" />
+		<constructor-arg name="httpUrl"
+			value="http://ysbdh03.gdbd.com:6080" />
+	</bean>
+	
+		<bean id="ldapMgrUserGroupBuilder"  class="com.idatrix.unisecurity.ranger.usersync.process.LdapMgrUserGroupBuilder">
+					<constructor-arg name="basicInfo" ref="rangerBasicInfoModel" />
+		
+	</bean>
+	
+	<bean id="freeipaTempalte" class="com.idatrix.unisecurity.freeipa.model.FreeIPATemplate">
+		<constructor-arg name="ldapUrl" value="https://ysbdh06.gdbd.com" />
+		<constructor-arg name="adminUser" value="admin" />
+		<constructor-arg name="adminPwd" value="hadoop123" />
+
+	</bean>
+	
+	
+
+	<bean id="ldapHttpDataBuilder"
+		class="com.idatrix.unisecurity.freeipa.proxy.factory.LdapHttpDataBuilder" />
+
+</beans>  

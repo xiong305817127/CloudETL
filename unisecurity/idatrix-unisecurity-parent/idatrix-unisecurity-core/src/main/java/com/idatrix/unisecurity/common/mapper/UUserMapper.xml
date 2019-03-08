@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.unisecurity.common.dao.UUserMapper">
+    <resultMap id="BaseResultMap" type="com.idatrix.unisecurity.common.domain.UUser">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="renter_id" property="renterId" jdbcType="BIGINT"/>
+        <result column="dept_id" property="deptId" jdbcType="BIGINT"/>
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="real_name" property="realName" jdbcType="VARCHAR"/>
+        <result column="sex" property="sex" jdbcType="BIGINT"/>
+        <result column="age" property="age" jdbcType="INTEGER"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="card_id" property="cardId" jdbcType="VARCHAR"/>
+        <result column="phone" property="phone" jdbcType="VARCHAR"/>
+        <result column="pswd" property="pswd" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="last_login_time" property="lastLoginTime" jdbcType="TIMESTAMP"/>
+        <result column="status" property="status" jdbcType="BIGINT"/>
+        <result column="login_token" property="loginToken" jdbcType="VARCHAR"/>
+        <result column="out_date" property="outDate" jdbcType="TIMESTAMP"/>
+        <result column="last_updated_date" property="lastUpdatedDate" jdbcType="TIMESTAMP"/>
+        <result column="validate_code" property="validateCode" jdbcType="VARCHAR"/>
+        <result column="q_one" property="qnOne" jdbcType="VARCHAR"/>
+        <result column="q_two" property="qnTwo" jdbcType="VARCHAR"/>
+        <result column="q_three" property="qnThree" jdbcType="VARCHAR"/>
+        <result column="a_one" property="arOne" jdbcType="VARCHAR"/>
+        <result column="a_two" property="arTwo" jdbcType="VARCHAR"/>
+        <result column="a_three" property="arThree" jdbcType="VARCHAR"/>
+        <result column="roleNames" property="roleNames" jdbcType="VARCHAR"/>
+        <result column="visit_times" property="visitTimes" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        u.id,u.renter_id,u.dept_id,u.username,u.pswd,u.real_name,u.sex,u.age,u.email,u.card_id,u.phone,u.create_time,u.last_login_time,u.status,u.out_date,u.last_updated_date,u.validate_code,u.visit_times
+    </sql>
+
+    <sql id="limit_sql">
+        <if test="page_sql != null and page_sql != ''">
+            ${page_sql}
+        </if>
+    </sql>
+
+    <sql id="where_all">
+        <where>
+            u.status = 1
+            <if test="findContent != null and findContent !='' ">
+                and (
+                LOWER(u.username) like LOWER(CONCAT("%",#{findContent,jdbcType=VARCHAR},"%")) or
+                LOWER(u.real_name) like LOWER(CONCAT("%",#{findContent,jdbcType=VARCHAR},"%")) or
+                LOWER(u.email) like LOWER(CONCAT("%",#{findContent,jdbcType=VARCHAR},"%"))
+                )
+            </if>
+            and u.renter_id = #{renterId,jdbcType=BIGINT}
+            and u.id &lt;&gt; #{id,jdbcType=BIGINT}
+        </where>
+    </sql>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        ,group_concat(ur.name) roleNames
+        from idatrix_unisecurity_user u
+        left join idatrix_unisecurity_user_role uur on uur.uid = u.id
+        left join idatrix_unisecurity_role ur on ur.id = uur.rid and ur.is_active=1
+        <include refid="where_all"/>
+        group by u.id
+        order by last_updated_date desc, create_time desc
+        <include refid="limit_sql"/>
+    </select>
+    <select id="findCount" resultMap="BaseResultMap">
+        select count(1) from idatrix_unisecurity_user u
+        <include refid="where_all"/>
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM idatrix_unisecurity_user
+    </select>
+
+    <!-- 用户权限分配的分页查询 -->
+    <select id="findUserAndRole" resultType="com.idatrix.unisecurity.permission.bo.UserRoleAllocationBo">
+        select u.id,u.username,u.email,u.create_time,u.last_login_time,u.status ,group_concat(ur.name)
+        roleNames,group_concat(ur.id) roleIds from
+        idatrix_unisecurity_user u
+        left join idatrix_unisecurity_user_role uur on uur.uid = u.id
+        left join idatrix_unisecurity_role ur on ur.id = uur.rid
+        <where>
+            <if test="findContent != null and findContent !='' ">
+                and (
+                LOWER(u.username) like LOWER(CONCAT("%",#{findContent,jdbcType=VARCHAR},"%")) or
+                LOWER(u.real_name) like LOWER(CONCAT("%",#{findContent,jdbcType=VARCHAR},"%")) or
+                LOWER(u.email) like LOWER(CONCAT("%",#{findContent,jdbcType=VARCHAR},"%"))
+                )
+            </if>
+        </where>
+        group by u.id
+    </select>
+    <select id="selectRoleByUserId" resultType="com.idatrix.unisecurity.permission.bo.URoleBo">
+        <!--
+      select ur.id,ur.name,ur.type,ifnull(uu.id,0)marker,uu.id userId from idatrix_unisecurity_role ur
+      left join idatrix_unisecurity_user_role uur on uur.rid = ur.id
+      left join (select id from idatrix_unisecurity_user where id =#{id,jdbcType=BIGINT}) uu on uu.id = uur.uid
+      group by ur.id
+         -->
+        select ur.id,ur.name,ur.type,ifnull(uur.uid,0) marker from idatrix_unisecurity_role ur
+        left join(select * from idatrix_unisecurity_user_role where uid=#{id,jdbcType=BIGINT}) uur on uur.rid = ur.id
+    </select>
+
+    <select id="login" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_user u
+        where (u.username = #{email,jdbcType=VARCHAR} or u.email = #{email,jdbcType=VARCHAR}) and u.pswd =
+        #{pswd,jdbcType=VARCHAR}
+    </select>
+
+    <select id="getUserByUsername" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_user u
+        where binary u.username = #{username,jdbcType=VARCHAR} AND u.status != 0
+    </select>
+
+    <select id="findUserByUsername" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select count(1)
+        from idatrix_unisecurity_user
+        where binary username = #{username,jdbcType=VARCHAR} AND status != 0
+    </select>
+
+    <select id="getUser" parameterType="java.lang.String" resultMap="BaseResultMap" >
+        select id,email,username,pswd,DEPT_ID
+        from idatrix_unisecurity_user 
+        where status =1 and binary username = #{username,jdbcType=VARCHAR} 
+    </select>
+
+    <select id="getLTUser" resultType="java.lang.String" parameterType="java.lang.String">
+        select login_token
+        from idatrix_unisecurity_user
+        where login_token like LOWER(CONCAT("%",#{lt,jdbcType=VARCHAR},"%"))
+    </select>
+
+    <update id="updateLoginToken" parameterType="java.util.Map">
+        update idatrix_unisecurity_user
+          set login_token = #{loginToken,jdbcType=VARCHAR}
+        where binary username=#{username,jdbcType=VARCHAR}
+    </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_user u
+        where u.id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update idatrix_unisecurity_user
+            set status = 0
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.idatrix.unisecurity.common.domain.UUser">
+        insert into idatrix_unisecurity_user (id, dept_id, username, real_name, sex, age, email, card_id, phone, pswd, create_time, out_date, last_login_time, status
+        )
+        values (#{id,jdbcType=BIGINT},
+        #{renterId,jdbcType=BIGINT},
+        #{deptId,jdbcType=BIGINT},
+        #{username,jdbcType=VARCHAR},
+        #{realName,jdbcType=VARCHAR},
+        #{sex,jdbcType=BIGINT},
+        #{age,jdbcType=INTEGER},
+        #{email,jdbcType=VARCHAR},
+        #{cardId,jdbcType=VARCHAR},
+        #{phone,jdbcType=VARCHAR},
+        #{pswd,jdbcType=VARCHAR},
+        #{createTime,jdbcType=TIMESTAMP},
+        #{outDate,jdbcType=TIMESTAMP},
+        #{lastLoginTime,jdbcType=TIMESTAMP},
+        #{status,jdbcType=BIGINT})
+    </insert>
+
+    <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.idatrix.unisecurity.common.domain.UUser">
+        insert into idatrix_unisecurity_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="renterId!=null">
+                renter_id,
+            </if>
+            <if test="deptId != null">
+                dept_id,
+            </if>
+            <if test="username != null">
+                username,
+            </if>
+            <if test="realName != null">
+                real_name,
+            </if>
+            <if test="sex != null">
+                sex,
+            </if>
+            <if test="age != null">
+                age,
+            </if>
+            <if test="email != null">
+                email,
+            </if>
+            <if test="cardId != null">
+                card_id,
+            </if>
+            <if test="phone != null">
+                phone,
+            </if>
+            <if test="pswd != null">
+                pswd,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="outDate != null">
+                out_date,
+            </if>
+            <if test="lastLoginTime != null">
+                last_login_time,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="lastUpdatedDate != null">
+                last_updated_date,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="renterId != null">
+                #{renterId,jdbcType=BIGINT},
+            </if>
+            <if test="deptId != null">
+                #{deptId,jdbcType=BIGINT},
+            </if>
+            <if test="username != null">
+                #{username,jdbcType=VARCHAR},
+            </if>
+            <if test="realName != null">
+                #{realName,jdbcType=VARCHAR},
+            </if>
+            <if test="sex != null">
+                #{sex,jdbcType=BIGINT},
+            </if>
+            <if test="age != null">
+                #{age,jdbcType=INTEGER},
+            </if>
+            <if test="email != null">
+                #{email,jdbcType=VARCHAR},
+            </if>
+            <if test="cardId != null">
+                #{cardId,jdbcType=VARCHAR},
+            </if>
+            <if test="phone != null">
+                #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="pswd != null">
+                #{pswd,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="outDate!=null">
+                #{outDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="lastLoginTime != null">
+                #{lastLoginTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="status != null">
+                #{status,jdbcType=BIGINT},
+            </if>
+            <if test="lastUpdatedDate != null">
+                #{lastUpdatedDate,jdbcType=TIMESTAMP}
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.idatrix.unisecurity.common.domain.UUser">
+        update idatrix_unisecurity_user
+        <set>
+            <if test="deptId != null">
+                dept_id = #{deptId,jdbcType=BIGINT},
+            </if>
+            <if test="realName != null">
+                real_name = #{realName,jdbcType=VARCHAR},
+            </if>
+            <if test="sex != null">
+                sex = #{sex,jdbcType=BIGINT},
+            </if>
+            <if test="age != null">
+                age = #{age,jdbcType=INTEGER},
+            </if>
+            <if test="email != null">
+                email = #{email,jdbcType=VARCHAR},
+            </if>
+            <if test="cardId != null">
+                card_id = #{cardId,jdbcType=VARCHAR},
+            </if>
+            <if test="phone != null">
+                phone = #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="pswd != null">
+                pswd = #{pswd,jdbcType=VARCHAR},
+            </if>
+            <if test="validateCode != null">
+                validate_code = #{validateCode,jdbcType=VARCHAR},
+            </if>
+            <if test="outDate!=null">
+                out_date = #{outDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="lastUpdatedDate!=null">
+                last_updated_date = #{lastUpdatedDate,jdbcType=TIMESTAMP},
+            </if>
+            <if test="lastLoginTime != null">
+                last_login_time = #{lastLoginTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="status != null">
+                status = #{status,jdbcType=BIGINT},
+            </if>
+            <if test="visitTimes != null">
+                visit_times = #{visitTimes,jdbcType=BIGINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.idatrix.unisecurity.common.domain.UUser">
+        update idatrix_unisecurity_user
+        set
+            dept_id = #{deptId,jdbcType=BIGINT},
+            real_name= #{realName,jdbcType=VARCHAR},
+            sex = #{sex,jdbcType=BIGINT},
+            age = #{age,jdbcType=INTEGER},
+            email = #{email,jdbcType=VARCHAR},
+            card_id = #{cardId,jdbcType=VARCHAR},
+            phone = #{phone,jdbcType=VARCHAR},
+            pswd = #{pswd,jdbcType=VARCHAR},
+            last_login_time = #{lastLoginTime,jdbcType=TIMESTAMP},
+            status = #{status,jdbcType=BIGINT}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateStatusByUsername" parameterType="java.lang.String">
+        update idatrix_unisecurity_user
+        set
+            status = 0
+        where binary username = #{username,jdbcType=VARCHAR}
+    </update>
+    <update id="updateVisitTimesByUsername" parameterType="java.lang.String">
+        update idatrix_unisecurity_user
+        set
+            visit_times =if(isnull(visit_times), 0, visit_times)  + 1
+        where binary username = #{username,jdbcType=VARCHAR}
+    </update>
+
+    <select id="findUserByEmail" resultType="java.lang.Integer" parameterType="java.lang.String">
+        select count(1)
+        from idatrix_unisecurity_user
+        where status!=0 AND binary email = #{email,jdbcType=VARCHAR}
+    </select>
+
+    <select id="findUsersByOrganizationId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_user u
+        where u.dept_id = #{deptId,jdbcType=BIGINT} and status = 1
+    </select>
+
+    <select id="findUsersByOrganizationIds" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_user u
+        where 1=1 and status=1 and u.dept_id in
+        <foreach close=")" collection="list" item="item" open="(" separator=",">
+            #{item,jdbcType=BIGINT}
+        </foreach>
+    </select>
+
+    <select id="findUsersByRoleId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select  usr.* from idatrix_unisecurity_user usr ,idatrix_unisecurity_user_role ur 
+        where usr.id=ur.uid and ur.rid= #{roleId,jdbcType=BIGINT}
+    </select>
+
+    <update id="clearOrganizationId" parameterType="java.util.Map">
+        update idatrix_unisecurity_user
+        set dept_id = null where id in
+        <foreach collection="list" item="item" index="index"
+                 open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
+
+    <!--  -->
+    <select id="findUserByPhone" resultType="java.lang.Integer" parameterType="java.lang.String">
+        select count(1)
+        from idatrix_unisecurity_user
+        where status!=0 AND binary phone = #{phone,jdbcType=VARCHAR}
+    </select>
+
+    <select id="findUserIdsByOrganizationId" resultType="java.lang.Long" parameterType="java.lang.Long">
+        select u.id
+        from idatrix_unisecurity_user u
+        where u.dept_id = #{deptId,jdbcType=BIGINT}
+    </select>
+
+    <select id="isRenterByUserId" resultType="java.lang.Integer">
+        select count(*)  from idatrix_unisecurity_renter r,idatrix_unisecurity_user u
+         where u.renter_id = r.id and u.id = #{userId,jdbcType=BIGINT} 
+         and r.opened_resource like concat ('%',#{cid,jdbcType=VARCHAR},'%');
+    </select>
+
+    <select id="userIsRenter" parameterType="java.lang.Long" resultType="java.lang.Integer">
+        SELECT
+            count(*)
+        FROM
+            idatrix_unisecurity_renter r
+        LEFT JOIN idatrix_unisecurity_user u ON r.admin_account = u.username
+        WHERE
+            u.id = #{userId,jdbcType=BIGINT};
+    </select>
+
+    <update id="userClearOrganizationId">
+        UPDATE idatrix_unisecurity_user
+        SET dept_id = NULL
+        WHERE
+            dept_id = #{deptId, jdbcType=BIGINT}
+    </update>
+
+    <update id="organizationToUser">
+        UPDATE idatrix_unisecurity_user
+        SET dept_id = #{deptId, jdbcType=BIGINT}
+        WHERE
+        id IN
+        <foreach collection="userIdArray" item="id" index="index"
+                 open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="updateUserStatusByRenterIds">
+        UPDATE idatrix_unisecurity_user
+        SET STATUS = #{status,jdbcType=BIGINT}
+        WHERE status!=0 AND renter_id IN
+        <foreach collection="array" index="index" item="renterId"
+                 open="(" separator="," close=")">
+            #{renterId}
+        </foreach>
+    </update>
+
+</mapper>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.unisecurity.common.dao.MailLogMapper">
+    <resultMap id="BaseResultMap" type="com.idatrix.unisecurity.common.domain.MailLog">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="subject" property="subject" jdbcType="VARCHAR"/>
+        <result column="send_server" property="sendServer" jdbcType="VARCHAR"/>
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="recipient" property="recipient" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="msg" property="msg" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+       id,subject,send_server,content,recipient,status,msg
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.idatrix.unisecurity.common.domain.MailLog">
+        insert into idatrix_unisecurity_mail_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="subject != null">
+                subject,
+            </if>
+            <if test="sendServer != null">
+                send_server,
+            </if>
+            <if test="content != null">
+                content,
+            </if>
+            <if test="recipient != null">
+                recipient,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="msg != null">
+                msg,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=INTEGER},
+            </if>
+            <if test="subject != null">
+                 #{subject,jdbcType=VARCHAR},
+            </if>
+            <if test="sendServer != null">
+                #{sendServer,jdbcType=VARCHAR},
+            </if>
+            <if test="content != null">
+                #{content,jdbcType=VARCHAR},
+            </if>
+            <if test="recipient != null">
+                #{recipient,jdbcType=VARCHAR},
+            </if>
+            <if test="status != null">
+                #{status,jdbcType=VARCHAR},
+            </if>
+            <if test="msg != null">
+                #{msg,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="update" parameterType="com.idatrix.unisecurity.common.domain.MailLog">
+        update idatrix_unisecurity_mail_log
+        <set>
+            <if test="status != null">
+                status = #{status,jdbcType=VARCHAR},
+            </if>
+            <if test="msg != null">
+                msg = #{msg,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    
+     <select id="findById" resultType="java.lang.Integer" parameterType="com.idatrix.unisecurity.common.domain.MailLog">
+	     select count(*) from idatrix_unisecurity_mail_log 
+	     where id=#{id,jdbcType=INTEGER}
+     </select>
+    
+    <select id="getMaxId" resultType="java.lang.Integer" >
+	      SELECT IF(ISNULL(MAX(id)),0,MAX(id)) FROM idatrix_unisecurity_mail_log
+     </select>
+    
+    
+</mapper>

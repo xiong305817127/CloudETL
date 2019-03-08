@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.unisecurity.common.dao.OrganizationMapper">
+
+    <resultMap id="BaseResultMap" type="com.idatrix.unisecurity.common.domain.Organization">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="parent_id" property="parentId" jdbcType="BIGINT"/>
+        <result column="parent_dept_name" property="parentDeptName" jdbcType="VARCHAR"/>
+        <result column="renter_id" property="renterId" jdbcType="BIGINT"/>
+        <result column="renter_name" property="renterName" jdbcType="VARCHAR"/>
+        <result column="dept_code" property="deptCode" jdbcType="VARCHAR"/>
+        <result column="dept_name" property="deptName" jdbcType="VARCHAR"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="last_updated_by" property="lastUpdatedBy" jdbcType="TIMESTAMP"/>
+        <result column="is_active" property="isActive" jdbcType="TINYINT"/>
+        <result column="unified_credit_code" property="unifiedCreditCode" jdbcType="VARCHAR"/>
+        <result column="ascription_dept_id" property="ascriptionDeptId" jdbcType="BIGINT"/>
+        <result column="ascription_dept_name" property="ascriptionDeptName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        d.id,d.parent_id parent_id,d.renter_id renter_id,d.dept_code dept_code ,d.dept_name dept_name,d.remark remark,d.create_time create_time,d.last_updated_by last_updated_by,
+        d.is_active is_active,d.unified_credit_code as unified_credit_code, d.ascription_dept_id
+    </sql>
+
+    <sql id="limit_sql">
+        <if test="page_sql != null and page_sql != ''">
+            ${page_sql}
+        </if>
+    </sql>
+
+    <sql id="where_all">
+        <where>
+            and d.is_active=1
+            <if test="findContent != null and findContent != ''">
+                and (
+                LOWER(d.dept_code) like CONCAT("%",#{findContent,jdbcType=VARCHAR},"%") or
+                LOWER(d.dept_name) like CONCAT("%",#{findContent,jdbcType=VARCHAR},"%")
+                )
+            </if>
+            and d.renter_id = #{renterId,jdbcType=VARCHAR}
+        </where>
+    </sql>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        , r.renter_name renter_name, d_p.dept_name parent_dept_name, d_a.dept_name ascription_dept_name
+        from idatrix_unisecurity_organization d
+        left join idatrix_unisecurity_renter r on d.renter_id = r.id
+        LEFT JOIN idatrix_unisecurity_organization d_p ON d.parent_id = d_p.id
+        LEFT JOIN idatrix_unisecurity_organization d_a ON d.ascription_dept_id = d_a.id
+        <include refid="where_all"/>
+        order by dept_code asc, d.last_updated_by desc
+        <include refid="limit_sql"/>
+    </select>
+
+    <select id="findCount" resultMap="BaseResultMap">
+        select count(1) from idatrix_unisecurity_organization d
+        left join idatrix_unisecurity_renter r on d.renter_id = r.id
+        <include refid="where_all"/>
+    </select>
+
+    <select id="findDeptCountByCode" resultType="java.lang.Integer"
+            parameterType="com.idatrix.unisecurity.common.domain.Organization">
+        SELECT
+        count(1)
+        FROM
+        idatrix_unisecurity_organization
+        WHERE
+        dept_code = #{deptCode,jdbcType=VARCHAR} and renter_id=#{renterId,jdbcType=BIGINT} and is_active=1
+        <if test="id!=null">
+            and id!=#{id,jdbcType=BIGINT}
+        </if>
+    </select>
+
+    <select id="findDeptByCode" resultMap="BaseResultMap"
+            parameterType="com.idatrix.unisecurity.common.domain.Organization">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_organization d
+        where d.dept_code = #{deptCode,jdbcType=VARCHAR} and d.renter_id=#{renterId,jdbcType=BIGINT} and is_active = 1
+    </select>
+
+    <select id="findById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_organization d WHERE d.id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="findRentDeptByRentId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_organization d
+        where d.renter_id = #{renterId,jdbcType=BIGINT} and d.parent_id is null
+    </select>
+
+    <select id="selectOrganizationByUserId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        ,r.renter_name renter_name
+        from idatrix_unisecurity_organization d
+        left join idatrix_unisecurity_renter r on d.renter_id = r.id
+        left join idatrix_unisecurity_user u on u.dept_id = d.id
+        where
+        u.id = #{userId,jdbcType=BIGINT}
+        and FIND_IN_SET(d.id,queryChildrenOrganizationInfo(d.id))
+    </select>
+
+    <select id="getOrganization" parameterType="java.util.Map" resultType="java.lang.Long">
+        select
+          id
+        from idatrix_unisecurity_organization
+        WHERE
+          renter_id = #{renterId,jdbcType=BIGINT}
+        AND
+          dept_name = #{deptName,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long"
+            resultType="com.idatrix.unisecurity.common.domain.OrganizationExcelData">
+        select dept_code deptCode, dept_name deptName from idatrix_unisecurity_organization where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="findOrganization" resultMap="BaseResultMap"
+            parameterType="com.idatrix.unisecurity.common.domain.Organization">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_organization d
+        where
+        d.renter_id = #{renterId,jdbcType=BIGINT}
+        and
+        d.dept_code = #{deptCode,jdbcType=VARCHAR}
+        and
+        d.dept_name = #{deptName,jdbcType=VARCHAR}
+        and
+        d.is_active = #{isActive,jdbcType=TINYINT}
+    </select>
+
+    <insert id="insertOrganization" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.idatrix.unisecurity.common.domain.Organization">
+        insert into idatrix_unisecurity_organization
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="parentId != null">
+                parent_id,
+            </if>
+            <if test="renterId != null">
+                renter_id,
+            </if>
+            <if test="deptCode != null">
+                dept_code,
+            </if>
+            <if test="deptName != null">
+                dept_name,
+            </if>
+            <if test="remark != null">
+                remark,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="isActive != null">
+                is_active,
+            </if>
+            <if test="unifiedCreditCode != null">
+                unified_credit_code,
+            </if>
+            <if test="ascriptionDeptId != null">
+                ascription_dept_id
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="parentId != null">
+                #{parentId,jdbcType=BIGINT},
+            </if>
+            <if test="renterId != null">
+                #{renterId,jdbcType=BIGINT},
+            </if>
+            <if test="deptCode != null">
+                #{deptCode,jdbcType=VARCHAR},
+            </if>
+            <if test="deptName != null">
+                #{deptName,jdbcType=VARCHAR},
+            </if>
+            <if test="remark != null">
+                #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isActive != null">
+                #{isActive,jdbcType=TINYINT},
+            </if>
+            <if test="unifiedCreditCode != null">
+                #{unifiedCreditCode,jdbcType=VARCHAR},
+            </if>
+            <if test="ascriptionDeptId != null">
+                #{ascriptionDeptId,jdbcType=BIGINT},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.idatrix.unisecurity.common.domain.Organization">
+        update idatrix_unisecurity_organization
+        <set>
+            <if test="deptName != null">
+                dept_name = #{deptName,jdbcType=VARCHAR},
+            </if>
+            <if test="remark != null">
+                remark = #{remark,jdbcType=VARCHAR},
+            </if>
+            <if test="deptCode != null">
+                dept_code = #{deptCode,jdbcType=VARCHAR},
+            </if>
+            last_updated_by = NOW(),
+            <if test="isActive != null">
+                is_active = #{isActive,jdbcType=TINYINT},
+            </if>
+            <if test="unifiedCreditCode != null">
+                unified_credit_code =#{unifiedCreditCode,jdbcType=VARCHAR},
+            </if>
+            <if test="ascriptionDeptId != null">
+                ascription_dept_id = #{ascriptionDeptId,jdbcType=BIGINT}
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update idatrix_unisecurity_organization
+        set is_active = 0
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <select id="findOrganizationByParentId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            *
+        FROM
+            idatrix_unisecurity_organization
+        WHERE
+            is_active = 1
+        AND parent_id = #{parentId,jdbcType=BIGINT}
+    </select>
+
+    <select id="findOrganizationByParentIdName" resultType="java.lang.Integer"
+            parameterType="com.idatrix.unisecurity.common.domain.Organization">
+        SELECT
+        count(*)
+        FROM
+        idatrix_unisecurity_organization
+        WHERE
+        parent_id = #{parentId,jdbcType=BIGINT}
+        AND dept_name = #{deptName,jdbcType=VARCHAR} and renter_id =#{renterId,jdbcType=BIGINT} and is_active=1
+        <if test="id!=null">
+            and id != #{id, jdbcType=BIGINT}
+        </if>
+    </select>
+
+    <select id="getDeptIdByCode" resultType="java.lang.Long">
+        select id from idatrix_unisecurity_organization 
+         where dept_code = #{deptCode,jdbcType=VARCHAR} and renter_id=#{renterId,jdbcType=BIGINT}
+    </select>
+
+
+    <select id="findChildOrganizationIdsByOrgId" resultType="java.lang.Long">
+        select id from idatrix_unisecurity_organization 
+          where parent_id = #{deptId,jdbcType=VARCHAR}
+    </select>
+
+    <select id="findAllOrganizations" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_organization d left join idatrix_unisecurity_user usr on usr.renter_id=d.renter_id
+        where d.is_active = 1 and usr.id=#{userId,jdbcType=BIGINT}
+    </select>
+
+    <update id="batchDelete" parameterType="java.util.List">
+        UPDATE idatrix_unisecurity_organization
+        SET is_active = 0
+        WHERE
+        id IN
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item, jdbcType=BIGINT}
+        </foreach>
+    </update>
+
+    <select id="findByUnifiedCreditCode" resultType="java.lang.Integer"
+            parameterType="com.idatrix.unisecurity.common.domain.Organization">
+        SELECT
+        count(1)
+        FROM
+        idatrix_unisecurity_organization
+        WHERE
+        unified_credit_code = #{unifiedCreditCode, jdbcType=VARCHAR}
+        AND renter_id = #{renterId,jdbcType=BIGINT} and is_active=1
+        <if test="id!=null">
+            and id != #{id,jdbcType=BIGINT}
+        </if>
+    </select>
+
+    <select id="findByAscriptionDeptId" resultMap="BaseResultMap">
+        SELECT
+          *
+        FROM
+          idatrix_unisecurity_organization
+        WHERE
+        ascription_dept_id = #{ascriptionDeptId,jdbcType=BIGINT}
+    </select>
+
+    <select id="findAscriptionDeptList" resultMap="BaseResultMap" >
+        select * from idatrix_unisecurity_organization where ascription_dept_id is null and renter_id = #{renterId}
+    </select>
+
+</mapper>

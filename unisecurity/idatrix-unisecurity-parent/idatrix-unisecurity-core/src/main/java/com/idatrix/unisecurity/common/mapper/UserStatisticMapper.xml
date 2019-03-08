@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.unisecurity.common.dao.UserStatisticMapper">
+    <resultMap id="BaseResultMap" type="com.idatrix.unisecurity.common.domain.UserStatistic">
+        <id column="uid" property="uid" jdbcType="BIGINT"/>
+        <result column="client_system_id" property="clientSystemId" jdbcType="VARCHAR"/>
+        <result column="last_accessed" property="lastAccessed" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        uid,client_system_id,last_accessed
+    </sql>
+
+    <select id="selectByRecent" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_user_statistic where uid=#{uid,jdbcType=BIGINT} order by last_accessed desc limit 3;
+    </select>
+
+    <insert id="insertSelective" parameterType="com.idatrix.unisecurity.common.domain.UserStatistic">
+            insert into idatrix_unisecurity_user_statistic
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="uid != null">
+                    uid,
+                </if>
+                <if test="clientSystemId != null">
+                    client_system_id,
+                </if>
+                <if test="lastAccessed != null">
+                    last_accessed,
+                </if>
+            </trim>
+            <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="uid != null">
+                    #{uid,jdbcType=BIGINT},
+                </if>
+                <if test="clientSystemId != null">
+                    #{clientSystemId,jdbcType=VARCHAR},
+                </if>
+                <if test="lastAccessed != null">
+                    #{lastAccessed,jdbcType=TIMESTAMP},
+                </if>
+            </trim>
+    </insert>
+    <delete id="deleteByPrimaryKey">
+        delete from idatrix_unisecurity_user_statistic
+        where uid = #{uid,jdbcType=BIGINT}
+    </delete>
+</mapper>

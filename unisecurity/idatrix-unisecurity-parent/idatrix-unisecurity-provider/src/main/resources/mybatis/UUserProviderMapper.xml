@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.unisecurity.common.dao.UUserProviderMapper" >
+  <resultMap id="BaseResultMap" type="com.idatrix.unisecurity.api.domain.User" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="user_name" property="username" jdbcType="BIGINT" />
+    <result column="real_name" property="realName" jdbcType="VARCHAR" />
+    <result column="sex" property="sex" jdbcType="BIGINT" />
+    <result column="age" property="age" jdbcType="INTEGER" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="card_id" property="cardId" jdbcType="VARCHAR" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="status" property="status" jdbcType="VARCHAR" />
+    <result column="role_name" property="roleName" jdbcType="VARCHAR" />
+    <result column="dept_id" property="deptId" jdbcType="BIGINT"/>
+    <result column="renter_id" property="renterId" jdbcType="BIGINT"/>
+  </resultMap>
+  
+  
+  <resultMap id="PermissionResultMap" type="com.idatrix.unisecurity.api.domain.UPermission" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+    <result column="type" property="type" jdbcType="VARCHAR" />
+    <result column="sex" property="url" jdbcType="VARCHAR" />
+<!--     <result column="isShow" property="isShow" jdbcType="INTEGER" /> -->
+    <result column="show_order" property="showOrder" jdbcType="INTEGER" />
+    <result column="url_desc" property="urlDesc" jdbcType="VARCHAR" />
+  </resultMap>
+
+  
+  <select id="findPermitByUserId" resultMap="PermissionResultMap" parameterType="java.lang.Long" >
+   select us.username user_name,us.real_name real_name,us.sex sex,us.age age,us.email email,
+      us.card_id card_id,us.phone phone,us.create_time create_time,r.name role_name,up.id id,up.parent_id parent_id,up.name name,up.type type,up.url url,up.is_show is_show,up.show_order show_order,up.url_desc url_desc
+     from idatrix_unisecurity_permission up, idatrix_unisecurity_role_permission urp,idatrix_unisecurity_role r,idatrix_unisecurity_user_role u,idatrix_unisecurity_user us
+    where up.id=urp.pid and r.id=urp.rid and u.rid=r.id and u.uid=us.id and u.uid=#{userId,jdbcType=BIGINT}
+  </select>
+  
+  
+  <select id="getUserInfo" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+   select us.username user_name,us.real_name real_name,us.sex sex,us.age age,us.email email,
+      us.card_id card_id,us.phone phone,us.create_time create_time,r.name role_name
+     from idatrix_unisecurity_role r,idatrix_unisecurity_user_role u,idatrix_unisecurity_user us
+    where u.rid=r.id and u.uid=us.id and u.uid=#{userId,jdbcType=BIGINT}
+  </select>
+
+  <select id="findSFTPUser" resultMap="BaseResultMap" >
+   select renter.opened_service,usr.* from idatrix_unisecurity_user usr, idatrix_unisecurity_renter renter 
+   where renter.id=usr.renter_id and opened_service like '%sftp%'  AND usr.status = 1
+  </select>
+
+  <select id="getAuthorUser" resultMap="BaseResultMap" >
+  select * from idatrix_unisecurity_user 
+  where username=#{username,jdbcType=VARCHAR} and pswd = #{password,jdbcType=VARCHAR} AND status = 1
+  </select>
+  
+  <select id="findUsersByRenterId" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+  select usr.* from idatrix_unisecurity_user usr,idatrix_unisecurity_renter renter
+   where usr.renter_id = renter.id and usr.status = 1 
+   and renter.renter_status=1 and renter.id=#{renterId,jdbcType=BIGINT} ORDER BY usr.username
+  </select>
+  
+  <select id="findRenterUsersByUsername" resultType="java.lang.String" parameterType="java.lang.String" >
+   select usr.username from idatrix_unisecurity_user usr where renter_id in (
+   select renter_id from idatrix_unisecurity_user where username=#{username,jdbcType=VARCHAR}) AND usr.status = 1
+  </select>
+  
+  
+   <select id="findRenterByRenterId" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+   SELECT u.* FROM idatrix_unisecurity_user u,idatrix_unisecurity_renter r 
+   WHERE u.renter_id=r.id AND u.`username`=r.`admin_account` AND u.`renter_id`=#{renterId,jdbcType=BIGINT} AND u.status = 1
+  </select>
+  
+  
+  <select id="findUsersByDeptAndRole" resultMap="BaseResultMap">
+    SELECT u.* FROM idatrix_unisecurity_user u,idatrix_unisecurity_role r,idatrix_unisecurity_user_role ur 
+  WHERE ur.uid=u.id AND ur.rid=r.id and u.dept_id=#{deptId,jdbcType=BIGINT} and r.id=#{roleId,jdbcType=BIGINT} AND u.status = 1
+  </select>
+
+    <select id="findUserByRoleAndRenter" resultMap="BaseResultMap">
+    SELECT
+      u.*
+    FROM
+        idatrix_unisecurity_user u,
+        idatrix_unisecurity_user_role ur
+    WHERE
+      u.id = ur.uid AND ur.rid = #{roleId,jdbcType=BIGINT} AND renter_id=#{renterId, jdbcType=BIGINT} AND u.status = 1
+    </select>
+
+    <select id="findByUserName" resultMap="BaseResultMap">
+        SELECT
+          *
+        FROM
+          idatrix_unisecurity_user
+        WHERE
+          username = #{username, jdbcType=VARCHAR} AND status = 1
+    </select>
+
+    <select id="findRoleCodesByUserName" resultType="java.lang.String">
+        SELECT
+        r.`code`
+        FROM
+        idatrix_unisecurity_user u LEFT JOIN idatrix_unisecurity_user_role ur on u.id = ur.uid
+        LEFT JOIN idatrix_unisecurity_role r ON r.id = ur.rid WHERE u.username = #{username, jdbcType=VARCHAR} AND u.status = 1
+    </select>
+
+</mapper>

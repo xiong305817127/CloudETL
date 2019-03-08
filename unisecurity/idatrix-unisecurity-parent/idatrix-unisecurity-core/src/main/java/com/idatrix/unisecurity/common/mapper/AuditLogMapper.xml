@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.unisecurity.common.dao.AuditLogMapper" >
+
+  <resultMap id="BaseResultMap" type="com.idatrix.unisecurity.common.domain.AuditLog" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="server" property="server" jdbcType="VARCHAR" />
+    <result column="resource" property="resource" jdbcType="VARCHAR" />
+    <result column="method_type" property="methodType" jdbcType="VARCHAR" />
+    <result column="client_ip" property="clientIp" jdbcType="VARCHAR" />
+    <result column="visit_time" property="visitTime" jdbcType="TIMESTAMP" />
+    <result column="result" property="result" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="BIGINT" />
+    <result column="user_name" property="userName" jdbcType="VARCHAR" />
+    <result column="renter_id" property="renterId" jdbcType="BIGINT" />
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    id, server, resource, method_type, client_ip, visit_time, result, user_id, user_name, 
+    renter_id
+  </sql>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+      <include refid="Base_Column_List" />
+    from idatrix_unisecurity_audit_log
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from idatrix_unisecurity_audit_log
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+
+  <insert id="insert" parameterType="com.idatrix.unisecurity.common.domain.AuditLog" >
+    insert into idatrix_unisecurity_audit_log (id, server, resource, 
+      method_type, client_ip, visit_time, 
+      result, user_id, user_name, 
+      renter_id)
+    values (#{id,jdbcType=BIGINT}, #{server,jdbcType=VARCHAR}, #{resource,jdbcType=VARCHAR}, 
+      #{methodType,jdbcType=VARCHAR}, #{clientIp,jdbcType=VARCHAR}, #{visitTime,jdbcType=TIMESTAMP}, 
+      #{result,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT}, #{userName,jdbcType=VARCHAR}, 
+      #{renterId,jdbcType=BIGINT})
+  </insert>
+
+  <insert id="insertSelective" parameterType="com.idatrix.unisecurity.common.domain.AuditLog" >
+    insert into idatrix_unisecurity_audit_log
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="server != null" >
+        server,
+      </if>
+      <if test="resource != null" >
+        resource,
+      </if>
+      <if test="methodType != null" >
+        method_type,
+      </if>
+      <if test="clientIp != null" >
+        client_ip,
+      </if>
+      <if test="visitTime != null" >
+        visit_time,
+      </if>
+      <if test="result != null" >
+        result,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="userName != null" >
+        user_name,
+      </if>
+      <if test="renterId != null" >
+        renter_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="server != null" >
+        #{server,jdbcType=VARCHAR},
+      </if>
+      <if test="resource != null" >
+        #{resource,jdbcType=VARCHAR},
+      </if>
+      <if test="methodType != null" >
+        #{methodType,jdbcType=VARCHAR},
+      </if>
+      <if test="clientIp != null" >
+        #{clientIp,jdbcType=VARCHAR},
+      </if>
+      <if test="visitTime != null" >
+        #{visitTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="result != null" >
+        #{result,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="userName != null" >
+        #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="renterId != null" >
+        #{renterId,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.idatrix.unisecurity.common.domain.AuditLog" >
+    update idatrix_unisecurity_audit_log
+    <set >
+      <if test="server != null" >
+        server = #{server,jdbcType=VARCHAR},
+      </if>
+      <if test="resource != null" >
+        resource = #{resource,jdbcType=VARCHAR},
+      </if>
+      <if test="methodType != null" >
+        method_type = #{methodType,jdbcType=VARCHAR},
+      </if>
+      <if test="clientIp != null" >
+        client_ip = #{clientIp,jdbcType=VARCHAR},
+      </if>
+      <if test="visitTime != null" >
+        visit_time = #{visitTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="result != null" >
+        result = #{result,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="userName != null" >
+        user_name = #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="renterId != null" >
+        renter_id = #{renterId,jdbcType=BIGINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <update id="updateByPrimaryKey" parameterType="com.idatrix.unisecurity.common.domain.AuditLog" >
+    update idatrix_unisecurity_audit_log
+    set server = #{server,jdbcType=VARCHAR},
+      resource = #{resource,jdbcType=VARCHAR},
+      method_type = #{methodType,jdbcType=VARCHAR},
+      client_ip = #{clientIp,jdbcType=VARCHAR},
+      visit_time = #{visitTime,jdbcType=TIMESTAMP},
+      result = #{result,jdbcType=VARCHAR},
+      user_id = #{userId,jdbcType=BIGINT},
+      user_name = #{userName,jdbcType=VARCHAR},
+      renter_id = #{renterId,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <select id="findPage" parameterType="com.idatrix.unisecurity.common.domain.AuditLog" resultMap="BaseResultMap">
+    SELECT
+      <include refid="Base_Column_List" />
+    FROM
+        idatrix_unisecurity_audit_log
+    <where>
+      <if test = "renterId != null">
+        renter_id = #{renterId,jdbcType=BIGINT}
+      </if>
+      <if test = "result != null">
+        and result = #{result,jdbcType=VARCHAR}
+      </if>
+    </where>
+    ORDER BY visit_time DESC
+  </select>
+
+  <delete id="clearLog">
+    DELETE
+    FROM
+    idatrix_unisecurity_audit_log
+    WHERE DATE_SUB(CURDATE(), INTERVAL 3 MONTH) > visit_time
+  </delete>
+
+</mapper>

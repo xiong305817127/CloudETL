@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.unisecurity.common.dao.ServerInfoProviderMapper" >
+
+  <resultMap id="BaseResultMap" type="com.idatrix.unisecurity.api.domain.ServerInfo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="user_id" property="userId" jdbcType="BIGINT" />
+    <result column="opened_service" property="openService" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, user_id, open_service
+  </sql>
+  
+  <select id="findServerInfoByUserId" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+   select rt.id as id,ur.uid as user_id, rt.opened_service as opened_service  from idatrix_unisecurity_renter rt left join idatrix_unisecurity_role r on r.renter_id=rt.id
+   left join idatrix_unisecurity_user_role ur on ur.rid=r.id where ur.uid=#{userId,jdbcType=BIGINT}
+  </select>
+  
+</mapper>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context  
+    http://www.springframework.org/schema/context/spring-context.xsd ">
+
+	<context:component-scan base-package="com.idatrix.unisecurity.user" />
+
+	<context:annotation-config />
+
+	<!-- config 配置类 -->
+	<bean id="config" class="com.idatrix.unisecurity.user.Config"  init-method="refreshConfig" destroy-method="destroy">
+		<property name="authenticationHandler" ref="SSOAuthenticationHandler" />
+		<property name="preLoginHandler" ref="captchaPreLoginHandler" />
+		<property name="userSerializer" ref="SSOUserSerializer" />
+	</bean>
+
+
+	<!-- 下面的一串是不知道干嘛的 -->
+	<bean id="rangerBasicInfoModel" class="com.idatrix.unisecurity.freeipa.common.RangerBasicInfoModel">
+		<constructor-arg name="username" value="admin" />
+		<constructor-arg name="passwd" value="admin" />
+		<constructor-arg name="httpUrl" value="http://ysbdh03.gdbd.com:6080" />
+	</bean>
+	
+	<bean id="ldapMgrUserGroupBuilder"  class="com.idatrix.unisecurity.ranger.usersync.process.LdapMgrUserGroupBuilder">
+		<constructor-arg name="basicInfo" ref="rangerBasicInfoModel" />
+	</bean>
+	
+	<bean id="freeIPATemplate" class="com.idatrix.unisecurity.freeipa.model.FreeIPATemplate">
+		<constructor-arg name="ldapUrl" value="https://ysbdh06.gdbd.com" />
+		<constructor-arg name="adminUser" value="admin" />
+		<constructor-arg name="adminPwd" value="hadoop123" />
+	</bean>
+
+	<bean id="ldapHttpDataBuilder" 
+		class="com.idatrix.unisecurity.freeipa.proxy.factory.LdapHttpDataBuilder" />
+
+</beans>

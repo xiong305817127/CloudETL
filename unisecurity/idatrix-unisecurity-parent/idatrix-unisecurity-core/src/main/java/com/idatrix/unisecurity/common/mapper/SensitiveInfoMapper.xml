@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.unisecurity.common.dao.SensitiveInfoMapper">
+    <resultMap id="BaseResultMap" type="com.idatrix.unisecurity.common.domain.SensitiveInfo">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="is_fixed_length" property="isFixedLength" jdbcType="VARCHAR"/>
+        <result column="begin" property="begin" jdbcType="INTEGER"/>
+        <result column="end" property="end" jdbcType="INTEGER"/>
+        <result column="symbol" property="symbol" jdbcType="VARCHAR"/>
+        <result column="original_info" property="originalInfo" jdbcType="VARCHAR"/>
+        <result column="sentive_info" property="sentiveInfo" jdbcType="VARCHAR"/>
+        <result column="creater" property="creater" jdbcType="VARCHAR"/>
+        <result column="dept_name" property="deptName" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+       id,name,is_fixed_length,begin,end,symbol,original_info,sentive_info,creater,dept_name,create_time,update_time
+    </sql>
+
+    <insert id="insert"  parameterType="com.idatrix.unisecurity.common.domain.SensitiveInfo">
+        insert into idatrix_unisecurity_sensitive_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="isFixedLength != null">
+                is_fixed_length,
+            </if>
+            <if test="begin != null">
+                begin,
+            </if>
+            <if test="end != null">
+                end,
+            </if>
+            <if test="symbol != null">
+                symbol,
+            </if>
+            <if test="originalInfo != null">
+                original_info,
+            </if>
+            <if test="sentiveInfo != null">
+                sentive_info,
+            </if>
+            <if test="creater != null">
+                creater,
+            </if>
+            <if test="deptName != null">
+                dept_name,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=INTEGER},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="isFixedLength != null">
+                #{isFixedLength,jdbcType=VARCHAR},
+            </if>
+            <if test="begin != null">
+                #{begin,jdbcType=INTEGER},
+            </if>
+            <if test="end != null">
+                #{end,jdbcType=INTEGER},
+            </if>
+            <if test="symbol != null">
+                #{symbol,jdbcType=VARCHAR},
+            </if>
+            <if test="originalInfo != null">
+                #{originalInfo,jdbcType=VARCHAR},
+            </if>
+            <if test="sentiveInfo != null">
+                #{sentiveInfo,jdbcType=VARCHAR},
+            </if>
+            <if test="creater != null">
+               #{creater,jdbcType=VARCHAR},
+            </if>
+            <if test="deptName != null">
+                #{deptName,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+               #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+              #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="update" parameterType="com.idatrix.unisecurity.common.domain.SensitiveInfo">
+        update idatrix_unisecurity_sensitive_info
+        <set>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="isFixedLength != null">
+                is_fixed_length = #{isFixedLength,jdbcType=VARCHAR},
+            </if>
+            <if test="begin != null">
+                begin= #{begin,jdbcType=INTEGER},
+            </if>
+            <if test="end != null">
+                end=#{end,jdbcType=INTEGER},
+            </if>
+            <if test="symbol != null">
+                symbol=#{symbol,jdbcType=VARCHAR},
+            </if>
+            <if test="originalInfo != null">
+                original_info = #{originalInfo,jdbcType=VARCHAR},
+            </if>
+            <if test="sentiveInfo != null">
+                sentive_info = #{sentiveInfo,jdbcType=VARCHAR},
+            </if>
+            <if test="creater != null">
+                creater = #{creater,jdbcType=VARCHAR},
+            </if>
+            <if test="deptName != null">
+                dept_name = #{deptName,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    
+    
+    
+    <select id="findAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_sensitive_info
+        <include refid="where_all"/>
+        <include refid="limit_sql"/>
+    </select>
+    
+    <select id="findCount" parameterType="java.lang.Integer">
+        select count(1) from idatrix_unisecurity_sensitive_info
+        <include refid="where_all"/>
+    </select>
+    
+    <delete id="deleteSentiveInfoById" parameterType="java.lang.Integer">
+        delete from idatrix_unisecurity_sensitive_info
+         where id = #{id,jdbcType=INTEGER}
+    </delete>
+    
+    <sql id="where_all">
+        <where>
+            <if test="findContent != null and findContent !='' ">
+                LOWER(name) like CONCAT("%",#{findContent,jdbcType=VARCHAR},"%")
+            </if>
+        </where>
+    </sql>
+    
+    <sql id="limit_sql">
+        <if test="page_sql != null and page_sql != ''">
+            ${page_sql}
+        </if>
+    </sql>
+    
+</mapper>

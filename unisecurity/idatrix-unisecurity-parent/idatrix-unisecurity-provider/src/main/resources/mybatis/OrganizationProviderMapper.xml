@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.unisecurity.common.dao.OrganizationProviderMapper">
+
+    <resultMap id="BaseResultMap" type="com.idatrix.unisecurity.api.domain.Organization">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="parent_id" property="parentId" jdbcType="BIGINT"/>
+        <result column="renter_id" property="renterId" jdbcType="BIGINT"/>
+        <result column="renter_name" property="renterName" jdbcType="VARCHAR"/>
+        <result column="dept_code" property="deptCode" jdbcType="VARCHAR"/>
+        <result column="dept_name" property="deptName" jdbcType="VARCHAR"/>
+        <result column="is_active" property="isActive" jdbcType="TINYINT"/>
+        <result column="unified_credit_code" property="unifiedCreditCode" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="last_updated_by" property="lastUpdatedBy" jdbcType="TIMESTAMP"/>
+        <result column="remark" property="remark" jdbcType="LONGVARCHAR"/>
+        <result column="ascription_dept_id" property="ascriptionDeptId" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <resultMap id="UserMap" type="com.idatrix.unisecurity.api.domain.User">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="user_name" property="username" jdbcType="BIGINT"/>
+        <result column="real_name" property="realName" jdbcType="VARCHAR"/>
+        <result column="sex" property="sex" jdbcType="BIGINT"/>
+        <result column="age" property="age" jdbcType="INTEGER"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="card_id" property="cardId" jdbcType="VARCHAR"/>
+        <result column="phone" property="phone" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="role_name" property="roleName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="getUserOrganizationByUserId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select d.* from idatrix_unisecurity_organization d 
+    left join idatrix_unisecurity_user u on d.id=u.dept_id 
+     where d.is_active=1 and u.id=#{userId,jdbcType=BIGINT}
+  </select>
+
+    <select id="findUsersByDeptId" resultMap="UserMap" parameterType="java.lang.Long">
+   select u.id,u.renter_id,u.username,u.real_name,u.sex,u.age,u.email,u.card_id,u.phone from idatrix_unisecurity_user u 
+   left join idatrix_unisecurity_organization d on u.dept_id=d.id where
+   u.status=1 and d.id=#{deptId,jdbcType=BIGINT}
+  </select>
+
+    <select id="findOrganizationsByUserId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+   select * from idatrix_unisecurity_organization where
+    renter_id =(select d.renter_id from idatrix_unisecurity_organization d 
+   left join idatrix_unisecurity_user u on d.id=u.dept_id where u.id=#{userId,jdbcType=BIGINT}) 
+   and is_active=1 order by CONVERT(dept_name USING gbk)
+  </select>
+
+
+    <select id="findOrganizations" resultMap="BaseResultMap" parameterType="java.lang.Long">
+   select * from idatrix_unisecurity_organization where is_active=1;
+  </select>
+
+    <select id="findParentIdsByDeptCode" resultType="java.lang.Integer" parameterType="java.lang.String">
+    SELECT id FROM idatrix_unisecurity_organization WHERE is_active=1 
+    and FIND_IN_SET(id, queryParentIdsByDeptCode(#{deptCode}, #{renterId}));
+  </select>
+
+    <select id="findParentIdsByUnifiedCreditCode" resultType="java.lang.Integer">
+    SELECT id FROM idatrix_unisecurity_organization WHERE is_active=1 
+    and FIND_IN_SET(id, queryParentIdsByUnifiedCode(#{unifiedCreditCode, jdbcType=VARCHAR}, #{renterId, jdbcType=BIGINT}));
+  </select>
+
+    <select id="findByName" resultType="java.lang.Long">
+        SELECT
+        id
+        FROM
+        idatrix_unisecurity_organization
+        WHERE
+        is_active = 1
+        <if test="name!=null">
+            AND dept_name LIKE concat('%',#{name},'%')
+        </if>
+        <if test="renterId!=null">
+            AND renter_id = #{renterId}
+        </if>
+    </select>
+
+    <select id="findById" resultMap="BaseResultMap">
+    SELECT
+        *
+    FROM
+        idatrix_unisecurity_organization
+    WHERE
+        id = #{id};
+  </select>
+
+    <select id="findAscriptionDeptCountByRenterId" resultType="java.lang.Integer">
+        SELECT
+            COUNT(DISTINCT ascription_dept_id)
+        FROM
+            idatrix_unisecurity_organization
+        WHERE renter_id = #{renterId, jdbcType=BIGINT} AND is_active = 1
+    </select>
+
+    <select id="findByRenterId" resultMap="BaseResultMap">
+        select
+          *
+        from
+          idatrix_unisecurity_organization
+        where
+          renter_id = #{renterId, jdbcType=BIGINT} and parent_id is null
+    </select>
+
+    <select id="findAllAscriptionDept" resultMap="BaseResultMap">
+        select
+          *
+        from
+          idatrix_unisecurity_organization
+        where
+          renter_id = #{renterId, jdbcType=BIGINT} and ascription_dept_id is null
+    </select>
+
+    <select id="findOrganizationByUserId" resultMap="BaseResultMap">
+        SELECT
+            *
+        FROM
+            idatrix_unisecurity_organization
+        WHERE
+            id = (
+                SELECT
+                    dept_id
+                FROM
+                    idatrix_unisecurity_user
+                WHERE
+                    id = #{userId, jdbcType=BIGINT}
+            )
+    </select>
+
+    <select id="findOrganizationByUserName" resultMap="BaseResultMap" >
+        SELECT
+            *
+        FROM
+            idatrix_unisecurity_organization
+        WHERE
+            id = (
+                SELECT dept_id FROM idatrix_unisecurity_user where username = #{userName}
+            )
+    </select>
+
+    <select id="findByCode" resultMap="BaseResultMap">
+        SELECT
+            *
+        FROM
+            idatrix_unisecurity_organization where dept_code = #{code, jdbcType=VARCHAR}
+    </select>
+
+</mapper>

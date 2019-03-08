@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+	<!-- <bean id="rangerProxy" class="com.idatrix.unisecurity.ranger.proxy.impl.RangerProxyImpl"> 
+		<property name="hdfsRepositoryName" value="lcCluster_hadoop" /> <property 
+		name="hbaseRepositoryName" value="lcCluster_hbase" /> <property name="hiveRepositoryName" 
+		value="lcCluster_hive" /> <property name="yarnRepositoryName" value="lcCluster_yarn" 
+		/> <property name="url" value="http://hadoop143.example.com:6080" /> <property 
+		name="username" value="admin" /> <property name="passwd" value="admin" /> 
+		public RangerProxyImpl(String hdfsRepositoryName, String hbaseRepositoryName, 
+		String hiveRepositoryName, String yarnRepositoryName, String httpurl, String 
+		usename, String passwd) </bean> -->
+
+
+
+	<bean id="rangerPolicyImpl"
+		class="com.idatrix.unisecurity.ranger.proxy.impl.RangerPolicyProxyImpl">
+		<constructor-arg name="username" value="admin" />
+		<constructor-arg name="passwd" value="admin" />
+		<constructor-arg name="httpUrl"
+			value="http://hadoop143.example.com:6080" />
+	</bean>
+
+	<bean id="rangerProxy"
+		class="com.idatrix.unisecurity.ranger.proxy.impl.RangerProxyImpl">
+		<constructor-arg name="hdfsRepositoryName" value="lcCluster_hadoop" />
+		<constructor-arg name="hbaseRepositoryName" value="lcCluster_hbase" />
+		<constructor-arg name="hiveRepositoryName" value="lcCluster_hive" />
+		<constructor-arg name="yarnRepositoryName" value="lcCluster_yarn" />
+		<constructor-arg name="rangerImpl" ref="rangerPolicyImpl" />
+	</bean>
+</beans>

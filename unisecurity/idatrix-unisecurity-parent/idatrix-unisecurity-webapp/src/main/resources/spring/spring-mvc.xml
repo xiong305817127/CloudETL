@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-4.0.xsd
+    http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 扫描controller -->
+    <context:component-scan base-package="com.idatrix.unisecurity.*.controller;com.idatrix.unisecurity.*.*.controller;com.idatrix.unisecurity.controller"/>
+
+    <!-- 加载配置文件 -->
+    <context:property-placeholder location="classpath:login_config.properties" />
+
+    <!-- 自动创建处理器映射器，处理器适配器，文件解析器 -->
+    <mvc:annotation-driven />
+
+    <!-- 配置切面 -->
+    <bean id="webLogAspect" class="com.idatrix.unisecurity.aspects.WebLogAspect">
+        <!-- 当期server是你当前子系统的名称，列如：我的是安全子系统，则设置security就ok -->
+        <property name="server" value="${server}" />
+    </bean>
+
+    <bean name="api" class="com.idatrix.unisecurity.core.tags.APITemplateModel" />
+
+    <!-- spring 容器工具类 -->
+    <bean name="springContextUtil" class="com.idatrix.unisecurity.common.utils.SpringContextUtil" scope="singleton" />
+
+    <!--  上传文件定义大小 -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver" p:defaultEncoding="utf-8">
+        <property name="maxUploadSize" value="50048000"/>
+    </bean>
+
+    <!-- 支持Controller的AOP代理 -->
+    <aop:aspectj-autoproxy proxy-target-class="true" />
+
+    <bean class="com.idatrix.unisecurity.config.SwaggerConfig"/><!-- swagger配置类 -->
+
+    <mvc:resources mapping="swagger-ui.html" location="classpath:/META-INF/resources/"/><!--必须-->
+
+    <mvc:resources mapping="/webjars/**" location="classpath:/META-INF/resources/webjars/"/><!--必须-->
+
+</beans>

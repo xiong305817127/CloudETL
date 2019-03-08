@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.unisecurity.common.dao.URenterMapper">
+    <resultMap id="BaseResultMap" type="com.idatrix.unisecurity.common.domain.URenter">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="renter_name" property="renterName" jdbcType="VARCHAR"/>
+        <result column="admin_account" property="adminAccount" jdbcType="VARCHAR"/>
+        <result column="admin_name" property="adminName" jdbcType="VARCHAR"/>
+        <result column="admin_email" property="adminEmail" jdbcType="VARCHAR"/>
+        <result column="admin_phone" property="adminPhone" jdbcType="VARCHAR"/>
+        <result column="opened_service" property="openedService" jdbcType="VARCHAR"/>
+        <result column="opened_resource" property="openedResource" jdbcType="VARCHAR"/>
+        <result column="renter_status" property="renterStatus" jdbcType="TINYINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="last_updated_by" property="lastUpdatedBy" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id, renter_name, admin_account, admin_name, admin_email, admin_phone, opened_service, opened_resource, renter_status
+    </sql>
+
+    <sql id="limit_sql">
+        <if test="page_sql != null and page_sql != ''">
+            ${page_sql}
+        </if>
+    </sql>
+
+    <sql id="where_all">
+        <where>
+            <if test="findContent != null and findContent !='' ">
+                and (
+                LOWER(renter_name) like CONCAT("%",#{findContent,jdbcType=VARCHAR},"%") or
+                LOWER(admin_account) like CONCAT("%",#{findContent,jdbcType=VARCHAR},"%") or
+                LOWER(admin_name) like CONCAT("%",#{findContent,jdbcType=VARCHAR},"%") or
+                LOWER(admin_email) like CONCAT("%",#{findContent,jdbcType=VARCHAR},"%") or
+                LOWER(admin_phone) like CONCAT("%",#{findContent,jdbcType=VARCHAR},"%") or
+                LOWER(opened_service) like CONCAT("%",#{findContent,jdbcType=VARCHAR},"%") or
+                LOWER(opened_resource) like CONCAT("%",#{findContent,jdbcType=VARCHAR},"%")
+                )
+                and renter_status = 1
+            </if>
+        </where>
+    </sql>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_renter
+        <include refid="where_all"/>
+        order by last_updated_by desc
+        <include refid="limit_sql"/>
+    </select>
+    <select id="findCount" resultMap="BaseResultMap">
+        select count(1) from idatrix_unisecurity_renter
+        <include refid="where_all"/>
+    </select>
+
+    <select id="findByName" resultType="java.lang.Integer" parameterType="java.lang.String">
+        select count(1) from idatrix_unisecurity_renter where renter_name = #{renterName,jdbcType=VARCHAR}
+    </select>
+
+    <select id="getByAccount" resultMap="BaseResultMap" parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List"/>
+        from idatrix_unisecurity_renter where admin_account = #{account,jdbcType=VARCHAR} limit 0,1
+    </select>
+
+    <select id="getAccountById" parameterType="java.lang.Long" resultType="java.lang.String">
+        select admin_account from idatrix_unisecurity_renter where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <insert id="insertRenter" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.idatrix.unisecurity.common.domain.URenter">
+        <selectKey resultType="Long" keyProperty="id" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into idatrix_unisecurity_renter
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="renterName != null">
+                renter_name,
+            </if>
+            <if test="adminAccount != null">
+                admin_account,
+            </if>
+            <if test="adminName != null">
+                admin_name,
+            </if>
+            <if test="adminEmail != null">
+                admin_email,
+            </if>
+            <if test="adminPhone != null">
+                admin_phone,
+            </if>
+            <if test="openedService != null">
+                opened_service,
+            </if>
+            <if test="openedResource != null">
+                opened_resource,
+            </if>
+            <if test="renterStatus != null">
+                renter_status,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="lastUpdatedBy != null">
+                last_updated_by,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="renterName != null">
+                #{renterName,jdbcType=VARCHAR},
+            </if>
+            <if test="adminAccount != null">
+                #{adminAccount,jdbcType=VARCHAR},
+            </if>
+            <if test="adminName != null">
+                #{adminName,jdbcType=VARCHAR},
+            </if>
+            <if test="adminEmail != null">
+                #{adminEmail,jdbcType=VARCHAR},
+            </if>
+            <if test="adminPhone != null">
+                #{adminPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="openedService != null">
+                #{openedService,jdbcType=VARCHAR},
+            </if>
+            <if test="openedResource != null">
+                #{openedResource,jdbcType=VARCHAR},
+            </if>
+            <if test="renterStatus != null">
+                #{renterStatus,jdbcType=TINYINT},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="lastUpdatedBy != null">
+                #{lastUpdatedBy,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.idatrix.unisecurity.common.domain.URenter">
+        update idatrix_unisecurity_renter
+        <set>
+            <if test="renterName != null">
+                renter_name = #{renterName,jdbcType=VARCHAR},
+            </if>
+            <if test="adminAccount != null">
+                admin_account = #{adminAccount,jdbcType=VARCHAR},
+            </if>
+            <if test="adminName != null">
+                admin_name = #{adminName,jdbcType=VARCHAR},
+            </if>
+            <if test="adminEmail != null">
+                admin_email = #{adminEmail,jdbcType=VARCHAR},
+            </if>
+            <if test="adminPhone != null">
+                admin_phone = #{adminPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="openedService != null">
+                opened_service = #{openedService,jdbcType=VARCHAR},
+            </if>
+            <if test="openedResource != null">
+                opened_resource = #{openedResource,jdbcType=VARCHAR},
+            </if>
+            <if test="renterStatus != null">
+                renter_status = #{renterStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="lastUpdatedBy != null">
+                last_updated_by = #{lastUpdatedBy,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update idatrix_unisecurity_renter
+        set renter_status = 0
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateRenterInfo" parameterType="com.idatrix.unisecurity.common.domain.URenter">
+        update idatrix_unisecurity_renter
+        <set>
+            <if test="adminEmail != null">
+                admin_email = #{adminEmail, jdbcType=VARCHAR},
+            </if>
+            <if test="adminPhone != null">
+                admin_phone = #{adminPhone, jdbcType=VARCHAR},
+            </if>
+            <if test="lastUpdatedBy != null">
+                last_updated_by = #{lastUpdatedBy, jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where 1=1 and admin_account = #{adminAccount, jdbcType=VARCHAR}
+    </update>
+
+
+    <select id="isExist" parameterType="com.idatrix.unisecurity.common.domain.URenter" resultType="java.lang.Integer">
+        select SUM(total) from (
+        select count(*) as total
+        from idatrix_unisecurity_renter
+        where 1=1
+        <if test="adminEmail != null">
+            and admin_email = #{adminEmail,jdbcType=VARCHAR}
+        </if>
+        <if test="adminPhone != null">
+            and admin_phone = #{adminPhone,jdbcType=VARCHAR}
+        </if>
+        <if test="renterName != null">
+            and renter_name = #{renterName,jdbcType=VARCHAR}
+        </if>
+        <if test="adminName != null">
+            and admin_name = #{adminName,jdbcType=VARCHAR}
+        </if>
+        <if test="adminEmail != null or adminPhone != null or adminName != null ">
+            UNION ALL
+            select count(*) as total from idatrix_unisecurity_user where status != 0
+            <if test="adminEmail != null">
+                and email = #{adminEmail,jdbcType=VARCHAR}
+            </if>
+            <if test="adminPhone != null">
+                and phone = #{adminPhone,jdbcType=VARCHAR}
+            </if>
+            <if test="adminName != null">
+                and real_name = #{adminName,jdbcType=VARCHAR}
+            </if>
+        </if>
+        ) as tmp
+    </select>
+
+    <select id="isRentByUserName" parameterType="java.lang.String" resultType="java.lang.Integer">
+     	select count(*) from idatrix_unisecurity_renter where admin_account = #{username, jdbcType=VARCHAR}
+     </select>
+
+    <select id="findByAdminAccount" resultMap="BaseResultMap">
+        select * from idatrix_unisecurity_renter where admin_account = #{username, jdbcType=VARCHAR}
+    </select>
+
+    <select id="findRenterById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select * from idatrix_unisecurity_renter where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <update id="updateStatus">
+        update idatrix_unisecurity_renter
+        set renter_status = #{status, jdbcType=VARCHAR}
+        where id IN
+        <foreach collection="array" index="index" item="renterId"
+                 open="(" separator="," close=")">
+            #{renterId}
+        </foreach>
+    </update>
+
+</mapper>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.unisecurity.common.dao.LoginCountProviderMapper">
+
+    <resultMap id="DeptUserLoginResultMap" type="com.idatrix.unisecurity.api.domain.OrganizationUserLoginInfo">
+        <result column="ascription_dept_name" property="deptName" jdbcType="VARCHAR"/>
+        <result column="count" property="count" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap id="LoginDateResultMap" type="com.idatrix.unisecurity.api.domain.LoginDateInfo">
+        <result column="now" property="loginDate" jdbcType="VARCHAR"/>
+        <result column="login_count" property="loginCount" jdbcType="INTEGER"/>
+        <result column="user_count" property="loginUserCount" jdbcType="INTEGER"/>
+        <result column="dept_count" property="loginDeptCount" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="findNowLoginCountByRenterId" resultType="java.lang.Integer">
+        SELECT
+          count(*)
+        FROM
+          idatrix_unisecurity_login_count
+        WHERE date_format(login_time, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+        AND renter_id = #{renterId, jdbcType=BIGINT}
+    </select>
+
+    <select id="findNowLoginDeptCountByRenterId" resultType="java.lang.Integer">
+        SELECT
+          COUNT(DISTINCT IFNULL(o.ascription_dept_id, '未知组织'))
+        FROM
+            idatrix_unisecurity_login_count lc
+        LEFT JOIN idatrix_unisecurity_user u ON lc.user_id = u.id
+        LEFT JOIN idatrix_unisecurity_organization o ON u.dept_id = o.id
+        WHERE date_format(lc.login_time, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+        AND lc.renter_id = #{renterId, jdbcType=BIGINT}
+    </select>
+
+    <select id="findNowLoginUserCountByRenterId" resultType="java.lang.Integer">
+        SELECT
+            count(DISTINCT user_id)
+        FROM
+            idatrix_unisecurity_login_count
+        WHERE
+            date_format(login_time, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+        AND renter_id = #{renterId, jdbcType=BIGINT}
+    </select>
+
+    <select id="findAllLoginCountByRenterId" resultType="java.lang.Integer">
+        SELECT
+          count(*)
+        FROM
+          idatrix_unisecurity_login_count WHERE renter_id = #{renterId, jdbcType=BIGINT}
+    </select>
+
+    <select id="findDeptUserLoginInfoByRentId" resultMap="DeptUserLoginResultMap">
+        SELECT
+            IFNULL(
+                ad.dept_name,
+                '未知组织'
+            ) ascription_dept_name,
+            COUNT(*) 'count'
+        FROM
+            idatrix_unisecurity_login_count lc
+        LEFT JOIN idatrix_unisecurity_user u ON lc.user_id = u.id
+        LEFT JOIN idatrix_unisecurity_organization o ON u.dept_id = o.id
+        LEFT JOIN idatrix_unisecurity_organization ad ON o.ascription_dept_id = ad.id
+        WHERE
+            lc.renter_id = #{renterId, jdbcType=BIGINT}
+        GROUP BY ad.id ORDER BY count DESC
+    </select>
+
+    <select id="findUserLoginInfoByRenterIdAndTimeSlot" resultMap="LoginDateResultMap">
+        SELECT
+            date_format(login_time, '%Y-%m-%d') now,
+            COUNT(*) login_count,
+            (
+                SELECT
+                    count(DISTINCT user_id)
+                FROM
+                    idatrix_unisecurity_login_count
+                WHERE
+                    date_format(login_time, '%Y-%m-%d') = now
+                AND renter_id = #{renterId, jdbcType=BIGINT}
+            ) user_count,
+            (
+                SELECT
+                    COUNT(
+                        DISTINCT IFNULL(
+                            ascription_dept_id,
+                            '未知组织'
+                        )
+                    )
+                FROM
+                    idatrix_unisecurity_login_count lc
+                LEFT JOIN idatrix_unisecurity_user u ON lc.user_id = u.id
+                LEFT JOIN idatrix_unisecurity_organization o ON u.dept_id = o.id
+                WHERE
+                    date_format(lc.login_time, '%Y-%m-%d') = now
+                AND lc.renter_id = #{renterId, jdbcType=BIGINT}
+            ) dept_count
+        FROM
+            idatrix_unisecurity_login_count
+        WHERE
+            renter_id = #{renterId, jdbcType=BIGINT} AND login_time BETWEEN #{startLoginDate,jdbcType=TIMESTAMP} AND #{lastLoginDate, jdbcType=TIMESTAMP}
+        GROUP BY
+            now
+    </select>
+
+</mapper>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.unisecurity.common.dao.URoleSysMapper">
+    <resultMap id="BaseResultMap" type="com.idatrix.unisecurity.common.domain.URoleSys">
+        <result column="role_id" property="roleId" jdbcType="BIGINT"/>
+        <result column="client_system_id" property="clientSystemId" jdbcType="VARCHAR"/>
+    </resultMap>
+    <insert id="insert" parameterType="com.idatrix.unisecurity.common.domain.URoleSys">
+        insert into idatrix_unisecurity_role_sys (role_id, client_system_id)
+        values (#{roleId,jdbcType=BIGINT}, #{clientSystemId,jdbcType=VARCHAR})
+    </insert>
+
+    <insert id="insertSelective" parameterType="com.idatrix.unisecurity.common.domain.URoleSys">
+        insert into idatrix_unisecurity_role_sys
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="roleId != null">
+                role_id,
+            </if>
+            <if test="clientSystemId != null">
+                client_system_id,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="roleId != null">
+                #{roleId,jdbcType=BIGINT},
+            </if>
+            <if test="clientSystemId != null">
+                #{clientSystemId,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+</mapper>

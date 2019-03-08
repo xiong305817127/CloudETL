@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.unisecurity.common.dao.ClientSystemMapper">
+
+    <resultMap id="BaseResultMap" type="com.idatrix.unisecurity.common.domain.ClientSystem">
+        <result column="id" property="id" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="base_url" property="baseUrl" jdbcType="VARCHAR"/>
+        <result column="home_uri" property="homeUri" jdbcType="VARCHAR"/>
+        <result column="inner_address" property="innerAddress" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, name, base_url, home_uri, inner_address
+    </sql>
+
+    <select id="selectClientSystemByUserId" resultMap="BaseResultMap">
+         select cs.id,cs.name,cs.base_url,cs.home_uri,cs.inner_address from idatrix_unisecurity_client_system cs,idatrix_unisecurity_role_permission rp,idatrix_unisecurity_permission p,idatrix_unisecurity_user_role ur
+         where ur.uid=#{userId,jdbcType=BIGINT} and ur.rid=rp.rid and rp.pid = p.id and p.client_system_id= cs.id group by cs.id
+    </select>
+
+    <select id="loadClientSystem" resultMap="BaseResultMap">
+        select id,name,base_url,home_uri,inner_address from idatrix_unisecurity_client_system
+    </select>
+
+    <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.idatrix.unisecurity.common.domain.ClientSystem">
+        insert into idatrix_unisecurity_client_system
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="baseUrl != null">
+                base_url,
+            </if>
+            <if test="homeUri != null">
+                home_uri,
+            </if>
+            <if test="innerAddress != null">
+                inner_address,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="baseUrl != null">
+                #{base_url,jdbcType=VARCHAR},
+            </if>
+            <if test="homeUri != null">
+                #{home_uri,jdbcType=VARCHAR},
+            </if>
+            <if test="innerAddress != null">
+                #{inner_address,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="findByIds" parameterType="java.util.List" resultMap="BaseResultMap">
+        select
+          *
+        from idatrix_unisecurity_client_system WHERE id IN
+        <foreach collection="array" index="index" item="id" open="(" separator="," close=")">
+            #{id, jdbcType=VARCHAR}
+        </foreach>
+    </select>
+
+</mapper>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <context:component-scan base-package="com.idatrix.unisecurity.quartz" />
+
+    <!-- 创建一个清理log的任务 logClearJob -->
+    <bean id="logClearJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <!-- 指定job的名称 -->
+        <property name="name" value="logClear_job"/>
+        <!-- 指定job的分组 -->
+        <property name="group" value="logClear_group"/>
+        <!-- 指定具体的job类 -->
+        <property name="jobClass" value="com.idatrix.unisecurity.quartz.LogClearJob"/>
+        <!-- 指定要传入的参数
+        <property name="jobDataMap">
+            <map>
+                <entry key="username" value="欧阳荣" value-type="java.lang.String"></entry>
+            </map>
+        </property> -->
+        <!-- 必须设置为true，如果为false，当没有活动的触发器与之关联时会在调度器中会删除该任务  -->
+        <property name="durability" value="true"/>
+    </bean>
+
+    <!-- 给logClearJob指定一个触发器 -->
+    <bean id="cronTriggerFactoryBean"
+          class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <!-- 指定Trigger的名称 -->
+        <property name="name" value="logClear_trigger"/>
+        <!-- 指定Trigger的名称 -->
+        <property name="group" value="logClear_trigger_group"/>
+        <!-- 指定Tirgger绑定的Job -->
+        <property name="jobDetail" ref="logClearJob"/>
+        <!-- 指定 Cron 的表达式 ，当前是每隔一天运行一次 0/5 * * * * ? -->
+        <property name="cronExpression" value="0 0 0 * * ? *" />
+    </bean>
+
+    <!-- 配置调度工厂 -->
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="cronTriggerFactoryBean" />
+            </list>
+        </property>
+        <property name="jobFactory" ref="securityQuartzJobFactory" />
+    </bean>
+
+</beans>

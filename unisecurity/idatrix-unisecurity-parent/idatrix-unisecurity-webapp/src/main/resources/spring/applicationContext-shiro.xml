@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <bean id="customSessionManager" class="com.idatrix.unisecurity.core.shiro.session.CustomSessionManager">
+        <property name="shiroSessionRepository" ref="jedisShiroSessionRepository"/>
+        <property name="customShiroSessionDAO" ref="customShiroSessionDAO"/>
+    </bean>
+
+    <!-- 安全管理器 -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <!-- 设置认证域 -->
+        <property name="realm" ref="sampleRealm"/>
+        <!-- session管理 -->
+        <property name="sessionManager" ref="sessionManager"/>
+        <!-- 缓存管理 -->
+        <property name="cacheManager" ref="customShiroCacheManager"/>
+        <!-- 记住我的功能 -->
+        <property name="rememberMeManager" ref="rememberMeManager"/>
+    </bean>
+
+    <!-- 授权 认证 -->
+    <bean id="sampleRealm" class="com.idatrix.unisecurity.core.shiro.token.SampleRealm">
+        <!-- 缓存开启 -->
+        <property name="cachingEnabled" value="true" />
+        <!--启用身份验证缓存，即缓存AuthenticationInfo，默认false
+        <property name="authenticationCachingEnabled" value="true"/>-->
+        <!--启用授权缓存，即缓存AuthorizationInfo的信息，默认为false-->
+        <property name="authorizationCachingEnabled" value="true"/>
+    </bean>
+
+    <!-- Session Manager -->
+    <bean id="sessionManager" class="com.idatrix.unisecurity.core.shiro.session.SecurityWebSessionManager">
+        <!--如果sessionManager是shiro原有的DefaultWebSecurityManager并且版本在1.3.2以上可以通过修改如下sessionIdUrlRewritingEnabled属性即可
+        <property name="sessionIdUrlRewritingEnabled" value="false"/> -->
+        <!-- 定义的是全局的session会话超时时间，此操作会覆盖web.xml文件中的超时时间配置，单位是毫秒 -->
+        <property name="globalSessionTimeout" value="#{${LOGIN_TOKEN_KEY_TIMEOUT} * 1000}"/>
+        <!-- 相隔多久检查一次session的有效性 单位是毫秒
+        <property name="sessionValidationInterval" value="60000"/>-->
+        <!-- sessionDao -->
+        <property name="sessionDAO" ref="customShiroSessionDAO"/>
+        <!-- session 监听，可以有多个。 -->
+        <property name="sessionListeners">
+            <list>
+                <ref bean="customSessionListener"/>
+            </list>
+        </property>
+        <!-- 定义要使用的无效的Session定时调度器 -->
+        <property name="sessionValidationScheduler" ref="sessionValidationScheduler"/>
+        <!-- 是否开启 检测，默认开启 -->
+        <property name="sessionValidationSchedulerEnabled" value="true"/>
+        <!-- 是否删除无效的session，默认也是开启 -->
+        <property name="deleteInvalidSessions" value="true"/>
+        <!-- 会话Cookie模板 -->
+        <property name="sessionIdCookie" ref="sessionIdCookie"/>
+    </bean>
+
+    <!-- sessionDao，在这里决定会话是储存在哪里 -->
+    <bean id="customShiroSessionDAO" class="com.idatrix.unisecurity.core.shiro.session.dao.CustomShiroSessionDAO">
+        <property name="shiroSessionRepository" ref="jedisShiroSessionRepository" />
+        <property name="sessionIdGenerator" ref="sessionIdGenerator" />
+    </bean>
+
+    <!-- session 创建、删除、查询（使用redis实现） -->
+    <bean id="jedisShiroSessionRepository" class="com.idatrix.unisecurity.core.shiro.session.dao.JedisShiroSessionRepository">
+        <property name="jedisClient" ref="jedisClient"/>
+        <property name="DB_INDEX" value="${shiro.session.db.index}" />
+    </bean>
+
+    <!-- 配置session的定时验证检测程序类，以让无效的session释放 -->
+    <bean id="sessionValidationScheduler"
+          class="org.apache.shiro.session.mgt.ExecutorServiceSessionValidationScheduler">
+        <property name="interval" value="${session.validate.timespan}"/><!-- 设置session的失效扫描间隔，单位为毫秒 -->
+        <property name="sessionManager" ref="sessionManager"/><!-- 随后还需要定义有一个会话管理器的程序类的引用 -->
+    </bean>
+
+    <!-- 会话Session ID生成器 -->
+    <bean id="sessionIdGenerator" class="org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator"/>
+
+    <!-- 自定义缓存管理器 -->
+    <bean id="customShiroCacheManager" class="com.idatrix.unisecurity.core.shiro.cache.CustomShiroCacheManager">
+        <property name="shiroCacheManager" ref="jedisShiroCacheManager"/>
+    </bean>
+
+    <!-- shiro 缓存实现，对ShiroCacheManager，采用redis实现 -->
+    <bean id="jedisShiroCacheManager" class="com.idatrix.unisecurity.core.shiro.cache.impl.JedisShiroCacheManager">
+        <property name="jedisClient" ref="jedisClient"/>
+        <property name="DB_INDEX" value="${shiro.cache.index}" />
+    </bean>
+
+    <!-- 会话Cookie模板 -->
+    <bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <constructor-arg value="${LOGIN_TOKEN_KEY}" /><!-- 给cookie命名 security-token -->
+        <property name="httpOnly" value="${HTTP.ONLY}"/><!-- 保证该系统不会受到跨域的脚本操作供给 -->
+        <property name="maxAge" value="-1"/><!--cookie的有效时间 -1表示浏览器关闭，cookie就消失 -->
+        <property name="path" value="/" /><!-- 设置一级域名下的所有域名都是共享的 -->
+    </bean>
+
+    <!-- shiro会话监听器 -->
+    <bean id="customSessionListener" class="com.idatrix.unisecurity.core.shiro.listenter.CustomSessionListener">
+        <property name="shiroSessionRepository" ref="jedisShiroSessionRepository"/>
+        <property name="loginProperties" ref="loginProperties" />
+    </bean>
+
+    <!-- rememberMe管理器 -->
+    <bean id="rememberMeManager" class="org.apache.shiro.web.mgt.CookieRememberMeManager">
+        <!-- rememberMe cookie加密的密钥 建议每个项目都不一样 默认AES算法 密钥长度（128 256 512 位）-->
+        <property name="cipherKey"
+                  value="#{T(org.apache.shiro.codec.Base64).decode('3AvVhmFLUs0KTA3Kprsdag==')}"/>
+        <property name="cookie" ref="rememberMeCookie"/>
+    </bean>
+
+    <!-- 用户信息记住我功能的相关配置 -->
+    <bean id="rememberMeCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <constructor-arg value="${REMEMBER_MY_TOKEN_KEY}"/><!-- security-remember -->
+        <property name="httpOnly" value="${HTTP.ONLY}"/>
+        <property name="path" value="/"/><!-- cookie设置为一级域名，一级域名下的二级域名都可以访问 -->
+        <property name="maxAge" value="${REMEMBER_MY_TOKEN_KEY_TIMEOUT}"/><!-- 设置cookie过期时间，单位为秒 -->
+    </bean>
+
+    <!--
+        自定义角色过滤器 支持多个角色可以访问同一个资源
+        用户有admin或者user角色 就可以访问
+    -->
+    <!-- 认证数据库存储-->
+    <bean id="shiroManager" class="com.idatrix.unisecurity.core.shiro.service.impl.ShiroManagerImpl" />
+
+    <!-- 自定义的shiro过滤器 -->
+
+    <!-- 自定义是否登录的filter -->
+    <bean id="login" class="com.idatrix.unisecurity.core.shiro.filter.LoginFilter"/>
+    <!-- 自定义的permission filter -->
+    <bean id="permission" class="com.idatrix.unisecurity.core.shiro.filter.PermissionFilter"/>
+    <!-- 自定义的role filter
+    <bean id="role" class="com.idatrix.unisecurity.core.shiro.filter.RoleFilter"/>-->
+    <!-- 自定义是否踢出的filter
+    <bean id="simple" class="com.idatrix.unisecurity.core.shiro.filter.SimpleAuthFilter"/> -->
+    <!-- 自定义控制会话并发的filter -->
+    <bean id="kickoutSessionFilter" class="com.idatrix.unisecurity.core.shiro.filter.KickoutSessionFilter">
+        <property name="kickoutUrl" value="/u/login.shtml?kickout"/><!-- TODO 当前系统中是使用不到此参数的 -->
+        <property name="cacheTimeout" value="${LOGIN_TOKEN_KEY_TIMEOUT}" />
+        <property name="maxSession" value="${SESSION.MAX.COUNT}"/>
+        <property name="cache" ref="vCache" />
+        <property name="shiroSessionRepository" ref="jedisShiroSessionRepository"/>
+        <property name="config" ref="config" />
+    </bean>
+
+    <!-- shiro 过滤器要对应的 bean -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/><!-- 配置安全管理器 -->
+        <!-- TODO 不被使用到的属性 start -->
+        <property name="loginUrl" value="/u/login.shtml"/>
+        <property name="successUrl" value="/"/>
+        <property name="unauthorizedUrl" value="/?login"/>
+        <!-- TODO 不被使用到的属性 end -->
+        <!-- 读取初始自定义权限内容-->
+        <property name="filterChainDefinitions" value="#{shiroManager.loadFilterChainDefinitions()}"/>
+        <property name="filters"><!-- 配置过滤器链 -->
+            <util:map>
+                <entry key="kickout" value-ref="kickoutSessionFilter"></entry>
+                <entry key="login" value-ref="login"></entry>
+                <entry key="permission" value-ref="permission"></entry>
+                <!--<entry key="role" value-ref="role"></entry>-->
+                <!--<entry key="simple" value-ref="simple"></entry>-->
+            </util:map>
+        </property>
+    </bean>
+
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="org.apache.shiro.SecurityUtils.setSecurityManager"/>
+        <property name="arguments" ref="securityManager"/>
+    </bean>
+
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+    <!--<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod"
+                  value="com.idatrix.unisecurity.core.shiro.filter.KickoutSessionFilter.setShiroSessionRepository"/>
+        <property name="arguments" ref="jedisShiroSessionRepository"/>
+    </bean>
+
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod"
+                  value="com.idatrix.unisecurity.core.shiro.filter.KickoutSessionFilter.setCache"/>
+        <property name="arguments" ref="vCache"/>
+    </bean>-->
+
+    <!--<bean class="com.idatrix.unisecurity.server.filter.ServiceSecurityFilter">
+        <property name="" value="${service.security.validate}" />
+    </bean>-->
+</beans>
+

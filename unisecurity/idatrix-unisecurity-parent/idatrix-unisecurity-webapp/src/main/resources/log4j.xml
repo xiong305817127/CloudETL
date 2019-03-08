@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j='http://jakarta.apache.org/log4j/'>
+
+    <!-- 日志输出到控制台 -->
+    <appender name="console" class="org.apache.log4j.ConsoleAppender">
+        <!-- 日志输出格式 -->
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%-d{yyyy-MM-dd HH:mm:ss,SSS} [%t] [%c]-[%p] %m%n"/>
+        </layout>
+        <!--过滤器设置输出的级别-->
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <!-- 设置日志输出的最小级别 -->
+            <param name="levelMin" value="DEBUG"/>
+            <!-- 设置日志输出的最大级别 -->
+            <param name="levelMax" value="ERROR"/>
+        </filter>
+    </appender>
+
+    <!-- info日志输出到文件 -->
+    <appender name="infoLog" class="org.apache.log4j.DailyRollingFileAppender">
+        <!-- 文件文件全路径名 -->
+        <param name="File" value="E:/logs/security/logs/info.log"/>
+        <param name="Append" value="true" />
+        <!-- 设置日志备份频率，默认：为每天一个日志文件 -->
+        <param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
+        <!-- 每分钟一个备份 -->
+        <!--<param name="DatePattern" value="'.'yyyy-MM-dd-HH-mm'.log'" />-->
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%-d{yyyy-MM-dd HH:mm:ss,SSS} [%t] [%c]-[%p] %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <!-- 设置日志输出的最小级别 -->
+            <param name="levelMin" value="INFO"/>
+            <!-- 设置日志输出的最大级别 -->
+            <param name="levelMax" value="INFO"/>
+        </filter>
+    </appender>
+
+    <!-- error日志输出到文件 -->
+    <appender name="errorLog" class="org.apache.log4j.DailyRollingFileAppender">
+        <!-- 文件文件全路径名 -->
+        <param name="File" value="E:/logs/security/logs/error.log"/>
+        <param name="Append" value="true" />
+        <!-- 设置日志备份频率，默认：为每天一个日志文件 -->
+        <param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
+        <!--每分钟一个备份-->
+        <!--<param name="DatePattern" value="'.'yyyy-MM-dd-HH-mm'.log'" />-->
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%-d{yyyy-MM-dd HH:mm:ss,SSS} [%t] [%c]-[%p] %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <!-- 设置日志输出的最小级别 -->
+            <param name="levelMin" value="ERROR"/>
+            <!-- 设置日志输出的最大级别 -->
+            <param name="levelMax" value="ERROR"/>
+        </filter>
+    </appender>
+
+    <!-- log写入数据库数据 org.apache.log4j.jdbc.JDBCAppender -->
+    <appender name="dbLog" class="com.idatrix.unisecurity.log.LogJDBCAppender">
+        <param name="driver" value="com.mysql.jdbc.Driver" />
+        <!-- 当前log入库到哪个数据库中 -->
+        <param name="URL" value="jdbc:mysql://10.0.0.85:3306/idatrix_unisecurity?seUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull" />
+        <!-- 数据库的账号和密码 -->
+        <param name="user" value="root" />
+        <param name="password" value="admin" />
+        <!-- 10条入库一次 -->
+        <param name="bufferSize" value="10" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <!-- 入库的sql -->
+            <param name="ConversionPattern"
+                   value="INSERT INTO idatrix_unisecurity_audit_log (server, resource, method_type, client_ip, visit_time, result, user_id, user_name, renter_id) VALUES('%X{server}', '%X{resource}', '%X{methodType}', '%X{clientIp}', '%X{visitTime}', '%X{result}', '%X{userId}', '%X{userName}', '%X{renterId}')" />
+        </layout>
+        <!-- 自定义的一个拦截器，去拦截log的等级 -->
+        <filter class="com.idatrix.unisecurity.log.SecurityLogFilter">
+            <param name="LevelMin" value="20050" />
+            <param name="LevelMax" value="20050" />
+        </filter>
+    </appender>
+
+    <root>
+        <level value="DEBUG" />
+        <appender-ref ref="console" />
+        <appender-ref ref="infoLog" />
+        <appender-ref ref="errorLog" />
+        <appender-ref ref="dbLog" />
+    </root>
+
+</log4j:configuration>
