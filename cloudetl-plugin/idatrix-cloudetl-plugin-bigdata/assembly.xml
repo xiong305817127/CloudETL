@@ -1,0 +1,27 @@
+<assembly>
+	<!-- 项目打成Zip包的Id -->
+	<id>CloudETL-V01R01-C001</id>
+	<formats>
+		<!-- 包的后缀 -->
+		<format>zip</format>
+	</formats>
+	<fileSets>
+		<!-- 项目一些说明的资源输出的目录，下面为当前目录 -->
+		<fileSet>
+			<directory>${project.build.directory}</directory>
+			<outputDirectory>/</outputDirectory>
+			<includes>
+				<include>*.jar</include>
+			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>${project.build.directory}/dependency</directory>
+			<outputDirectory>/lib</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>${project.basedir}/config</directory>
+			<outputDirectory>/</outputDirectory>
+		</fileSet>
+	
+	</fileSets>
+</assembly>

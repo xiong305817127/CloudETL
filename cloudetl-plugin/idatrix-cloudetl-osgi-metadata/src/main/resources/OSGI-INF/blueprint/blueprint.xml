@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
+    <bean id="cloudSessionMetadataProvider" class="com.ys.metadata.provider.CloudSessionMetadataProvider" scope="singleton"/>
+
+    <service ref="cloudSessionMetadataProvider" interface="org.pentaho.osgi.metastore.locator.api.MetastoreProvider" ranking="100">
+      <service-properties>  
+            <entry key="serviceMapKey" value="LocalMetastoreProvider"/>  
+     </service-properties>
+    </service>
+    
+  <reference id="metastoreLocator"  interface="org.pentaho.osgi.metastore.locator.api.MetastoreLocator" availability="optional"/>
+  <bean id="idatrixRunConfigurationExecutor" scope="singleton"
+        class="org.pentaho.di.engine.configuration.impl.pentaho.DefaultRunConfigurationExecutor">
+  </bean>
+    
+  <bean id="idatrixRunConfigurationProvider" scope="singleton"  class="com.ys.runconfiguration.provider.IdatrixRunConfigurationProvider">
+    <argument ref="metastoreLocator"/>
+    <argument ref="idatrixRunConfigurationExecutor"/>
+  </bean>
+
+  <service ref="idatrixRunConfigurationProvider" interface="org.pentaho.di.engine.configuration.api.RunConfigurationProvider" ranking="100">
+  </service>
+    
+    
+</blueprint>
