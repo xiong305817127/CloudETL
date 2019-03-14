@@ -1,0 +1,8 @@
+:global(#DRMNewFileModel .ant-btn){
+  height: 32px;
+}
+.jvzhong :global(.ant-btn){
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: 538px;
+}

@@ -1,0 +1,7 @@
+.NewTask  .detail{
+    background: url("../../../image/App/add.png") no-repeat center;
+
+}
+.NewTask{
+  font-size: 14px;
+}

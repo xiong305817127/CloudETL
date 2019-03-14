@@ -1,0 +1,46 @@
+{
+  "href" : "http://192.168.37.132:8080/api/v1/clusters/hadoop/configurations/service_config_versions?service_name.in(CLUSTERINFO)&is_current=true",
+  "items" : [
+    {
+      "href" : "http://192.168.37.132:8080/api/v1/clusters/hadoop/configurations/service_config_versions?service_name=CLUSTERINFO&service_config_version=4",
+      "cluster_name" : "hadoop",
+      "configurations" : [
+        {
+          "Config" : {
+            "cluster_name" : "hadoop",
+            "stack_id" : "HDP-2.5"
+          },
+          "type" : "url.cfg",
+          "tag" : "version1495070261368",
+          "version" : 4,
+          "properties" : {
+            "NAMENODE" : "hdfs://hadoop:8020",
+            "JOBTRACKER" : "rpc://None:8050",
+            "WEBHDFS" : "http://hadoop:50070/webhdfs",
+            "WEBHCAT" : "http://None:50111/templeton",
+            "OOZIE" : "http://None:11000/oozie",
+            "WEBHBASE" : "http://hadoop:8080",
+            "HIVE" : "http://None:10001/cliservice",
+            "RESOURCEMANAGER" : "http://None:8080/ws",
+            "MYSQL" : "hadoop:3306",
+            "MYSQL_ROOT_NAME" : "ROOT",
+            "MYSQL_ROOT_PASSWORD" : "ysdsjbigdata",
+            "ELASTICSEARCH" : "hadoop:9300"
+          },
+          "properties_attributes" : { }
+        }
+      ],
+      "createtime" : 1495070251574,
+      "group_id" : -1,
+      "group_name" : "Default",
+      "hosts" : [ ],
+      "is_cluster_compatible" : true,
+      "is_current" : true,
+      "service_config_version" : 4,
+      "service_config_version_note" : "",
+      "service_name" : "ZOOKEEPER",
+      "stack_id" : "HDP-2.5",
+      "user" : "admin"
+    }
+  ]
+}

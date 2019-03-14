@@ -1,0 +1,79 @@
+const pass = $_POST['name'] === 'root' && $_POST['passwd'] === '7ee86ea7ca89728ef5f08aa0aef7a120';
+
+const resopnse = {
+  "status": 200,
+  "message": "登录成功",
+  "sysList": [
+    {
+      "id": "dataResDir",
+      "name": "resources",
+      "baseUrl": "http://localhost:8080/resources",
+      "homeUri": "/user/index.shtml",
+      "innerAddress": "http://127.0.0.1:8083",
+      "homeUrl": "http://localhost:8080/resources/user/index.shtml"
+    },
+    {
+      "id": "idatrix-metacube-web",
+      "name": "metadata",
+      "baseUrl": "http://localhost:8080/metadata",
+      "homeUri": "/user/index.shtml",
+      "innerAddress": "http://127.0.0.1:8083",
+      "homeUrl": "http://localhost:8080/metadata/user/index.shtml"
+    },
+    {
+      "id": "servicebase",
+      "name": "services",
+      "baseUrl": "http://localhost:8080/services",
+      "homeUri": "/user/index.shtml",
+      "innerAddress": "http://127.0.0.1:8083",
+      "homeUrl": "http://localhost:8080/services/user/index.shtml"
+    },
+    {
+      "id": "datalab",
+      "name": "analysis",
+      "baseUrl": "http://localhost:8080/analysis",
+      "homeUri": "/user/index.shtml",
+      "innerAddress": "http://127.0.0.1:8083",
+      "homeUrl": "http://localhost:8080/analysis/user/index.shtml"
+    },
+    {
+      "id": "cloudetl",
+      "name": "gather",
+      "baseUrl": "http://localhost:8080/gather",
+      "homeUri": "/user/index.shtml",
+      "innerAddress": "http://127.0.0.1:8083",
+      "homeUrl": "http://localhost:8080/gather/user/index.shtml"
+    },
+    {
+      "id": "monitor",
+      "name": "monitor",
+      "baseUrl": "http://localhost:8080/monitor",
+      "homeUri": "/user/index.shtml",
+      "innerAddress": "http://127.0.0.1:8083",
+      "homeUrl": "http://localhost:8080/monitor/user/index.shtml"
+    },
+    {
+      "id": "ITIL",
+      "name": "operation",
+      "baseUrl": "http://localhost:8080/operation",
+      "homeUri": "/user/index.shtml",
+      "innerAddress": "http://127.0.0.1:8083",
+      "homeUrl": "http://localhost:8080/operation/user/index.shtml"
+    },
+    {
+      "id": "security",
+      "name": "security",
+      "baseUrl": "http://localhost:8080/security",
+      "homeUri": "/user/index.shtml",
+      "innerAddress": "http://127.0.0.1:8083",
+      "homeUrl": "http://localhost:8080/security/user/index.shtml"
+    }
+  ],
+  "vt": "5951e3ffe9314841a1d92c9ae922000e",
+  "permits": [{"id":4,"parentId":null,"url":"/permission/index.shtml","name":"权限列表","isShow":null,"showOrder":null,"urlDesc":null},{"id":6,"parentId":null,"url":"/permission/addPermission.shtml","name":"权限添加","isShow":null,"showOrder":null,"urlDesc":null},{"id":7,"parentId":null,"url":"/permission/deletePermissionById.shtml","name":"权限删除","isShow":null,"showOrder":null,"urlDesc":null},{"id":8,"parentId":null,"url":"/member/list.shtml","name":"用户列表","isShow":null,"showOrder":null,"urlDesc":null},{"id":9,"parentId":null,"url":"/member/online.shtml","name":"在线用户","isShow":null,"showOrder":null,"urlDesc":null},{"id":10,"parentId":null,"url":"/member/changeSessionStatus.shtml","name":"用户Session踢出","isShow":null,"showOrder":null,"urlDesc":null},{"id":11,"parentId":null,"url":"/member/forbidUserById.shtml","name":"用户激活&禁止","isShow":null,"showOrder":null,"urlDesc":null},{"id":12,"parentId":null,"url":"/member/deleteUserById.shtml","name":"用户删除","isShow":null,"showOrder":null,"urlDesc":null},{"id":13,"parentId":null,"url":"/permission/addPermission2Role.shtml","name":"权限分配","isShow":null,"showOrder":null,"urlDesc":null},{"id":14,"parentId":null,"url":"/role/clearRoleByUserIds.shtml","name":"用户角色分配清空","isShow":null,"showOrder":null,"urlDesc":null},{"id":15,"parentId":null,"url":"/role/addRole2User.shtml","name":"角色分配保存","isShow":null,"showOrder":null,"urlDesc":null},{"id":16,"parentId":null,"url":"/role/deleteRoleById.shtml","name":"角色列表删除","isShow":null,"showOrder":null,"urlDesc":null},{"id":17,"parentId":null,"url":"/role/addRole.shtml","name":"角色列表添加","isShow":null,"showOrder":null,"urlDesc":null},{"id":18,"parentId":null,"url":"/role/index.shtml","name":"角色列表","isShow":null,"showOrder":null,"urlDesc":null},{"id":19,"parentId":null,"url":"/permission/allocation.shtml","name":"权限分配","isShow":null,"showOrder":null,"urlDesc":null},{"id":20,"parentId":null,"url":"/role/allocation.shtml","name":"角色分配","isShow":null,"showOrder":null,"urlDesc":null},{"id":21,"parentId":null,"url":"/u/register.shtml","name":"添加用户","isShow":null,"showOrder":null,"urlDesc":null},{"id":22,"parentId":null,"url":"/renter/index.shtml","name":"租户列表","isShow":null,"showOrder":null,"urlDesc":null},{"id":26,"parentId":null,"url":"/bigdata/index.shtml","name":"大数据集合","isShow":true,"showOrder":1,"urlDesc":null},{"id":27,"parentId":4,"url":"/newpermission/datasystem","name":"大数据数据子系统","isShow":true,"showOrder":2,"urlDesc":null}],"loginUser":{"id":1,"username":"admin","realName":"小芳","sex":2,"age":25,"email":"admin","cardId":"366534653979347682","phone":"13623215682","pswd":"7ee86ea7ca89728ef5f08aa0aef7a120","createTime":1466046933000,"lastLoginTime":1497946987643,"status":1,"loginToken":null}
+};
+
+end(pass ? resopnse : {
+  status: 400,
+  message: '用户名或密码不正确',
+});

@@ -1,0 +1,10 @@
+.mapWrap{
+  position: relative;
+  height: 300px;
+  margin-bottom: 10px;
+}
+.toolsWrap {
+  position: absolute;
+  right: 0;
+  z-index: 9999;
+}

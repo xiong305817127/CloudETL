@@ -1,0 +1,47 @@
+@silderWidth:200px;
+@editHeight:200px;
+
+.layout{
+	height:700px;
+	display:flex;
+
+	.silder{
+		width:@silderWidth;
+		box-sizing:border-box;
+		padding-right:10px;
+		overflow:scroll;
+
+		:global{
+			.ant-tree > li:first-child{
+				padding-top:0px;
+			}
+		};
+	}
+	.content{
+		display:flex;
+		flex-direction:column;
+		width:calc(~"100% - @{silderWidth}");
+
+		.contentHeader{
+
+			height:@editHeight;
+		}
+		.footer{
+			box-sizing:border-box;
+			padding:10px;
+			height:calc(~"100% - @{editHeight}");
+			border-left:1px solid #ddd;
+			font-size:14px;
+			overflow:scroll;
+
+			.name{
+				font-size:20px;
+				font-weight:bold;
+			}
+			.description{
+				font-size:16px;
+				font-weight:bold;
+			}
+		}
+	}
+}

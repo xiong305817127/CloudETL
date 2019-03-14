@@ -1,0 +1,294 @@
+.sider {
+  flex-basis: 80px!important;
+  background-color: rgb(234, 239, 243);
+}
+
+.Flow{
+   height: 754px;
+  display: flex;
+}
+
+.Flow .layout{
+  margin-top: 10px;
+  align-items: stretch;
+  border:1px solid #CCCCCC;
+  border-radius: 5px;
+}
+
+.Flow .Header{
+   padding: 0;
+   height: 45px;
+   line-height: 45px;
+   margin-bottom: 10px;
+}
+
+
+.mainContent{
+  flex:1;
+  display: flex;
+  flex-direction: column;
+}
+
+:global(.workspace_contain2){
+  background: white;
+}
+
+.divContent{
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+.delBtn{
+  float: left;
+  margin-left:8px ;
+}
+.confirm{
+  position: fixed;
+  top:100px;
+  left: 100px;
+}
+:global(.vertical-center-modal){
+  text-align: center;
+  white-space: nowrap;
+}
+
+:global(.out-model){
+  z-index:1025;
+  background-color:rgba(55, 55, 55, 0.3)
+}
+
+
+:global(.vertical-center-modal:before){
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  width: 0;
+}
+
+:global(.vertical-center-modal1:before){
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  width: 0;
+}
+
+:global(.vertical-center-modal .ant-modal){
+  display: inline-block;
+  vertical-align: middle;
+  top: 0;
+  text-align: left;
+}
+:global(.vertical-center-modal1:before){
+  display: inline-block;
+  vertical-align: middle;
+  top: 0;
+  text-align: left;
+}
+
+.mainContent :global(.ant-popover-inner-content){
+  padding: 0px 30px 8px 18px;
+}
+.mainContent :global(.anticon-close:before){
+  position: absolute;
+}
+
+
+/*drag部分样式*/
+.drop{
+  width: 50px;
+  height: 60px;
+  position: absolute;
+  left: 100px;
+
+
+  box-shadow: 2px 2px 19px #e0e0e0;
+  -o-box-shadow: 2px 2px 19px #e0e0e0;
+  -webkit-box-shadow: 2px 2px 19px #e0e0e0;
+  -moz-box-shadow: 2px 2px 19px #e0e0e0;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
+  opacity: 0.8;
+  cursor: move;
+  font-size: 11px;
+  -webkit-transition: background-color 0.25s ease-in;
+  -moz-transition: background-color 0.25s ease-in;
+  transition: background-color 0.25s ease-in;
+
+  user-select: none;
+}
+.drop:hover{
+  border: 1px solid #1e8151;
+  /*box-shadow: -1px 0 3px #2e6f9a,1px 0 3px #2e6f9a, 0 -1px 3px #2e6f9a,0 1px 3px #2e6f9a;*/
+}
+.span{
+  width: 100px;
+  position: relative;
+  left: -50%;
+  top:67px;
+  text-align: center;
+}
+:global(.anticon-close:before){
+  top: 5px;
+  right: 3px;
+  font-size: 12px;
+}
+:global(.anticon-close:before:hover){
+  cursor: pointer;
+}
+
+
+:global(.aLabel){
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  background: url("./img/change.png") no-repeat center;
+  color: transparent;
+}
+
+:global(.aLabel:hover){
+  background: url("./img/change.png") no-repeat center;
+  color: transparent;
+}
+
+
+
+
+
+.close:hover{
+  cursor: pointer;
+}
+.pushpin{
+  position: absolute;
+  left: 1px;
+  bottom: 1px;
+  z-index: -1;
+}
+.pushpin:hover{
+  cursor: pointer;
+}
+
+/*连线位置*/
+.canDrag{
+  width: 13px;
+  height: 13px;
+  position: absolute;
+  bottom: 3px;
+  left: 3px;
+  background: url("./img/line_icon.png") no-repeat center ;
+}
+.canDrag:hover{
+  cursor: pointer;
+  box-shadow: -1px 0 3px #666,1px 0 3px #666, 0 -1px 3px #666,0 1px 3px #666;
+}
+.img{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -16px;
+  margin-left: -16px;
+}
+.header{
+  background: white;
+  height: 40px;
+  line-height: 40px;
+}
+
+
+:global(.dragNormal){
+  border: 1px solid #5D96c6;
+}
+:global(.dragNormal .checkCircle){
+  display: none;
+}
+
+:global(.stopStyle){
+  border: 1px solid darkorange;
+}
+:global(.stopStyle .checkCircle){
+  display: none;
+}
+
+
+:global(.dragClick){
+  border: 1px solid #1e8151;
+}
+:global(.dragClick .checkCircle){
+  display: none;
+}
+
+/* 运行中 */
+:global(.runningStyle){
+  border: 1px solid #108ee9;
+  box-shadow: 0 0 5px 1px #108ee9;
+  animation: runningMove 1.6s infinite;
+}
+:global(.runningStyle .checkCircle){
+  display: none;
+}
+@keyframes runningMove {
+  from {box-shadow: 0 0 1px 1px #108ee9;}
+  to {box-shadow: 0 0 10px 1px #108ee9;}
+}
+
+/* 暂停 */
+:global(.pauseStyle){
+  border: 1px solid #ffce3d;
+  box-shadow: 0 0 5px 1px #ffce3d;
+}
+:global(.pauseStyle .checkCircle){
+  display: none;
+}
+
+:global(.errStyle){
+  border: 1px solid #ff0000;
+  box-shadow: 0 0 2px 1px #ff0000;
+}
+:global(.errStyle .checkCircle){
+  display: none;
+}
+
+:global(.successStyle){
+  /*border: 1px solid #5c96bc;*/
+  border: 1px solid rgb(0, 168, 84);
+  box-shadow: 0 0 2px 1px rgb(0, 168, 84);
+}
+:global(.successStyle .checkCircle){
+  font-size: 16px;
+  color: #00AA00;
+  position: absolute;
+  top: -8px;
+  left:-8px;
+  z-index: 10;
+}
+
+
+ .saveButton{
+  position: absolute;
+  top:20px;
+  right: 30px;
+}
+.saveButton :global(.ant-btn) {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* :global(#workspace_container .ant-btn:not(.ant-btn-circle):not(.ant-btn-circle-outline).ant-btn-icon-only){
+  padding: 5px 15px 3px 15px;
+} */
+:global(textarea.ant-input){
+  font-size: 14px;
+  word-spacing:3px;
+  letter-spacing: 1px
+}
+
+
+
+/*Check按钮样式*/
+:global(#space_switch){
+  position: absolute;
+  top:22px;
+  right: 200px;
+}

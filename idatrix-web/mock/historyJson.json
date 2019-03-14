@@ -1,0 +1,10 @@
+{
+	"code":30,
+	"data":[
+		{"oprate":"新增","oprater":"李XX","time":"yyyy-mm-dd hh:MM:ss"},
+		{"oprate":"修改","oprater":"李XX","time":"yyyy-mm-dd hh:MM:ss"},
+		{"oprate":"注册","oprater":"李XX","time":"yyyy-mm-dd hh:MM:ss"},
+		{"oprate":"上架","oprater":"张XX","time":"yyyy-mm-dd hh:MM:ss"},
+		{"oprate":"下架","oprater":"张XX","time":"yyyy-mm-dd hh:MM:ss"}
+	]
+}

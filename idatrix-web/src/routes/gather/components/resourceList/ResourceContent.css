@@ -1,0 +1,37 @@
+
+/*资源列表共同css*/
+/* :global(#ResourceContent){
+   padding:0 30px;
+} */
+
+:global(#ResourceContent)  :global(#filesystem) :global(.ant-tabs:not(.ant-tabs-vertical)) > :global(.ant-tabs-content){
+   display: none;
+}
+
+:global(#ResourceContent)  :global(.ant-table-tbody) >  :global(tr) > :global(td){
+    padding: 11px 8px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow:ellipsis;
+}
+.divTabs{
+    width: 100%;
+	  height: 550px;
+	  margin-top:15px;
+    border: 1px #ccc solid;
+    border-radius: 10px;
+    padding-top: 20px;
+}
+ .BottomRow{
+  /* position: absolute; */
+  bottom: 50px;
+  left: 50px;
+  width: 200px;
+}
+
+ /*
+    政府风格
+ */
+:global(.skin-government) :global(#ResourceContent){
+    padding:0 20px 20px 20px;
+}

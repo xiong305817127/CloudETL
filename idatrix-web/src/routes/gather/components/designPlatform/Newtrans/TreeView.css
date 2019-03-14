@@ -1,0 +1,9 @@
+
+
+
+:global(:root .ant-tree.ant-tree-show-line li.newTreeNode span.ant-tree-switcher.ant-tree-switcher_close:after){
+    content: "\E612";
+    /*\E66C*/
+}
+
+

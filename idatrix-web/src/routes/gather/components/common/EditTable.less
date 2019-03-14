@@ -1,0 +1,55 @@
+.editable{
+	:global{
+		.ant-table .ant-table-content .ant-table-scroll{
+			.ant-table-header{
+				background: #F3F5F4;
+				.ant-table-thead{
+					tr{
+						th{
+							background: #F3F5F4;
+						}
+						th:last-child{
+							width: calc(~"100% - 100px");
+
+						}
+						.ant-table-selection-column{
+							width: 30px;
+							min-width: 30px;
+						}
+					}
+				}
+			}
+			.ant-table-body{
+				.ant-table-row{
+					td{
+						max-width: 150px;
+						padding: 0px;
+						overflow: hidden;
+					    -o-text-overflow: ellipsis;
+					    text-overflow: ellipsis;
+
+						.editable-cell{
+							input{
+								border: none;
+								border-radius: 0;
+								box-shadow: none;
+							}
+						}
+						.ant-select{
+							width: 100%;
+							.ant-select-selection{
+								border: none;
+								border-radius: 0;
+								box-shadow: none;
+							}
+						}
+					}
+					.ant-table-selection-column{
+						width: 30px;
+						min-width: 30px;
+					}
+				}
+			}
+		}
+	};
+}

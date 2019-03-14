@@ -1,0 +1,38 @@
+
+:global(.gather_control_view .ant-modal-header){
+    background: url(../../../../../assets/images/gov/cart-head-bg.png) repeat-x;
+}
+:global(.ant-modal-mask){
+  z-index:400;
+}
+:global(.gather_control_view){
+   z-index: 500;
+}
+
+
+:global(.gather_control_view) .viewBtn{
+  position: absolute;
+  top: 80px;
+  right: 40px;
+  z-index: 100;
+}
+:global(.gather_control_view .ant-modal-body){
+  padding: 0;
+}
+:global(.gather_control_view) .viewContent{
+  background: url("../../../../../assets/images/gather_view.jpg") no-repeat;
+
+  background-size: 100% 100%;
+}
+:global(.gather_control_view) .viewCanvas{
+  background-image: linear-gradient(
+    #283e4e,#283e4e 1px,
+    transparent 1px,transparent 50px,
+    #283e4e 50px,#283e4e 51px,transparent 51px,transparent 100px),
+  linear-gradient(90deg,#283e4e,#283e4e 1px,
+    transparent 1px,transparent 50px,
+    #283e4e 50px, #283e4e 51px,transparent 51px,transparent 100px);
+
+  background-position: 50% 0, 50% 0;
+  background-size: 100px 100px, 100px 100px;
+}

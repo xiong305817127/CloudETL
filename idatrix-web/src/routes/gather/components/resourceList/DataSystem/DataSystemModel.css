@@ -1,0 +1,35 @@
+:global(#datasystem_form .ant-tabs-bar){
+  display: none;
+}
+:global(#datasystem_form){
+  position: relative;
+  margin-top: 20px;
+  height: 560px;
+  border: 1px solid #CCCCCC;
+  border-radius: 10px;
+}
+:global(#data_detail) .ColList{
+  margin-top: 20px;
+  width: 1000px;
+}
+:global(#data_detail) .ColList   :global(.ant-col-2){
+  text-align: center;
+  margin-right: 20px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+:global(#data_detail) .ColList   .click{
+  text-align: center;
+  border: 1px solid #68c4eb;
+  border-radius: 10px;
+  margin-right: 20px;
+  cursor: pointer;
+  color:#68c4eb
+}
+:global(#data_detail) .BottomRow{
+  position: absolute;
+  bottom: 20px;
+  left: 50px;
+  width: 200px;
+}

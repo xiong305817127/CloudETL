@@ -1,0 +1,35 @@
+{
+  "msg":"success",
+  "data":[{
+    "resourceName":"基础信息资源目录",
+    "resourceEncode":"01",
+    "id":"11",
+    "parentId":"0",
+    "children": [{
+      "resourceName":"人口基础信息",
+      "resourceEncode":"001",
+      "id":"111",
+      "parentId":"11",
+      "children": [
+        { "resourceName":"公安部","resourceEncode":"0001","id":"1111","parentId":"111"},
+        { "resourceName":"明政部","resourceEncode":"0002","id":"1112","parentId":"111"},
+        { "resourceName":"卫计部","resourceEncode":"0003","id":"1113","parentId":"111"},
+        { "resourceName":"教育部","resourceEncode":"0004","id":"1114","parentId":"111"}
+      ]
+    }]
+  },{
+    "resourceName":"部门信息资源目录",
+    "resourceEncode":"02",
+    "id":"12",
+    "parentId":"0",
+    "children": [{
+      "resourceName":"国务院",
+      "resourceEncode":"002",
+      "id":"112",
+      "parentId":"12",
+      "children": [
+        { "resourceName":"公安部","resourceEncode":"0001","id":"1115","parentId":"112"}
+      ]
+    }]
+  }]
+}

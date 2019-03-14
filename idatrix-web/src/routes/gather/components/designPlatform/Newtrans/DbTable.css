@@ -1,0 +1,7 @@
+:global(#dbtable  .ant-table-placeholder){
+    border-bottom:none ;
+}
+
+:global(#dbtable  .ant-table-small){
+  height: 300px;
+}

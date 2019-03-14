@@ -1,0 +1,64 @@
+/* 侧边导航 */
+:global(#common-sidebar.ant-layout-sider){
+  position:relative;
+  background-color: rgb(234, 239, 243);
+  min-height: 100%;
+}
+:global(#common-sidebar .ant-menu-item-selected){
+  background-color: #0faedb;
+}
+:global(#common-sidebar .ant-menu-item-selected::after){
+  border-right-color: #0faedb;
+}
+:global(#common-sidebar .ant-menu-item-selected a){
+  color:#fff;
+}
+:global(#common-sidebar.ant-layout-sider-collapsed .ant-menu-item-group-title) {
+  width:2em;
+  margin-left:auto;
+  margin-right:auto;
+  padding-left:0;
+  padding-right:0;
+  white-space:nowrap;
+  overflow: hidden;
+}
+:global(#common-sidebar.ant-layout-sider-collapsed .nav-text) {
+  display: none;
+}
+:global(#common-sidebar .ant-layout-sider-children){
+  margin-top:45px;
+}
+:global(#common-sidebar .ant-layout-sider-trigger){
+  position: absolute;
+  top: 0;
+  height: 45px;
+  line-height:50px;
+  background-color: rgb(214,223,230);
+  color:#969696;
+  font-size:18px;
+  font-weight: bold;
+}
+:global(#common-sidebar .ant-layout-sider-trigger>.anticon:before) {
+  display: inline-block;
+  content: ' ';
+  width:20px;
+  height:20px;
+}
+:global(#common-sidebar .anticon-left:before) {
+  background: url(../../../assets/images/sider-trigger-fold.png) no-repeat center center;
+}
+:global(#common-sidebar .anticon-right:before) {
+  background: url(../../../assets/images/sider-trigger-unfold.png) no-repeat center center;
+}
+:global(#common-sidebar ul){
+  background-color: transparent;
+}
+:global(#common-sidebar li span){
+  font-size:16px;
+  color:rgba(0, 0, 0, 0.65); 
+}
+:global(#common-sidebar li .anticon){
+  font-size:22px;
+  vertical-align: middle;
+  margin-right: 15px;
+}

@@ -1,0 +1,18 @@
+ .DataNone :global(.ant-tabs-bar){
+ 	border-bottom: 1px solid #fff;
+ }
+/*   .DataNone :global(.ant-tabs-nav-wrap){
+   display: none;
+} */
+ .DataNone :global(.ant-tabs-nav .ant-tabs-nav-animated){
+ 	width: 0px;
+ }
+.headbat :global(.ant-tabs-nav .ant-tabs-tab-active){
+     border: 1px solid #0faedb;
+    background: #0faedb;
+    color: #fff;
+    border-radius: 20px;
+    font-size: 13px;
+    height: 28px;
+    line-height: 12px;
+}

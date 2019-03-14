@@ -1,0 +1,14 @@
+/**
+ * 皮肤相关公共样式
+ * 为尽可能的减小因皮肤引起的样式文件体积，约定如下：
+ *   1. 该文件仅定义皮肤相关公共样式
+ *   2. 必须是无法被具体分化到内页、首页等处的样式
+ *   3. 必须以body标签的皮肤专用类名开头，除此外不得出现自定义类名（如有自定义类名，说明是可以分化的）
+ */
+
+/* -======= 政府皮肤公共样式 ========- */
+:global(.skin-government .ant-btn-primary:not(:disabled)) {
+  background-image: linear-gradient(to bottom, rgb(88, 210, 233), rgb(84, 193, 232) 50%, rgb(77, 167, 230));
+  background-color: rgb(86, 200, 234);
+  border-color: rgb(65, 161, 221);
+}

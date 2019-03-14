@@ -1,0 +1,336 @@
+.mainContent{
+  flex:1;
+  display: flex;
+  flex-direction: column;
+
+}
+:global(.workspace_contain1){
+  background: url("../../../image/design/grid_bg.png");
+}
+:global(.workspace_contain2){
+  background: white;
+}
+
+
+.divContent{
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+.delBtn{
+  float: left;
+  margin-left:8px ;
+}
+.confirm{
+  position: fixed;
+  top:100px;
+  left: 100px;
+}
+:global(.vertical-center-modal){
+  text-align: center;
+  white-space: nowrap;
+}
+
+:global(.out-model){
+  z-index:1025;
+  background-color:rgba(55, 55, 55, 0.3)
+}
+
+
+ :global(.vertical-center-modal:before){
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  width: 0;
+}
+
+:global(.vertical-center-modal1:before){
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  width: 0;
+}
+
+ :global(.vertical-center-modal .ant-modal){
+  display: inline-block;
+  vertical-align: middle;
+  top: 0;
+  text-align: left;
+}
+:global(.vertical-center-modal1:before){
+  display: inline-block;
+  vertical-align: middle;
+  top: 0;
+  text-align: left;
+}
+
+.mainContent :global(.ant-popover-inner-content){
+  padding: 0px 30px 8px 18px;
+}
+.mainContent :global(.anticon-close:before){
+  position: absolute;
+}
+
+
+/*drag部分样式*/
+.drop{
+  width: 50px;
+  height: 60px;
+  position: absolute;
+  left: 100px;
+
+
+  box-shadow: 2px 2px 19px #e0e0e0;
+  -o-box-shadow: 2px 2px 19px #e0e0e0;
+  -webkit-box-shadow: 2px 2px 19px #e0e0e0;
+  -moz-box-shadow: 2px 2px 19px #e0e0e0;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
+  opacity: 0.8;
+  cursor: move;
+  font-size: 11px;
+  -webkit-transition: background-color 0.25s ease-in;
+  -moz-transition: background-color 0.25s ease-in;
+  transition: background-color 0.25s ease-in;
+}
+.drop:hover{
+  border: 1px solid #1e8151;
+  /*box-shadow: -1px 0 3px #2e6f9a,1px 0 3px #2e6f9a, 0 -1px 3px #2e6f9a,0 1px 3px #2e6f9a;*/
+}
+.span{
+  width: 100px;
+  position: relative;
+  left: -50%;
+  top:67px;
+  text-align: center;
+}
+:global(.anticon-close:before){
+  top: 5px;
+  right: 3px;
+  font-size: 12px;
+}
+:global(.anticon-close:before:hover){
+  cursor: pointer;
+}
+
+
+
+.close:hover{
+  cursor: pointer;
+}
+.pushpin{
+  position: absolute;
+  left: 1px;
+  bottom: 1px;
+  z-index: -1;
+}
+.pushpin:hover{
+  cursor: pointer;
+}
+/*设置位置*/
+.domSet{
+  width: 13px;
+  height: 13px;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  background: url("../workview/img/dom_set.png") no-repeat center ;
+  cursor: pointer;
+}
+/*连线位置*/
+.canDrag{
+  width: 13px;
+  height: 13px;
+  position: absolute;
+  bottom: 3px;
+  left: 3px;
+  background: url("../workview/img/line_icon.png") no-repeat center ;
+}
+.canDrag:hover{
+  cursor: pointer;
+  box-shadow: -1px 0 3px #666,1px 0 3px #666, 0 -1px 3px #666,0 1px 3px #666;
+}
+.img{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -16px;
+  margin-left: -16px;
+  width: 32px;
+  height: 32px;
+}
+.header{
+  background: white;
+  height: 40px;
+  line-height: 40px;
+}
+
+/*初始化状态*/
+:global(.dragNormal){
+  border: 1px solid #5D96c6;
+}
+:global(.dragNormal .checkCircle){
+  display: none;
+}
+
+/*告警状态*/
+:global(.stopStyle){
+  border: 1px solid darkorange;
+}
+:global(.stopStyle .checkCircle){
+  display: none;
+}
+
+/*错误状态*/
+:global(.errorStyle){
+  border: 1px solid #ff508b;
+}
+:global(.errorStyle .checkCircle){
+  display: none;
+}
+
+/*成功状态*/
+:global(.successStyle){
+  border: 1px solid #5c96bc;
+}
+:global(.successStyle .checkCircle){
+  font-size: 16px;
+  color: #00AA00;
+  position: absolute;
+  top: -8px;
+  left:-8px;
+  z-index: 10;
+}
+
+
+:global(.success){
+  border: 1px solid #00AA00;
+}
+:global(.success .checkCircle:before){
+  content: "\E630";
+}
+:global(.success .checkCircle){
+  font-size: 16px;
+  color: #00AA00;
+  position: absolute;
+  top: -8px;
+  left:-8px;
+  z-index: 10;
+}
+
+
+
+:global(.error){
+  border: 1px solid #ff508b;
+}
+:global(.error .checkCircle:before){
+  content: "\E62E";
+}
+:global(.error .checkCircle){
+  font-size: 16px;
+  color: #ff508b;
+  position: absolute;
+  top: -8px;
+  left:-8px;
+  z-index: 10;
+}
+
+
+
+:global(.dragClick){
+  border: 1px solid #1e8151;
+}
+:global(.dragClick .checkCircle){
+  display: none;
+}
+
+
+
+:global(.successStyle){
+  border: 1px solid #5c96bc;
+}
+:global(.successStyle .checkCircle){
+  font-size: 16px;
+  color: #00AA00;
+  position: absolute;
+  top: -8px;
+  left:-8px;
+  z-index: 10;
+}
+
+
+:global(#workspace_container .ant-btn:not(.ant-btn-circle):not(.ant-btn-circle-outline).ant-btn-icon-only){
+  padding: 5px 15px 3px 15px;
+}
+:global(textarea.ant-input){
+  font-size: 14px;
+  word-spacing:3px;
+  letter-spacing: 1px
+}
+
+
+
+:global(#space_button){
+  position: absolute;
+  top:65px;
+  right: 50px;
+}
+
+/*Check按钮样式*/
+:global(#space_switch){
+  position: absolute;
+  top:69px;
+  right: 220px;
+  /*从right:180改成220*/
+}
+
+/*线条中间样式*/
+
+:global(.aLabel){
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  background:url("../workview/img/copy.png") no-repeat center;
+  color: transparent;
+}
+
+:global(.aLabel:hover){
+  background:url("../workview/img/copy.png") no-repeat center;
+  color: transparent;
+}
+
+
+:global(.aLabelError){
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  background: url("./img/error.png") no-repeat center;
+  color: transparent;
+}
+
+:global(.aLabelError:hover){
+  background: url("./img/error.png") no-repeat center;
+  color: transparent;
+}
+
+:global(.aLabelDistribute){
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  background:url("../workview/img/distribute.png") no-repeat center;
+  color: transparent;
+}
+
+:global(.aLabelDistribute:hover){
+  background:url("../workview/img/distribute.png") no-repeat center;
+  color: transparent;
+}
+
+/*出现错误时 线条的颜色*/
+:global(.errTransClass path){
+   stroke: red;
+  stroke-dasharray: 10,5;
+}

@@ -1,0 +1,57 @@
+:global(#DesignPlaform)  .Sider{
+  align-items: stretch;
+  background: #eff5f9;
+  padding:10px 0 0 10px;
+  display: flex;
+}
+
+
+
+:global(#DesignPlaform)  .SiderDiv{
+  height: 100%;
+  width: 215px;
+  align-items: stretch;
+  background: #EAEFF3;
+}
+
+:global(#DesignPlaform)   .Content{
+  display: flex;
+  flex: 1;
+  justify-content:center;
+  background: #eff5f9;
+}
+
+
+.mainCont{
+  width: 100%;
+  display: flex;
+  border: 1px solid #CCCCCC;
+  border-top: none;
+  flex-direction: column;
+  align-items:stretch;
+  overflow-y: hidden;
+  margin: 10px 10px 0;
+  background: white;
+  border-radius: 10px;
+
+}
+
+.welcome{
+  margin: 10px 10px 0;
+  display: flex;
+  border: 1px solid #CCCCCC;
+  flex-direction: column;
+  align-items:stretch;
+  overflow-y: hidden;
+  background: white;
+  border-radius: 10px;
+}
+/*
+  政府风格
+*/
+:global(.skin-government)  :global(#DesignPlaform)  .Sider{
+  background: white;
+}
+:global(.skin-government)  :global(#DesignPlaform)   .Content{
+  background: white;
+}

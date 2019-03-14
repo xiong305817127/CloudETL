@@ -1,0 +1,276 @@
+@color:#81d5f8;
+@font: "24px";
+@yellow_c: #e59253; //部分字体使用橘黄色
+
+.baseColor {
+    color: @color;
+}
+
+.baseColor_1{
+    color:#e59253;
+}
+
+.baseFont {
+    color: @color;
+    font-size: @font;
+    font-weight: bold;
+}
+
+.number_list{
+    list-style: none;
+}
+.number_list > li{
+    flex: 1;
+    position: relative;
+}
+.wrapped_div{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    padding: 8px;
+}
+.num_back{
+    background-origin: content-box;
+    background-color: @color;
+    border: 2px solid #fff;
+    opacity: 0.2;
+    width: 100%;
+    height: 100%;
+    box-shadow:rgb(11, 234, 235) 0px 0px 18px inset;
+}
+.num{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 44px;
+    transform: translate(-50%,-50%);
+    color: @yellow_c;
+    text-shadow:0 0 0.2em @yellow_c,
+                -0 -0 0.2em @yellow_c;
+}
+.init_progress{
+    padding: 8px;
+}
+.reset_button_back {
+    background: none !important;
+    padding-left: 8px;
+
+    > label > span{
+        background: none !important;
+    }
+    > label{
+        background: none !important;
+    }
+    :global(.ant-radio-button-checked){
+        color: @yellow_c !important;
+    }
+    :global(.ant-radio-button-wrapper-checked){
+        color: @yellow_c !important;
+    }
+    :global(.ant-radio-button-wrapper-checked:first-child){
+        border-color: @color !important;
+    }
+    :global(.ant-radio-button-wrapper){
+        color: @color;
+        border-color: @color;
+    }
+}
+
+.select_year{
+    float: right;
+    transform: translateY(32px);
+    z-index: 9999;
+}
+:global(.init-ant-btn){
+    :global(.ant-btn){
+        background: none !important;
+        border-color: @color;
+        color: @color;
+    } 
+}
+.clear_menu_back{
+    background: none;
+    
+    :global(.ant-menu){
+        background: #1C2F40 !important;
+        color: #fff;
+    }
+}
+.unit_list{
+    overflow: scroll;
+    :global(.ant-progress-inner){
+        background: #1E3A50 !important;
+    }
+    :global(.ant-progress-text){
+        color: @color;
+    }
+}
+
+.share_cycle{
+    padding: 16px;
+    text-align: center;
+    box-sizing: border-box;
+    background-size: 60% 80%;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+.share_cycle_1{
+    background-image: url("../../../../assets/hotmap/c1.png");
+}
+.share_cycle_2{
+    background-image: url("../../../../assets/hotmap/c2.png");
+}
+.share_cycle_3{
+    background-image: url("../../../../assets/hotmap/c2.png");
+}
+.share_cycle_4{
+    background-image: url("../../../../assets/hotmap/c2.png");
+}
+.arrow_next{
+    height: 20px;
+    background-image: url("../../../../assets/hotmap/arrow.png");
+    background-size: 15% 100%;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+.share_cycle_h1{
+    color: @yellow_c;
+    font-size: 24px;
+    display: flex;
+    flex-direction: column-reverse;
+}
+.share_cycle_h1 > p{
+    margin-bottom: 0;
+    line-height: 36px;
+}
+.share_cycle_h2{
+    color: @color;
+    height: 90px;
+    font-size: 14px;
+}
+.share_cycle_h2 > p{
+    margin-bottom: 0;
+    line-height: 24px;
+}
+
+.db_select{
+    padding: 16px;
+    justify-content: center;
+
+    :hover{
+        box-shadow: 0 0 10px @color;
+    }
+
+    >div{
+        border:1px solid @color;
+        border-radius: 10px;
+        box-shadow: 0 0 -10px @color;
+        position: relative;
+        display: flex;
+        flex-direction: column-reverse;
+        max-width: 220px;
+        height: 150px;
+        background-position: center 30%;
+        background-repeat: no-repeat;
+        cursor: pointer;
+
+        > div{
+            height: 30px;
+            background-color: rgb(31,84,115);
+            text-align: center;
+            color: #fff;
+            line-height: 30px;
+            border-bottom-right-radius: 10px;
+            border-bottom-left-radius: 10px;
+        }
+    }
+}
+
+.db_selected{
+    >div{
+        border:1px solid @yellow_c;
+        box-shadow: 0 0 10px @yellow_c;
+        > div {
+            background-color: @yellow_c;
+            font-weight: bold;
+        }
+    }
+}
+
+.db_mysql{
+    background-image: url(../../../../assets/hotmap/mysql.png);
+    background-size: 50% auto;
+}
+.db_dm{
+    background-image: url(../../../../assets/hotmap/dm.png);
+    background-size: 80% auto;
+}
+.db_sftp{
+    background-image: url(../../../../assets/hotmap/sftp.png);
+    background-size: 60% auto;
+}
+
+.back_tab{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: @color;
+    opacity: 0.05;
+    z-index: 10;
+}
+.tabItem{
+    height: 72px;
+    color: @color;
+    padding: 8px;
+    z-index: 9999;
+    position: relative;
+    cursor: pointer;
+}
+.tabItem > p:first-child{
+    font-weight: bold;
+    font-size: 14px;
+}
+.tabItem > p:last-child{
+    opacity: 0.6;
+}
+.selectedTab{
+    border: 1px solid @yellow_c;
+    border-right: 3px solid @yellow_c;
+    color: @yellow_c;
+}
+.selectedTab > p:last-child{
+    opacity: 1 !important;
+}
+.resetTable{
+    :global(.ant-table-small){
+        border: none;
+    }
+    :global(.ant-table-thead > tr > th){
+        background: none;
+        color: @color;
+    }
+    :global(th) {
+        background: #1E3A50 !important;
+        color: @yellow_c !important;
+        font-weight: bold;
+        border-bottom-color: #1E3A50 !important;
+    }
+    :global(td){
+        color: @color !important;
+        border-bottom-color: #1E3A50 !important;
+    }
+    :global(.ant-table-tbody .ant-table-row){
+        &:hover > :global(td){
+            background: #1E3A50 !important;
+        }
+    }
+}
+:global(.resetScroll::-webkit-scrollbar-thumb) {
+    border-radius: 10px;
+    background: @color;
+}
+:global(.resetScroll::-webkit-scrollbar) {
+    width: 4px;
+}

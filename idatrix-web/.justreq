@@ -1,0 +1,85 @@
+{
+   "host": "10.0.0.84", // 深圳测试服
+   "port": 80,
+ //"host": "119.147.93.211", // 广州测试服
+ //"port": 2880,
+
+  "cacheTime": "20m",
+  "cachePath": ".jr/cache/",
+  "substitutePath": "mock/",
+  "jrPort": 8060,
+  "proxyTimeout": "300s",
+  "rules": [
+    {
+      "href": ".+",
+      "keepFresh": true
+    },
+    {
+      "href": "^/dist/(.*)$",
+      "subs": "../dist/$1"
+    }
+ // ,{
+ //   "href": "/bi",
+ //   "host": "10.0.0.117",  //WB
+ //   "port": 8088
+ // }
+//  ,{
+//    "href": "/saiku",
+//    "host": "10.0.0.117",  //WB
+//    "port": 8080
+//  }
+ // ,{
+ //     "href":"/security",
+ //    	"host":"10.0.0.117",
+ //     "port": 8080
+ // }
+  // ,{
+  //    "href":"/metacube",   //周剑元数据
+  //    "host":"10.0.0.108",
+  //   "port": 8085
+  //  }
+  // ,{
+  // ,{
+  //     "href": "/cloudetl",
+  //     "host": "10.0.0.102",  //SSH
+  //     "port": 9090
+  //   }
+  //  ,{
+  //    "href": "/quality",
+  //    "host": "10.0.0.117",  //WB
+ //    "port": 9090
+ //   }
+  //  ,{
+  //    "href": "/metacube",
+  //    "host": "10.0.0.108",  //WB
+  //    "port": 8085
+  //  }
+  //,{
+  //    "href": "/datalab",
+   //   "host": "10.0.0.108",  //WB
+   //   "port": 8086
+   // }
+,{
+       "href": "/cloudetl",
+       "host": "10.0.0.102",  //SSH
+       "port": 8080
+     }
+    ,{
+      "href": "/quality",
+      "host": "10.0.0.102",  //WB
+	  "port": 9090
+    }
+   // ,{
+   //   "href": "/saiku",
+   //   "host": "10.0.0.117",  //oyr
+   //   "port": 8088
+   // }
+   //  ,{
+   //   "href": "/catalog",
+   //   "host": "10.0.0.114",  //WB
+   //   "port": 8080
+  //  }
+   
+    
+  ]
+}

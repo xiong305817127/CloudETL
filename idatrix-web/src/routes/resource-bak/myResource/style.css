@@ -1,0 +1,17 @@
+.head-wrap {
+  padding: 20px 50px;
+  background-color: #fff;
+}
+
+.main-wrap {
+  margin-top:20px;
+  padding:10px;
+  background-color: #fff;
+}
+
+.tags-wrap{
+  padding: 20px 8px;
+}
+.tags-wrap .ant-tabs-bar{
+  margin-bottom:0;
+}

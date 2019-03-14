@@ -1,0 +1,101 @@
+.dataModel {
+  display: flex;
+  flex: 0 1 100%;
+}
+.dataModel .sliderTree {
+  flex: 0 1 240px;
+  display: flex;
+  flex-direction: column;
+}
+.dataModel .sliderTree .treeHeader {
+  height: 41px;
+  line-height: 40px;
+  display: flex;
+  box-sizing: border-box;
+  padding: 0 10px;
+  border-bottom: 1px solid #ccc;
+}
+.dataModel .sliderTree .treeHeader .name {
+  width: calc(240px - 60px);
+  font-weight: bold;
+}
+.dataModel .sliderTree .treeHeader .icon {
+  display: flex;
+  flex: 0 1 40px;
+  font-size: 16px;
+  justify-content: center;
+  align-items: center;
+  color: #66baea;
+  cursor: pointer;
+}
+.dataModel .sliderTree .treeSearch {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+.dataModel .sliderTree .treeContent {
+  height: calc(100% - 100px);
+  box-sizing: border-box;
+  padding: 0 12px;
+  width: 240px;
+  overflow: scroll;
+}
+.dataModel .sliderTree .treeContent :global .anticon-folder-open:before {
+  color: #f6b038;
+}
+.dataModel .sliderTree .treeContent :global .anticon-folder:before {
+  color: #f6b038;
+}
+.dataModel .content {
+  width: calc(100% - 240px);
+  box-sizing: border-box;
+  border-left: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+}
+.dataModel .content .welcome {
+  color: #66baea;
+  font-size: 16px;
+  font-weight: bold;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+}
+.dataModel .content .welcome .welcomeFont {
+  padding-top: 10px;
+}
+.treeList {
+  height: 300px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 16px;
+}
+.treeList .header {
+  height: 30px;
+  border-bottom: 1px solid #ccc;
+}
+.treeList .tree {
+  height: 270px;
+  overflow: scroll;
+}
+.treeList :global .anticon-folder-open:before {
+  font-size: 20px;
+  color: #f6b038;
+}
+.treeList :global .anticon-folder:before {
+  font-size: 20px;
+  color: #f6b038;
+}
+.treeList :global .ant-tree.ant-tree-directory > li.ant-tree-treenode-selected > span.ant-tree-switcher {
+  display: none;
+}
+.treeList :global .ant-tree.ant-tree-directory > li span.ant-tree-switcher,
+.treeList :global .ant-tree.ant-tree-directory .ant-tree-child-tree > li span.ant-tree-switcher {
+  display: none;
+}
+.treeList :global .ant-tree.ant-tree-directory > li span.ant-tree-node-content-wrapper > span,
+.treeList :global .ant-tree.ant-tree-directory .ant-tree-child-tree > li span.ant-tree-node-content-wrapper > span {
+  margin-left: 10px;
+}

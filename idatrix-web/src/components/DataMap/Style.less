@@ -1,0 +1,154 @@
+@color1: rgb(111, 162, 196);
+@color2: rgb(14, 211, 211);
+
+.wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.legend {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 5px;
+  background-color: rgba(255, 255, 255, .8);
+  border-radius: 5px;
+}
+
+.panel {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  padding: 5px;
+  background-color: rgba(255, 255, 255, .8);
+  color: #999;
+  text-align: center;
+  border-radius: 5px;
+  i {
+    cursor: pointer;
+  }
+}
+
+.fullBtn {
+  i {
+    border: 1px solid #999;
+    box-sizing: border-box;
+  }
+}
+
+.slider {
+  height: 70px;
+  margin: 0 auto;
+}
+
+.arrow {
+  fill: @color1;
+}
+
+.dot {
+  fill: @color1;
+}
+
+/* 节点 */
+.nodeGroup {
+  cursor: pointer;
+  .nodeWrap {
+    stroke: @color1;
+    fill: #fff;
+  }
+  .nodeTitleBg {
+    fill: rgb(218, 236, 248);
+  }
+  .nodeTitle {
+    fill: #333;
+    text-anchor: middle; /* 文本水平居中 */
+    dominant-baseline: middle; /* 文本垂直居中 */
+  }
+  .nodeNumBox {
+    stroke: @color1;
+    fill: #fff;
+  }
+  .nodeNum {
+    text-anchor: middle; /* 文本水平居中 */
+    dominant-baseline: middle; /* 文本垂直居中 */
+    fill: @color1;
+    font-size: 12px;
+  }
+  .nodeDesc {
+    text-anchor: middle; /* 文本水平居中 */
+    dominant-baseline: middle; /* 文本垂直居中 */
+    fill: #333;
+    font-size: 12px;
+  }
+  .nodeTitleBg2 {
+    fill: none;
+    stroke: rgb(155, 136, 50);
+    stroke-dasharray: 5px;
+    stroke-dashoffset: 1px
+  }
+  /* 鼠标经过样式 */
+  .hover, .active {
+    .nodeWrap {
+      stroke: @color2;
+    }
+    .nodeNumBox {
+      stroke: @color2;
+    }
+    .nodeTitleBg {
+      fill: @color2;
+    }
+    .nodeTitle {
+      fill: #fff;
+    }
+    .nodeTitle2 {
+      fill: #fff;
+    }
+  }
+}
+
+.linkWrap {
+  path {
+    stroke: @color1;
+    fill: none;
+  }
+}
+
+/* 连接数字 */
+.linkNumGroup {
+  cursor: pointer;
+  circle {
+    fill: #fff;
+    stroke: @color1;
+  }
+  text {
+    text-anchor: middle; /* 文本水平居中 */
+    dominant-baseline: middle; /* 文本垂直居中 */
+    fill: @color1;
+    font-size: 12px;
+  }
+  /* 鼠标经过样式 */
+  .hover, .active {
+    circle {
+      fill: @color2;
+    }
+    text {
+      fill: #fff;
+    }
+  }
+}
+
+/* 工具提示 */
+.tooltipsGroup {
+  .tooltipsBg {
+    fill: rgb(234, 239, 243);
+    width: 100px;
+    height: 20px;
+    rx: 3px;
+    ry: 3px;
+  }
+  .tooltipsMsg {
+    text-anchor: middle; /* 文本水平居中 */
+    dominant-baseline: middle; /* 文本垂直居中 */
+    fill: #444;
+  }
+}

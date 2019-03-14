@@ -1,0 +1,22 @@
+.div{
+  height: 60px;
+  box-sizing: border-box;
+  line-height: 60px;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: center;
+}
+
+.div .img{
+   width: 32px;
+   height: 32px;
+}
+
+.div .name{
+  height: 20px;
+  line-height: 20px;
+  font-size: 12px;
+}

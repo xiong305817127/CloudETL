@@ -1,0 +1,25 @@
+ .detail{
+ /* border: 1px solid #12b9d2;
+  border-radius: 25px;
+  text-align: center;
+  color: #12b9d2;
+   font-size: 14px;*/
+   background: url("./img/task.png") no-repeat center;
+}
+ .detailtask{
+  padding-left: 10px;
+   font-size: 14px;
+}
+
+.DropMenu{
+  width: 250px; 
+  height: 300px;
+  overflow-y: scroll;
+  overflow-x: scroll;
+}
+
+ .DropMenu :global(li){
+    width: 240px;
+   display: inline-block;
+   white-space: nowrap;
+ }

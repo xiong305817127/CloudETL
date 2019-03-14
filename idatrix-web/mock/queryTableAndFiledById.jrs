@@ -1,0 +1,3 @@
+const resopnse = {"code":"0","data":{"dataFiledRelation":[{"createTime":"2017-08-07 13:56:32.0","creator":"ax","fcolCode":"sss","fcolName":"aa","fmetaid":200080,"fprosid":1,"id":1,"modifyTime":"2017-08-07 13:56:32.0","rsdescription":"ss","scolCode":"ss111","scolName":"aa","smetaid":"200079","sprosid":"2"}],"metaRelationship":[{"childId":200079,"childOwner":"null","childTable":"ss","createTime":"2017-08-07 10:57:08.0","creator":"0","id":6,"metaid":200080,"modifier":"0","modifyTime":"2017-08-07 10:57:08.0","owner":"null","rsType":1,"tableName":"table","tableType":0}]},"msg":"Success"};
+
+end(resopnse);

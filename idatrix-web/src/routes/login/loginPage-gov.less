@@ -1,0 +1,80 @@
+.logo{
+  width: 50px;
+  height: 50px;
+}
+
+.bg {
+  height: 100%;
+  min-width: 650px;
+  min-height: 600px;
+  background: rgb(154, 234, 243) url(../../assets/images/gov/login-bg.jpg) no-repeat center top;
+  :global(.ant-input){
+    height: 40px;
+    text-indent:1.5em;
+    background-color: rgba(67, 169, 194, .8);
+    border-color: rgb(56, 140, 161);
+    color: #fff;
+  }
+  .icon {
+    font-size: 30px;
+    color: #fff;
+  }
+  .formBg {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: url(../../assets/images/gov/login-form.png) no-repeat center center;
+    .formWrap {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 620px;
+      height: 410px;
+      margin: -205px 0 0 -310px;
+      header {
+        margin-top: 10px;
+        text-align: center;
+        color: #fff;
+        font-size: 24px;
+        line-height: 1.6;
+        letter-spacing: 4px;
+      }
+      .form {
+        margin: 20px auto 0;
+        width: 50%;
+        :global(.ant-form-item) {
+          margin-bottom: 15px;
+        }
+        :global(.ant-row) {
+          margin-top: 0;
+          line-height: 1;
+          :global(.ant-form-item-control) {
+            line-height: 1;
+          }
+        }
+        .submit {
+          background-image: linear-gradient(to bottom, rgb(129, 205, 26), rgb(108, 195, 14) 50%, rgb(86, 179, 10));
+          background-color: rgb(108, 195, 14);
+          border-color: rgb(94, 176, 8);
+          height: 40px;
+          width: 100%;
+          font-size: 16px;
+          letter-spacing: 10px;
+        }
+        .captcha {
+          display: flex;
+          height: 40px;
+          line-height: 40px;
+          text-align: center;
+          width: 150px;
+          border: 1px solid #d9d9d9;
+          img {
+            width: 100%;
+            height: 100%;
+          }
+        }
+      }
+    }
+  }
+}
+

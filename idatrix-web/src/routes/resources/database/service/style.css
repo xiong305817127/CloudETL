@@ -1,0 +1,18 @@
+
+.view td{
+    border:1px solid #ddd;
+    padding: 5px;
+  }
+ .view td:nth-child(odd){
+    text-align: right;
+    width: 160px;
+    height: 30px;
+  }
+ .view td:nth-child(even){
+   text-align: left;
+   height: 30px;
+   padding-left: 10px;
+ }
+ .view table{
+   border-collapse:collapse;
+ }

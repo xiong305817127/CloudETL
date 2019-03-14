@@ -1,0 +1,167 @@
+@redStyle: #fe4a82;
+@greenStyle: #01cd81;
+/*灰色背景*/
+@grayStyle: #889da7;
+
+/*默认字段颜色*/
+@fontColor:#555555;
+
+
+/*灰色字体颜色*/
+@grayColor:#b0b0b0;
+/*蓝色字体颜色*/
+@blueColor:#68c4eb;
+
+/*边框颜色*/
+@grayBorder:#d8dce0;
+
+
+//执行状态
+
+@runStatus:#8cce35;
+
+@initStatus:#bbb3a5;
+@finishStatus:#bbb3a5;
+
+@stopStatus:rgb(255, 200, 20);
+@errorStatus:#fd4e88;
+
+
+html, body, :global(#root) {
+  height: 100%;
+  color:@fontColor;
+  font-size: 14px;
+  font-family: "Microsoft YaHei";
+}
+
+
+html body :global(#gatherSystem) a{
+  color:@fontColor;
+  text-decoration: none;
+}
+
+
+:global(.redBg){
+  background:@redStyle;
+}
+:global(.greenBg){
+  background: @greenStyle;
+}
+:global(.grayBg){
+  background:@grayStyle;
+}
+
+:global(.redColor){
+  Color:@redStyle;
+}
+:global(.greenColor){
+  Color: @greenStyle;
+}
+:global(.grayColor){
+  Color:@grayColor;
+}
+:global(.blueColor){
+  Color:@blueColor;
+}
+:global(.grayBorder){
+  border:1px solid @grayBorder;
+}
+
+
+
+:global(.runStatus){
+  color:@runStatus;
+}
+:global(.runStatusBg){
+  background:@runStatus;
+}
+
+:global(.initStatus){
+  color: @initStatus;
+}
+:global(.initStatusBg){
+  background: @initStatus;
+}
+
+:global(.stopStatus){
+  color:@stopStatus;
+}
+:global(.stopStatusBg){
+  background:@stopStatus;
+}
+
+:global(.errorStatus){
+  color:@errorStatus;
+}
+:global(.errorStatusBg){
+  background:@errorStatus;
+}
+
+
+
+:global(.grayColor){
+  Color:@grayColor;
+}
+:global(.blueColor){
+  Color:@blueColor;
+}
+:global(.grayBorder){
+  border:1px solid @grayBorder;
+}
+
+
+/*树的样式*/
+/*:global(.ant-tree.cloudetlTree.ant-tree-show-line li span.ant-tree-switcher.ant-tree-switcher_open:after){
+  content: "\E699";
+}
+
+:global(.ant-tree.cloudetlTree.ant-tree-show-line li span.ant-tree-switcher.ant-tree-switcher_close:after){
+  content: "\E662";
+}*/
+
+:global(.ant-tree.cloudetlTree.ant-tree-show-line .folder span.ant-tree-switcher.ant-tree-switcher-noop:after){
+  content: "\E662";
+}
+
+/*消息提醒层级*/
+:global(.ant-message){
+   z-index: 1050;
+}
+
+:global(#noTabPane) :global(.ant-tabs:not(.ant-tabs-vertical)) > :global(.ant-tabs-content){
+  display: none;
+}
+
+/*弹框文字长度限制*/
+:global(.limitText .ant-form-text){
+    font-size: 12px;
+    font-style: italic;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+
+/*自适应*/
+/*最小宽度1366px*/
+html, body, :global(#root) {
+  height: 100%;
+  color:@fontColor;
+  font-size: 12px;
+  font-family: "Microsoft YaHei";
+}
+
+
+@media (min-width: 1440px) {
+  body{font-size: 25px !important;}
+}
+
+@media (min-width: 1680px) {
+  body{font-size: 28px;}
+}
+
+@media (min-width: 1920px) {
+  body{font-size: 33px;}
+}
+
+

@@ -1,0 +1,43 @@
+/*外层*/
+.LunBotu{
+  width: 1064px;
+  margin:0 auto;
+}
+/*1.轮播框*/
+.LunBotu .LunBoimg{
+}
+/*轮播图片*/
+.LunBotu .LunBogo{
+  display: inline-block;
+  width: 564px;
+  height: 319px;
+}
+/*轮播内容*/
+.LunBotu .LunBoText{
+  display: inline-block;
+  position: absolute;
+  text-align: center;
+  height: 320px;
+  width: 500px;
+  padding-top: 50px;
+  background-color: #fff;
+}
+/*了解详情*/
+.LunBotu .LunBoText span{
+  font-size: 16px;
+  background-color: #00c1de;
+  padding: 5px;
+  border-radius: 3px;
+}
+.LunBotu .LunBoText a{
+  color: #fff;
+}
+/*2.底层内容：*/
+.FooterText{
+  color: #fff;
+  text-align: center;
+  font-size:20px;
+  font-weight: bold;
+  text-shadow: 4px 3px 2px #888;
+  padding-bottom: 10px;
+}

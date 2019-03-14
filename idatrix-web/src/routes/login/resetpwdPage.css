@@ -1,0 +1,63 @@
+/*外层*/
+.resetpwdWrapper {
+  min-height: 100%;
+  background-color:#eff5f9;
+  min-width: 1400px;
+}
+/*1:header*/
+.resetpwdHeader {
+  text-align: center;
+  padding-top: 50px;
+}
+.resetpwdHeader a{
+  display: inline-block;
+}
+.resetpwdHeader img{
+  vertical-align:middle;
+  height: 60px;
+  width: 60px;
+}
+.resetpwdHeader span{
+  vertical-align:middle;
+  margin-left: 30px;
+  color: #333333;
+  font-size: 30px;
+}
+
+/*2：content表单*/
+.resetpwdContent {
+  margin:5% 10%;
+  background-color: #ffffff;
+  min-height: 550px;
+}
+
+/*3:footer*/
+.resetpwdFooter {
+  text-align: center;
+  padding-bottom: 80px;
+  background-color: #eff5f9;
+}
+.resetpwdFooter a{
+  text-align: center;
+  font-size: 18px;
+  color: #333333;
+}
+
+/*4.其他：切换页面后各个的样式*/
+.resetpwdForm{
+  margin: 10px;
+}
+/*4.1.1：忘记密码的标题*/
+.resetpwdContent .resetpwdForm h1{
+  font-size: 24px;
+  padding-bottom: 10px;
+  padding-left: 20px;
+  border-bottom: 1px solid #e7e7e7;
+}
+/*4.1.2：文字*/
+.resetpwdContent p{
+  font-size: 16px;
+  padding-top: 10px;
+  padding-left: 20px;
+  color: #999999;
+}

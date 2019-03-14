@@ -15,3 +15,24 @@ cloudetl_daily*
 **/XHTestMain.java
 .idea
 /idatrix-cloudetl-cloud/src/test/java/com/ys/test/DirectMiningTest.java
+
+node_modules
+
+# production
+dist
+
+# compile
+*-compiled.js
+*-compiled.js.map
+
+# misc
+.DS_Store
+npm-debug.log*
+.jr
+.idea
+
+*.zip
+*.rar
+*.tar.gz
+pkg
+

@@ -1,0 +1,14 @@
+:global(#TaskCenter){
+  background: #e9f0f3;
+}
+
+:global(#TaskCenter) .Sider{
+  align-items: stretch;
+  background: #e9f0f3;
+  width: 100%;
+}
+
+:global(#TaskCenter)   .Content{
+  background: white;
+  padding: 25px 30px 15px 30px;
+}

@@ -1,0 +1,48 @@
+.ExecutionCenter{
+	width: 100%;
+	height: 600px;
+	margin-top:15px; 
+    border: 1px #ccc solid;
+    border-radius: 10px;
+}
+ .DataNone :global(.ant-tabs-nav-wrap){
+     display: none;
+}
+.DataNone{
+	width: 30%;
+	margin-left:73px;
+	height: 300px;
+	
+}
+.ExecuTab1{
+	height: 40px;
+	line-height: 40px;
+	border: 1px solid #ccc;
+    border-radius: 10px;
+    text-align: center;
+}
+.ExecuTab2{
+	height: 55px;
+	border: 1px solid #ccc;
+    border-radius: 10px;
+    margin-top: -10px;
+    text-align: center;
+    line-height: 55px;
+}
+.ExecuTab3{
+	 margin-top: 10px;
+}
+
+.DataCenter{
+	width: 100%;
+	 margin-top: 10px;
+	border: 1px solid #ccc;
+	border-radius: 10px;
+	line-height: 45px;
+}
+.exectionName{
+	margin-left: 20px;
+}
+ .DataNone :global(.ant-tabs-bar){
+ 	border-bottom: 1px solid #fff;
+ }

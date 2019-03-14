@@ -1,0 +1,17 @@
+.sider-wrap{
+  position: relative;
+  background-color: #fff;
+  min-height: calc(100vh - 140px);
+}
+.tree-btns-wrap{
+  margin-bottom:10px;
+}
+.tree-btn{
+  margin:0 5px;
+}
+
+.tree-list{
+  height: calc(100% - 60px);
+  width: 100%;
+  overflow: auto;
+}

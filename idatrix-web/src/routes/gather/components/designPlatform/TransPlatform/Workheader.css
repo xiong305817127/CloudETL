@@ -1,0 +1,48 @@
+
+.Workheader{
+  width: 100%;
+  background: #F4F5F7;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+   border-top: 1px solid #D8DCE0;
+  margin-left:-1px;
+
+}
+:global(#Workheader .ant-tabs-bar){
+  margin-bottom: 0;
+}
+:global(#Workheader .ant-tabs-tabpane){
+  display: none;
+}
+:global(#Workheader .anticon-close:before){
+  top:1px;
+  right: 1px;
+}
+:global(#Workheader .ant-tabs.ant-tabs-card > .ant-tabs-bar .ant-tabs-tab-active){
+
+  background: white;
+}
+
+
+.Workheader :global(.ant-tabs.ant-tabs-card > .ant-tabs-bar .ant-tabs-nav-container) {
+  max-width: 850px;
+}
+
+@media (min-width: 1440px) {
+  .Workheader :global(.ant-tabs.ant-tabs-card > .ant-tabs-bar .ant-tabs-nav-container) {
+    max-width: 1100px;
+  }
+}
+
+@media (min-width: 1680px) {
+  .Workheader :global(.ant-tabs.ant-tabs-card > .ant-tabs-bar .ant-tabs-nav-container) {
+    max-width: 1250px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .Workheader :global(.ant-tabs.ant-tabs-card > .ant-tabs-bar .ant-tabs-nav-container) {
+    max-width: 1450px;
+  }
+}
+

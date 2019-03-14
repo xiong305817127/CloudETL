@@ -1,0 +1,18 @@
+.hd {
+  font-weight: bold;
+  line-height: 30px;
+  margin-bottom: 5px;
+}
+.selectWrap, .treeWrap{
+  height:360px;
+  border:1px solid #eee;
+  overflow-y: auto;
+  text-align: left;
+}
+.selectWrap :global(ul){
+  padding:10px;
+}
+.selectWrap :global(li){
+  margin:5px 10px;
+  text-align: left;
+}

@@ -1,0 +1,37 @@
+const data1 = {
+  "schemaInfo": {
+    "book_db": {
+      "users": [
+        {
+          "table_schema": "book_db",
+          "table_name": "users",
+          "column_name": "id",
+        },
+        {
+          "table_schema": "book_db",
+          "table_name": "users",
+          "column_name": "username",
+        }
+      ],
+      "books": [
+        {
+          "table_schema": "book_db",
+          "table_name": "books",
+          "column_name": "id",
+        },
+        {
+          "table_schema": "book_db",
+          "table_name": "books",
+          "column_name": "bookname",
+        }
+      ]
+    }
+  }
+};
+
+data = {
+  "users": ["id", "username"],
+  "books": ["id", "bookname"],
+};
+
+end({ code: 200, data });

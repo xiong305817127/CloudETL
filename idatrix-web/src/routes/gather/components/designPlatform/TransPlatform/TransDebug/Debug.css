@@ -1,0 +1,67 @@
+
+.debug{
+  height: 200px;
+  align-items:flex-end;
+  background: #F4F5F7;
+  padding-top: 10px;
+  display: none;
+}
+.debug :global(.ant-tabs-content){
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.debug :global(.ant-tabs-tabpane){
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+/*debug  div样式*/
+:global(.tabDiv){
+  width:100%;
+  height:158px;
+  background:white;
+  overflow:auto;
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+:global(.tabDiv1){
+  width:100%;
+  height:300px;
+  background:white;
+  overflow:auto;
+}
+
+
+
+/*debug样式*/
+:global(#components-tabs-demo-card-top .code-box-demo){
+  background: #ececec;
+  overflow: hidden;
+  padding: 24px;
+}
+
+:global(#debugTabs .ant-tabs-bar){
+  margin-bottom: 0px;
+}
+/*debug样式*/
+
+
+.operations{
+   position: relative;
+  right: 20px;
+  top:-5px
+}
+
+
+/*debugDetail样式*/
+:global(#debugDetail .ant-tabs-bar){
+  margin-bottom: 5px;
+}
+:global(#debugDetail){
+  margin-bottom: 20px;
+}
+
+.card :global(.ant-card-body){
+  padding: 0;
+}

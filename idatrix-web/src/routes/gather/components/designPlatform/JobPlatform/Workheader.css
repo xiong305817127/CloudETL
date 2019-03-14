@@ -1,0 +1,23 @@
+
+.Workheader{
+  background: #F4F5F7;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border: 1px solid #D8DCE0;
+
+}
+:global(#Workheader .ant-tabs-bar){
+  margin-bottom: 0;
+}
+:global(#Workheader .ant-tabs-tabpane){
+  display: none;
+}
+:global(#Workheader .anticon-close:before){
+  top:1px;
+  right: 1px;
+}
+:global(#Workheader .ant-tabs.ant-tabs-card > .ant-tabs-bar .ant-tabs-tab-active){
+
+  background: white;
+}
+

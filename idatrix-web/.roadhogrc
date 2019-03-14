@@ -1,0 +1,88 @@
+{
+  "entry": "src/index.js",
+  "publicPath": "./",
+  "outputPath": "./dist",
+  "env": {
+    "development": {
+      "extraBabelPlugins": [
+        "dva-hmr",
+        "transform-runtime",
+        "transform-decorators-legacy",
+        ["import", { "libraryName": "antd", "style": true }]
+      ]
+    },
+    "production": {
+      "extraBabelPlugins": [
+        "transform-runtime",
+        "transform-decorators-legacy",
+        "transform-remove-console",
+        ["import", { "libraryName": "antd", "style": true }]
+      ]
+    }
+  },
+  "theme": {
+     "primary-color": "#0faedb",
+     "font-size-base": "14px",
+     "icon-url": "'/iconfont/iconfont'",
+     "base-padding": "16px"
+   },
+  "dllPlugin": {
+    "exclude": [
+      "babel-runtime"
+    ],
+    "include": [
+      "dva/router",
+      "dva/saga",
+      "dva/fetch",
+      "brace",
+      "react-ace"
+    ]
+  },
+  "proxy": {
+    "/dist": {
+      "target": "http://127.0.0.1:8060",
+      "changeOrigin": true
+    },
+    "/uniom": {
+      "target": "http://10.0.0.84:80/",
+      "changeOrigin": true,
+      "pathRewrite": {
+        "^/uniom" : ""
+      }
+    },
+    "/api/v1": {
+      "target": "http://172.16.22.11:8080/",
+      "changeOrigin": true
+    },
+    "/api": {
+      "target": "http://127.0.0.1:8060",
+      "changeOrigin": true,
+      "pathRewrite": {
+        "^/api" : ""
+      }
+    },
+    "/security": {
+      "target": "http://127.0.0.1:8060",
+      "changeOrigin": true
+    },
+    "/u": {
+      "target": "http://127.0.0.1:8060",
+      "changeOrigin": true
+    },
+    "/metadata":{
+      "target" : "http://127.0.0.1:3000",
+      "changeOrigin": true
+    },
+    "/static":{
+      "target":"http://127.0.0.1:3000/static",
+      "changeOrigin": true,
+      "pathRewrite": {
+        "^/static" : ""
+      }
+    },
+    "/main.*":{
+      "target": "http://127.0.0.1:3000",
+      "changeOrigin": true
+    }
+  }
+}

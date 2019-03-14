@@ -1,0 +1,37 @@
+.Searchzujian :global(.ant-input-group){
+  width: 500px;
+  margin: 10px 0;
+}
+.Searchzujian{
+  position: relative;
+}
+.Searchzujian{
+  position: relative;
+}
+.xuanzebumen{
+  position: absolute;
+  left: 513px;
+  top: -9px;
+}
+.Search{
+  border:0px;
+  height:30px;
+  width:39px;
+}
+.Searchzujian :global(.ant-input-group-addon:last-child){
+  margin:0;
+  padding:0;
+  width:40px;
+}
+.DRMselectTable :global(.ant-form-item){
+  margin-bottom: 8px;
+}
+.DRMselectTable :global(.ant-select){
+  width:85px;
+}
+
+.selectTable :global(.ant-pagination){
+    float: left;
+}
+
+

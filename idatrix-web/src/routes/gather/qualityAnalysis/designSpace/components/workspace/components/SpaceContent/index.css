@@ -1,0 +1,174 @@
+.mainContent {
+  height: 100%;
+  overflow: scroll;
+  position: relative;
+  /*线条中间样式*/
+}
+.mainContent.netStyle {
+  background: url("../../../../../../image/design/grid_bg.png");
+}
+.mainContent .drop {
+  width: 50px;
+  height: 60px;
+  position: absolute;
+  left: 100px;
+  box-shadow: 2px 2px 19px #e0e0e0;
+  -o-box-shadow: 2px 2px 19px #e0e0e0;
+  -webkit-box-shadow: 2px 2px 19px #e0e0e0;
+  -moz-box-shadow: 2px 2px 19px #e0e0e0;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
+  opacity: 0.8;
+  cursor: move;
+  font-size: 11px;
+  -webkit-transition: background-color 0.25s ease-in;
+  -moz-transition: background-color 0.25s ease-in;
+  transition: background-color 0.25s ease-in;
+  /*连线位置*/
+}
+.mainContent .drop .canDrag {
+  width: 13px;
+  height: 13px;
+  position: absolute;
+  bottom: 3px;
+  left: 3px;
+  background: url("../../../../../../image/design/line_icon.png ") no-repeat center;
+}
+.mainContent .drop .canDrag:hover {
+  cursor: pointer;
+  box-shadow: -1px 0 3px #666, 1px 0 3px #666, 0 -1px 3px #666, 0 1px 3px #666;
+}
+.mainContent .drop .img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -16px;
+  margin-left: -16px;
+  width: 32px;
+  height: 32px;
+}
+.mainContent .drop .domSet {
+  width: 13px;
+  height: 13px;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  background: url("../../../../../../image/design/dom_set.png") no-repeat center;
+  cursor: pointer;
+}
+.mainContent .drop .span {
+  width: 100px;
+  position: relative;
+  left: -50%;
+  top: 67px;
+  text-align: center;
+}
+.mainContent .drop :global .anticon-close:before {
+  position: absolute;
+  top: 5px;
+  right: 3px;
+  font-size: 12px;
+}
+.mainContent .drop :global .anticon-close:before:hover {
+  cursor: pointer;
+}
+.mainContent .drop .close:hover {
+  cursor: pointer;
+}
+.mainContent :global {
+  /*初始化状态*/
+  /*告警状态*/
+}
+.mainContent :global .dragNormal {
+  border: 1px solid #5D96c6;
+}
+.mainContent :global .dragNormal .checkCircle {
+  display: none;
+}
+.mainContent :global .stopStyle {
+  border: 1px solid darkorange;
+}
+.mainContent :global .stopStyle .checkCircle {
+  display: none;
+}
+.mainContent :global .errorStyle {
+  border: 1px solid #ff508b;
+}
+.mainContent :global .errorStyle .checkCircle {
+  display: none;
+}
+.mainContent :global .success {
+  border: 1px solid #00AA00;
+}
+.mainContent :global .success .checkCircle:before {
+  content: "\E630";
+}
+.mainContent :global .success .checkCircle {
+  font-size: 16px;
+  color: #00AA00;
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  z-index: 10;
+}
+.mainContent .drop:hover {
+  border: 1px solid #1e8151;
+  /*box-shadow: -1px 0 3px #2e6f9a,1px 0 3px #2e6f9a, 0 -1px 3px #2e6f9a,0 1px 3px #2e6f9a;*/
+}
+.mainContent :global .aLabel {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  background: url("../../../../../../image/design/copy.png") no-repeat center;
+  color: transparent;
+}
+.mainContent :global .aLabel:hover {
+  background: url("../../../../../../image/design/copy.png") no-repeat center;
+  color: transparent;
+}
+.mainContent :global .aLabelError {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  background: url("../../../../../../image/design/error.png") no-repeat center;
+  color: transparent;
+}
+.mainContent :global .aLabelError:hover {
+  background: url("../../../../../../image/design/error.png") no-repeat center;
+  color: transparent;
+}
+.mainContent :global .aLabelDistribute {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  background: url("../../../../../../image/design/distribute.png") no-repeat center;
+  color: transparent;
+}
+.mainContent :global .aLabelDistribute:hover {
+  background: url("../../../../../../image/design/distribute.png") no-repeat center;
+  color: transparent;
+}
+.mainContent :global .errTransClass path {
+  stroke: red;
+  stroke-dasharray: 10,5;
+}
+.mainContent .fucBtn {
+  position: absolute;
+  height: 32px;
+  top: 20px;
+  right: 50px;
+  line-height: 32px;
+  width: 350px;
+  box-sizing: border-box;
+  text-align: right;
+}
+.mainContent .fucBtn .fucBtn1 {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 120px;
+}
+.mainContent .fucBtn .fucBtn2 {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 160px;
+}
