@@ -16,9 +16,13 @@
 	<url>http://maven.apache.org</url>
 
     <properties>
-        <db.agent.api.version>1.2.22-SNAPSHOT</db.agent.api.version>
-        <db.proxy.api.version>1.2.22-SNAPSHOT</db.proxy.api.version>
-        <db.metacube.api.version>1.2.22-SNAPSHOT</db.metacube.api.version>
+        <db.api.version>2.0.0-SNAPSHOT</db.api.version>
+        <db.metacube.api.version>2.0.0-SNAPSHOT</db.metacube.api.version>
+        <cloudetl.service.api.version>2.0.0-SNAPSHOT</cloudetl.service.api.version>
+        <resource.service.api.version>2.0.0-SNAPSHOT</resource.service.api.version>
+        <unisecurity.sso.client.version>2.0.0-SNAPSHOT</unisecurity.sso.client.version>
+        <es.api.version>2.0.0-SNAPSHOT</es.api.version>
+        <spring.version>4.3.12.RELEASE</spring.version>
     </properties>
 
 	<dependencies>
@@ -29,16 +33,27 @@
             <artifactId>hessian</artifactId>
             <version>4.0.7-u</version>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/redis.clients/jedis -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+        <!--idarix es -->
+        <dependency>
+            <groupId>com.ys</groupId>
+            <artifactId>idatrix-es-api</artifactId>
+            <version>${es.api.version}</version>
+        </dependency>
         <dependency>
 			<groupId>com.ys</groupId>
 			<artifactId>idatrix-cloudetl-service-api</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${cloudetl.service.api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.ys</groupId>
 			<artifactId>idatrix-resource-service-api</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>${resource.service.api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.pagehelper</groupId>
@@ -48,7 +63,7 @@
 		<dependency>
 			<groupId>com.idatrix.unisecurity</groupId>
 			<artifactId>idatrix-unisecurity-sso-client</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>${unisecurity.sso.client.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>quartz</artifactId>
@@ -67,7 +82,7 @@
 		<dependency>
 			<groupId>com.idatrix.unisecurity</groupId>
 			<artifactId>idatrix-unisecurity-api</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>${unisecurity.sso.client.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>quartz</artifactId>
@@ -85,29 +100,9 @@
         </dependency>
 		<dependency>
 			<groupId>com.ys</groupId>
-			<artifactId>idatrix-db-proxy-api</artifactId>
-			<version>${db.proxy.api.version}</version>
+			<artifactId>idatrix-db-api</artifactId>
+			<version>${db.api.version}</version>
             <exclusions>
-                <exclusion>
-                    <artifactId>hessian</artifactId>
-                    <groupId>com.caucho</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-	        <dependency>
-	            <groupId>com.ys</groupId>
-	            <artifactId>idatrix-POIExcel</artifactId>
-	            <version>0.0.1-SNAPSHOT</version>
-	        </dependency>
-		<dependency>
-			<groupId>com.ys</groupId>
-			<artifactId>idatrix-db-agent-api</artifactId>
-            <version>${db.agent.api.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>mysql-connector-java</artifactId>
-                    <groupId>mysql</groupId>
-                </exclusion>
                 <exclusion>
                     <artifactId>hessian</artifactId>
                     <groupId>com.caucho</groupId>
@@ -160,7 +155,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.5</version>
+			<version>3.8.1</version>
 		</dependency>
 
         <dependency>
@@ -188,10 +183,27 @@
 			<artifactId>spring-web</artifactId>
 			<version>4.3.8.RELEASE</version>
 		</dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>4.3.8.RELEASE</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
             <version>4.3.8.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
 		<dependency>
@@ -199,12 +211,6 @@
 			<artifactId>httpclient</artifactId>
 			<version>4.5.2</version>
 		</dependency>
-		<!--<dependency>-->
-			<!--<groupId>com.google.collections</groupId>-->
-			<!--<artifactId>google-collections</artifactId>-->
-			<!--<version>1.0</version>-->
-		<!--</dependency>-->
-		<!-- https://mvnrepository.com/artifact/javax.servlet/servlet-api -->
 
 		<!--版本匹配3.4.1和1.3.1-->
 		<dependency>
@@ -244,12 +250,6 @@
 			<artifactId>elasticsearch</artifactId>
 			<version>2.4.6</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>18.0</version>
-		</dependency>
         <dependency>
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
@@ -262,8 +262,99 @@
             <version>5.1.38</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.20</version>
+        </dependency>
+        <!-- swagger -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.9.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>2.9.2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>25.1-jre</version>
+        </dependency>
 
-	</dependencies>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis-spring</artifactId>
+            <version>1.3.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper -->
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>3.4.6</version>
+        </dependency>
+
+<!--        <dependency>
+            <groupId>com.dianping.cat</groupId>
+            <artifactId>cat-client</artifactId>
+            <version>3.0.0</version>
+        </dependency>-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>4.3.8.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils-core</artifactId>
+            <version>1.8.3-SONATYPE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.8</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework/spring-test -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>5.1.4.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo</artifactId>
+            <version>2.6.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.netty</groupId>
+                    <artifactId>netty</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.1.12</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.101tec/zkclient -->
+        <dependency>
+            <groupId>com.101tec</groupId>
+            <artifactId>zkclient</artifactId>
+            <version>0.2</version>
+        </dependency>
+
+    </dependencies>
+
 	<build>
 		<finalName>idatrix-resource-web</finalName>
         <plugins>

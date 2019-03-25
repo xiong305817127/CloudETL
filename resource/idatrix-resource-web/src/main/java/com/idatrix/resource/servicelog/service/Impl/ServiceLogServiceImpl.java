@@ -11,6 +11,7 @@ import com.idatrix.resource.servicelog.po.ServiceLogPO;
 import com.idatrix.resource.servicelog.service.IServiceLogService;
 import com.idatrix.resource.servicelog.vo.ServiceLogDetailVO;
 import com.idatrix.resource.servicelog.vo.ServiceLogVO;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +45,7 @@ public class ServiceLogServiceImpl implements IServiceLogService {
         List<ServiceLogVO> servicesVOList = new ArrayList<ServiceLogVO>();
         List<ServiceLogPO> serviceLogPOList = serviceLogDAO.getServiceLogInfoByCondition(condition);
 
-        if (serviceLogPOList != null && !serviceLogPOList.isEmpty()) {
+        if(CollectionUtils.isNotEmpty(serviceLogPOList)){
 
             for (ServiceLogPO model : serviceLogPOList) {
 
@@ -83,9 +84,9 @@ public class ServiceLogServiceImpl implements IServiceLogService {
         ServiceLogPO serviceLogPO = serviceLogDAO.getServiceLogById(id);
         ServiceLogDetailPO serviceLogDetailPO = serviceLogDetailDAO.getServiceLogDetailByParentId(id);
 
-        if (serviceLogPO == null)
+        if (serviceLogPO == null) {
             return null;
-
+        }
         ServiceLogDetailVO serviceLogDetailVO = new ServiceLogDetailVO();
 
         if (serviceLogPO != null) {
@@ -93,14 +94,24 @@ public class ServiceLogServiceImpl implements IServiceLogService {
             serviceLogDetailVO.setCallTime(DateTools.getDateTime(serviceLogPO.getCreateTime()));
             serviceLogDetailVO.setExecTime(serviceLogPO.getExecTime());
         }
-
         if (serviceLogDetailPO != null) {
             serviceLogDetailVO.setInput(new String(serviceLogDetailPO.getInput()));
             serviceLogDetailVO.setOutput(new String(serviceLogDetailPO.getOutput()));
             serviceLogDetailVO.setErrorMessage(serviceLogDetailPO.getErrorMessage());
             serviceLogDetailVO.setErrorStack(new String(serviceLogDetailPO.getErrorStack()));
         }
-
         return serviceLogDetailVO;
+    }
+
+    /**
+     * 获取最新几个被调用的服务信息
+     *
+     * @param num
+     * @return
+     */
+    @Override
+    public List<ServiceLogPO> getLastestCalledService(Long num) {
+
+        return serviceLogDAO.getLastestServiceLog(num);
     }
 }

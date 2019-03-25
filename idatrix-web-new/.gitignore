@@ -1,0 +1,22 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+
+# production
+/dist
+
+# compile
+*-compiled.js
+*-compiled.js.map
+
+# misc
+.DS_Store
+npm-debug.log*
+.jr/
+.idea
+
+*.zip
+*.rar
+*.tar.gz
+/pkg

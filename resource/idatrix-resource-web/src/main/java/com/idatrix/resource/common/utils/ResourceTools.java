@@ -9,23 +9,24 @@ public class ResourceTools {
 
    public enum FormatType {
        /*不确定*/
-       NOT_SURE(0),
+       NOT_SURE(0,"不确定"),
        /*电子文件*/
-        FILE(1),
+        FILE(1,"电子文件"),
        /*电子表格*/
-        FORM(2),
+        FORM(2,"电子表格"),
        /*数据库*/
-        DB(3),
+        DB(3,"数据库"),
        /*图形图像*/
-        IMAGE(4),
+        IMAGE(4,"图形图像"),
        /*流媒体*/
-        STEAM_MEDIA(5),
+        STEAM_MEDIA(5,"流媒体"),
        /*自定义格式*/
-        SELF_FORMAT(6),
+        SELF_FORMAT(6,"自定义格式"),
        /*网络接口*/
-        SERVICE_INTERFACE(7);
+        SERVICE_INTERFACE(7,"网络接口");
 
         int typeValue;
+        String formatInfoZH;
 
        public int getTypeValue() {
            return typeValue;
@@ -35,7 +36,20 @@ public class ResourceTools {
            this.typeValue = typeValue;
        }
 
+       public String getFormatInfoZH() {
+           return formatInfoZH;
+       }
+
+       public void setFormatInfoZH(String formatInfoZH) {
+           this.formatInfoZH = formatInfoZH;
+       }
+
        FormatType(int typeValue){this.typeValue=typeValue;};
+
+       FormatType(int typeValue,String formatInfoZH){
+           this.typeValue=typeValue;
+           this.formatInfoZH = formatInfoZH;
+       };
 
        public static FormatType getFormatType(int value){
            for(FormatType formatType: values()){
@@ -44,6 +58,15 @@ public class ResourceTools {
                }
            }
            return NOT_SURE;
+       }
+
+       public static String getFormatInfoZH(int value){
+           for(FormatType formatType: values()){
+               if(formatType.getTypeValue()==value){
+                   return formatType.getFormatInfoZH();
+               }
+           }
+           return NOT_SURE.getFormatInfoZH();
        }
     }
 

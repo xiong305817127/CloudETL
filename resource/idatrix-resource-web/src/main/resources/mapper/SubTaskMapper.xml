@@ -9,7 +9,7 @@
         <result column="etl_subscribe_id" property="etlSubscribeId" jdbcType="VARCHAR" />
         <result column="task_type" property="taskType" jdbcType="VARCHAR" />
         <result column="status" property="status" jdbcType="VARCHAR" />
-
+        <result column="rent_id" property="rentId" jdbcType="BIGINT" />
         <result column="last_run_time" property="lastRunTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
         <result column="import_count" property="importCount" jdbcType="BIGINT" />
         <result column="end_time" property="endTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
@@ -46,11 +46,12 @@
     </resultMap>
 
    <sql id="Base_Column_List">
-        id, sub_task_id, src_meta_id, dest_meta_id, etl_subscribe_id, task_type, status, end_time, last_run_time, import_count,
+        id, sub_task_id, src_meta_id, dest_meta_id, etl_subscribe_id,
+         task_type, status, end_time, last_run_time, import_count, rent_id,
         creator, create_time, modifier, modify_time
     </sql>
 
-    <select id="getTaskInfoByMonth" parameterType="java.lang.Long" resultMap="TaskInfoResultMap">
+    <select id="getTaskInfoByMonth" resultMap="TaskInfoResultMap">
         SELECT
         DATE_FORMAT(create_time, '%Y%m') as month,
         SUM(import_count) as data_count,
@@ -58,37 +59,52 @@
         FROM
         rc_sub_task
         WHERE create_time>DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01') , INTERVAL #{num} MONTH)
+        AND rent_id=#{rentId}
         GROUP BY month
         ORDER BY month DESC;
     </select>
 
     <select id="queryOverview" resultMap="SubTaskResultMap"  parameterType="hashmap">
-        select
-            rct.id as id,
-            rct.sub_task_id as sub_task_id,
-            rct.etl_subscribe_id as etl_subscribe_id,
-            tmp.end_time as end_time,
-            tmp.resource_id as resource_id,
-            tmp.resource_name as resource_name,
-            tmp.resource_code as resource_code,
-            rct.task_type as task_type,
-            rct.status as task_status,
-            rct.last_run_time as last_run_time,
-            rct.creator as user,
-            tmp.subscribe_id as subscribe_id,
-            tmp.suscribe_dept_name as suscribe_dept_name,
-            tmp.provide_dept_name as provide_dept_name,
-            rct.import_count as data_count
-        from rc_sub_task rct INNER JOIN (
-            SELECT
-                rs.id as subscribe_id, rs.dept_name as suscribe_dept_name, rs.dept_id as suscribe_dept_id,
-                rr.id as resource_id, rr.dept_name as provide_dept_name, rr.code as resource_code, rr.name as resource_name,
-                rs.end_date as end_time
-            FROM rc_subscribe rs INNER JOIN rc_resource rr ON rs.resource_id=rr.id)tmp
-        ON rct.id=tmp.subscribe_id
-        where 1=1
+        SELECT
+            rct.id AS id,
+            rct.sub_task_id AS sub_task_id,
+            rct.etl_subscribe_id AS etl_subscribe_id,
+            tmp.end_time AS end_time,
+            tmp.resource_id AS resource_id,
+            tmp.resource_name AS resource_name,
+            tmp.resource_code AS resource_code,
+            rct.task_type AS task_type,
+            rct.STATUS AS task_status,
+            rct.last_run_time AS last_run_time,
+            rct.creator AS USER,
+            tmp.subscribe_id AS subscribe_id,
+            tmp.suscribe_dept_name AS suscribe_dept_name,
+            tmp.provide_dept_name AS provide_dept_name,
+            rct.import_count AS data_count
+        FROM
+          rc_sub_task rct
+        INNER JOIN (
+                SELECT
+                    rs.id AS subscribe_id,
+                    rs.sub_no as sub_no,
+                    rs.dept_name AS suscribe_dept_name,
+                    rs.dept_id AS suscribe_dept_id,
+                    rr.id AS resource_id,
+                    rr.dept_name AS provide_dept_name,
+                    rr.CODE AS resource_code,
+                    rr.NAME AS resource_name,
+                    rs.end_date AS end_time
+                FROM
+                  rc_subscribe rs
+                INNER JOIN rc_resource rr ON rs.resource_id = rr.id
+            ) tmp ON rct.sub_task_id = tmp.sub_no
+        WHERE
+        1 = 1
         <if test="subTaskId!=null">
             and rct.sub_task_id like '%${subTaskId}%'
+        </if>
+        <if test="rentId!=null">
+            and rct.rent_id=#{rentId}
         </if>
         <if test="code!=null">
             and tmp.resource_code like '%${code}%'
@@ -111,6 +127,7 @@
         select
           count(id)
         from rc_sub_task
+        where rent_id=#{rentId}
     </select>
 
     <select id="getBySubscribe" resultMap="BaseResultMap">
@@ -148,12 +165,12 @@
 
 
     <insert id="insert" parameterType="com.idatrix.resource.taskmanage.po.SubTaskPO" useGeneratedKeys="true" keyProperty="id">
-        insert into rc_sub_task ( sub_task_id, src_meta_id, dest_meta_id, etl_subscribe_id, task_type,
-        status, end_time, last_run_time, import_count,
+        insert into rc_sub_task (sub_task_id, src_meta_id, dest_meta_id, etl_subscribe_id, task_type,
+        status, end_time, last_run_time, import_count, rent_id,
         creator, create_time, modifier, modify_time)
         values
         (#{subTaskId}, #{srcMetaId}, #{destMetaId},
-         #{etlSubscribeId}, #{taskType}, #{status},#{endTime}, #{lastRunTime},#{importCount},
+         #{etlSubscribeId}, #{taskType}, #{status},#{endTime}, #{lastRunTime},#{importCount},#{rentId},
          #{creator}, #{createTime}, #{modifier}, #{modifyTime})
     </insert>
 
@@ -169,6 +186,7 @@
         end_time =#{endTime},
         last_run_time = #{lastRunTime},
         import_count = #{importCount},
+        rent_id=#{rentId},
         creator = #{creator},
         create_time = #{createTime},
         modifier = #{modifier},

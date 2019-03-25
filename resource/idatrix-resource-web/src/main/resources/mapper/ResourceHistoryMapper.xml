@@ -16,11 +16,6 @@
         id, resource_id, action, action_name, creator, create_time
     </sql>
 
-    <select id="getAllResourceHistory" resultMap="BaseResultMap">
-        select
-        <include refid="Base_Column_List" />
-        from rc_resource_history
-    </select>
 
     <select id="getHistoryByResourceId" resultMap="BaseResultMap" parameterType="java.lang.Long">
         select

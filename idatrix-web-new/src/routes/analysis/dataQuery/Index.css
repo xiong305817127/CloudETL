@@ -1,0 +1,32 @@
+/*执行历史：失败:*/
+.rowRed :global(td){
+  color: red !important;
+}
+.rowRed:hover>td{
+  color: red !important;
+}
+/*执行历史：超时:*/
+.rowOrange :global(td){
+  color: #ffbf7a !important;
+}
+.rowOrange:hover>td{
+  color: #ffbf7a !important;
+}
+.sider-wrap{
+  position: relative;
+  background-color: #fff;
+  min-height: calc(100vh - 140px);
+}
+.tree-btns-wrap{
+  margin-bottom:10px;
+}
+.tree-btn{
+  margin:0 5px;
+}
+.tree-list{
+  position: absolute;
+  height: calc(100% - 20px);
+  width: calc(100% - 20px);
+  max-height: 100%;
+  overflow: auto;
+}

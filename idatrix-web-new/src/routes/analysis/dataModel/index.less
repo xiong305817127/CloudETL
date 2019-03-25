@@ -1,0 +1,132 @@
+//边栏宽度
+@silderWidth:240px;
+//页面字体特殊颜色
+@fontColor:RGB(102,186,234);
+
+.dataModel{
+	display: flex;
+	flex:0 1 100%;
+
+	.sliderTree{
+		flex:0 1 @silderWidth;
+		display: flex;
+		flex-direction: column;
+
+
+
+		.treeHeader{
+			height: 41px;
+			line-height: 40px;
+			display: flex;
+			
+			box-sizing: border-box;
+			padding: 0 10px;
+
+			border-bottom: 1px solid #ccc;
+
+			.name{
+				width: calc(~"@{silderWidth} - 60px");
+				font-weight: bold;
+			}
+
+			.icon{
+				display: flex;
+				flex:0 1 40px;
+				font-size: 16px;
+				justify-content: center;
+				align-items: center;
+				color:@fontColor;
+				cursor: pointer;
+			}
+		}
+
+		.treeSearch{
+			height: 60px;
+			display: flex;
+			align-items: center;
+			text-align: center;
+		}
+
+		.treeContent{
+
+			height: calc(~"100% - 100px");
+			box-sizing: border-box;
+			padding: 0 12px;
+			width: 240px;
+			overflow: scroll;
+
+			:global{
+				.anticon-folder-open:before{
+					color:RGB(246,176,56);
+				}
+
+				.anticon-folder:before{
+					color:RGB(246,176,56);
+				}
+			};
+		}
+
+	}
+
+	.content{
+		width: calc(~"100% - @{silderWidth}");
+		box-sizing: border-box;
+		border-left: 1px solid #ccc;
+
+		display: flex;
+		justify-content: center;
+
+		.welcome{
+			color:@fontColor;
+			font-size: 16px;
+			font-weight: bold;
+			align-items: center;
+    		justify-content: center;
+			display: flex;
+
+			flex-direction: column;
+
+			.welcomeFont{
+				padding-top: 10px;
+			}
+		}
+	}
+}
+.treeList{
+	height: 300px;
+	border: 1px solid #ccc;
+	border-radius: 10px;
+	font-size: 16px;
+
+	.header{
+		height: 30px;
+		border-bottom: 1px solid #ccc;
+	}
+
+	.tree{
+		height: 270px;
+		overflow: scroll;
+	}
+
+	:global{
+		.anticon-folder-open:before{
+			font-size: 20px;
+			color:RGB(246,176,56);
+		}
+
+		.anticon-folder:before{
+			font-size: 20px;
+			color:RGB(246,176,56);
+		}
+
+		.ant-tree.ant-tree-directory > li.ant-tree-treenode-selected > span.ant-tree-switcher{
+			display: none;
+		}
+		.ant-tree.ant-tree-directory > li span.ant-tree-switcher, .ant-tree.ant-tree-directory .ant-tree-child-tree > li span.ant-tree-switcher{
+			display: none;
+		}
+		.ant-tree.ant-tree-directory > li span.ant-tree-node-content-wrapper > span, .ant-tree.ant-tree-directory .ant-tree-child-tree > li span.ant-tree-node-content-wrapper > span{
+			margin-left: 10px;
+		}
+	};
+}

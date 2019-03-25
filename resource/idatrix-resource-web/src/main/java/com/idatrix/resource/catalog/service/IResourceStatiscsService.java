@@ -11,6 +11,9 @@ public interface IResourceStatiscsService {
     //更新文件个数，文件类型是文件个数，数据库是记录条数
     void increaseDataCount(Long resourceId, Long count);
 
+    //更新文件个数，文件类型是文件个数，数据库是记录条数
+    void refreshDataCount(Long resourceId, Long count);
+
     //更新交换数据
     void increaseShareDataCount(Long resource, Long count);
 

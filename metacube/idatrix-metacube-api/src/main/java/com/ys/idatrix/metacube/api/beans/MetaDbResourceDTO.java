@@ -60,7 +60,7 @@ public class MetaDbResourceDTO implements Serializable {
     /**
      * 表、视图集合
      */
-    private Map<Long, String> metadataMap;
+    private List<Map<String, Object>> tableAndViewList;
 
     /**
      * schemaName 显示名称

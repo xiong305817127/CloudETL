@@ -2,12 +2,15 @@ package com.idatrix.resource.exchange.po;
 
 import com.idatrix.resource.common.utils.DateTools;
 import com.idatrix.resource.exchange.vo.request.ExchangeSubscribeVO;
+import lombok.Data;
 
 import java.util.Date;
 
 /**
  * Created by Administrator on 2018/11/8.
  */
+
+@Data
 public class ExchangeSubscribeTaskPO {
 
     //主键ID
@@ -24,6 +27,12 @@ public class ExchangeSubscribeTaskPO {
 
     /*资源信息编码*/
     private String resourceCode;
+
+    /*源数据表的元数据ID*/
+    private Long srcMetaId;
+
+    /*目标数据表的元数据ID*/
+    private Long destMetaId;
 
     /*部门信息 订阅部门ID*/
     private Long subscribeDeptId;
@@ -58,120 +67,18 @@ public class ExchangeSubscribeTaskPO {
         this.modifyTime = new Date();
     }
 
+    public ExchangeSubscribeTaskPO(ExchangeSubscribeInfoPO taskVO, Long detpId, String deptName){
 
+        this.resourceCode = taskVO.getResourceCode();
+        this.endTime = taskVO.getEndTime();
 
+        this.subscribeDeptId = detpId;
+        this.subscribeDeptName = deptName;
 
-    public Long getId() {
-        return id;
+        this.creator = taskVO.getCreator();
+        this.createTime = new Date();
+        this.modifier = taskVO.getCreator();
+        this.modifyTime = new Date();
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getSeq() {
-        return seq;
-    }
-
-    public void setSeq(Long seq) {
-        this.seq = seq;
-    }
-
-    public String getSubNo() {
-        return subNo;
-    }
-
-    public void setSubNo(String subNo) {
-        this.subNo = subNo;
-    }
-
-    public Long getSubscribeId() {
-        return subscribeId;
-    }
-
-    public void setSubscribeId(Long subscribeId) {
-        this.subscribeId = subscribeId;
-    }
-
-    public String getResourceCode() {
-        return resourceCode;
-    }
-
-    public void setResourceCode(String resourceCode) {
-        this.resourceCode = resourceCode;
-    }
-
-    public Long getSubscribeDeptId() {
-        return subscribeDeptId;
-    }
-
-    public void setSubscribeDeptId(Long subscribeDeptId) {
-        this.subscribeDeptId = subscribeDeptId;
-    }
-
-    public String getSubscribeDeptName() {
-        return subscribeDeptName;
-    }
-
-    public void setSubscribeDeptName(String subscribeDeptName) {
-        this.subscribeDeptName = subscribeDeptName;
-    }
-
-    public Date getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier;
-    }
-
-    public Date getModifyTime() {
-        return modifyTime;
-    }
-
-    public void setModifyTime(Date modifyTime) {
-        this.modifyTime = modifyTime;
-    }
-
-    @Override
-    public String toString() {
-        return "ExchangeSubscribeTaskPO{" +
-                "id=" + id +
-                ", seq=" + seq +
-                ", subNo='" + subNo + '\'' +
-                ", subscribeId=" + subscribeId +
-                ", resourceCode='" + resourceCode + '\'' +
-                ", subscribeDeptId='" + subscribeDeptId + '\'' +
-                ", subscribeDeptName='" + subscribeDeptName + '\'' +
-                ", endTime='" + endTime + '\'' +
-                ", creator='" + creator + '\'' +
-                ", createTime=" + createTime +
-                ", modifier='" + modifier + '\'' +
-                ", modifyTime=" + modifyTime +
-                '}';
-    }
 }

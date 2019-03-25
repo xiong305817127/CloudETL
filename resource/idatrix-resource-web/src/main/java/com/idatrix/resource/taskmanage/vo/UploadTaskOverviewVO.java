@@ -1,8 +1,11 @@
 package com.idatrix.resource.taskmanage.vo;
 
+import lombok.Data;
+
 /**
  * Created by Administrator on 2018/8/8.
  */
+@Data
 public class UploadTaskOverviewVO {
 
     /*作业名称*/
@@ -32,75 +35,4 @@ public class UploadTaskOverviewVO {
     /*任务创建者*/
     private String creator;
 
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public String getEtlSubcribeId() {
-        return etlSubcribeId;
-    }
-
-    public void setEtlSubcribeId(String etlSubcribeId) {
-        this.etlSubcribeId = etlSubcribeId;
-    }
-
-    public String getTaskName() {
-        return taskName;
-    }
-
-    public void setTaskName(String taskName) {
-        this.taskName = taskName;
-    }
-
-    public String getDeptName() {
-        return deptName;
-    }
-
-    public void setDeptName(String deptName) {
-        this.deptName = deptName;
-    }
-
-    public String getTaskType() {
-        return taskType;
-    }
-
-    public void setTaskType(String taskType) {
-        this.taskType = taskType;
-    }
-
-    public String getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
-    }
-
-    public String getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
-    }
-
-    public Long getDataCount() {
-        return dataCount;
-    }
-
-    public void setDataCount(Long dataCount) {
-        this.dataCount = dataCount;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
 }

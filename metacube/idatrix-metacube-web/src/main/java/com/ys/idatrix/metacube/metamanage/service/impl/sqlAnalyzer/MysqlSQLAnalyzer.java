@@ -20,15 +20,15 @@ import com.ys.idatrix.db.api.sql.service.SqlExecService;
 import com.ys.idatrix.metacube.common.enums.DBEnum;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
 import com.ys.idatrix.metacube.metamanage.domain.*;
-import com.ys.idatrix.metacube.metamanage.mapper.McDatabaseMapper;
 import com.ys.idatrix.metacube.metamanage.mapper.McSchemaMapper;
 import com.ys.idatrix.metacube.metamanage.mapper.MetadataMapper;
 import com.ys.idatrix.metacube.metamanage.mapper.TableColumnMapper;
+import com.ys.idatrix.metacube.metamanage.service.impl.sqlAnalyzer.dto.DatabaseConnect;
+import com.ys.idatrix.metacube.metamanage.service.impl.sqlAnalyzer.dto.DependencyNotExistException;
 import com.ys.idatrix.metacube.metamanage.service.impl.sqlAnalyzer.dto.TablesDependency;
 import com.ys.idatrix.metacube.metamanage.vo.request.DBViewVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetadataBaseVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.MySqlTableVO;
-import com.ys.idatrix.metacube.metamanage.vo.response.DatasourceVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -45,9 +45,6 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
     private McSchemaMapper schemaMapper;
 
     @Autowired
-    private McDatabaseMapper databaseMapper;
-
-    @Autowired
     private  MetadataMapper metadataMapper ;
     @Autowired
     private TableColumnMapper tableColumnMapper;
@@ -61,10 +58,10 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
     }
 
     @Override
-    public List<MySqlTableVO> getTablesFromDB(Long schemaId, String... tableFilter) {
+    public List<MySqlTableVO> getTablesFromDB(DatabaseConnect dbInfo,  String... tableFilter) {
 
         List<MySqlTableVO>  res  = new ArrayList<>();
-        List<MetadataBaseVO> result = getTablesInfoFromDB(schemaId, true, tableFilter) ;
+        List<MetadataBaseVO> result = getTablesInfoFromDB(dbInfo, true, tableFilter) ;
         if( result != null ) {
             result.stream().forEach( mb -> {
                 MySqlTableVO md =  new MySqlTableVO();
@@ -82,10 +79,10 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
     }
 
     @Override
-    public List<DBViewVO> getViewsFromDB( Long schemaId ,String... viewFilter){
+    public List<DBViewVO> getViewsFromDB( DatabaseConnect dbInfo ,String... viewFilter){
 
         List<DBViewVO>  res  = new ArrayList<>();
-        List<MetadataBaseVO> result = getTablesInfoFromDB(schemaId, false, viewFilter) ;
+        List<MetadataBaseVO> result = getTablesInfoFromDB(dbInfo, false, viewFilter) ;
         if( result != null ) {
 
             result.stream().forEach( mb -> {
@@ -97,7 +94,7 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
                 md.setStatus(1);
                 md.setResourceType(2);
                 md.setViewDetail(new ViewDetail());
-                md.getViewDetail().setViewSql(getCreateViewSqlFromDB(schemaId, mb.getName()));
+                md.getViewDetail().setViewSql(getViewSelectSqlFromDB(dbInfo, mb.getName()));
                 md.setVersion(1);
                 res.add(md);
             });
@@ -107,20 +104,19 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
 
 
     @Override
-    public List<TablesDependency> getTablesDependency(Long schemaId, String... tableFilter) {
+    public List<TablesDependency> getTablesDependency(DatabaseConnect dbInfo,  String... tableFilter) {
 
-        McSchemaPO schema = schemaMapper.findById( schemaId );
-        if( schema == null ) {
-            throw new MetaDataException("Schema["+schemaId+"]未找到.");
-        }
+        McSchemaPO schema = dbInfo.getSchema() ;
+        Long schemaId = dbInfo.getSchemaId() ;
+
         List<TablesDependency> result =  new ArrayList<>(); ;
-        List<MySqlTableVO> tables = getTablesFromDB(schemaId,tableFilter);
+        List<MySqlTableVO> tables = getTablesFromDB(dbInfo,tableFilter);
         if( tables != null && tables.size() >0 ) {
             tables.stream().forEach(tab -> {
 
-                SQLStatement stmt  = analyzerCreateSql(schemaId, tab.getName()) ;
+                SQLStatement stmt  = analyzerCreateSql(dbInfo, tab.getName()) ;
                 try {
-                    List<TableFkMysql> fks = getTableForeignkeys(schemaId, tab.getName(),true, stmt);
+                    List<TableFkMysql> fks = getTableForeignkeys(dbInfo, tab.getName(),true, stmt);
                     if( fks != null && fks.size() > 0 ) {
                         fks.forEach(fk -> {
                             TablesDependency td = new TablesDependency();
@@ -149,8 +145,8 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
 
 
     @Override
-    public  List<TableColumn> getViewColumns(Long  schemaId, String viewName, String viewSql) {
-        return getFieldsFromDB(schemaId, viewName);
+    public  List<TableColumn> getViewColumns(DatabaseConnect dbInfo,  String viewName, String viewSql) {
+        return getFieldsFromDB(dbInfo, viewName);
     }
 
     //===========================================获取 外键/主键/索引/字段 ============================================================
@@ -164,16 +160,12 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
      * @return
      * @throws DependencyNotExistException
      */
-    public  List<TableFkMysql> getTableForeignkeys(Long  schemaId, String tableName, boolean ignoreDependency , SQLStatement stmt) throws DependencyNotExistException {
+    public  List<TableFkMysql> getTableForeignkeys(DatabaseConnect dbInfo, String tableName, boolean ignoreDependency , SQLStatement stmt) throws DependencyNotExistException {
         if( stmt == null) {
-            stmt = analyzerCreateSql (schemaId, tableName);
+            stmt = analyzerCreateSql (dbInfo, tableName);
         }
         MySqlCreateTableStatement mysqlStmt = (MySqlCreateTableStatement)stmt;
-
-        McSchemaPO schema = schemaMapper.findById( schemaId );
-        if( schema == null ) {
-            throw new MetaDataException("Schema["+schemaId+"]未找到.");
-        }
+        McSchemaPO schema = dbInfo.getSchema();
 
         List<TableFkMysql> result = new ArrayList<>();
         for( SQLForeignKeyConstraint sqlForeign : mysqlStmt.findForeignKey() ){
@@ -209,7 +201,7 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
                 fk.setReferenceTableId(ref_table.get(0).getId());
             }else if( !ignoreDependency ){
                 //TODO 外键参考表不存在 , 需要先采集依赖表 , 需要先判断是否有循环依赖,避免死循环
-                throw new DependencyNotExistException(ref_tableName, ref_schemaId, tableName, schemaId);
+                throw new DependencyNotExistException(ref_tableName, ref_schemaId, tableName, dbInfo.getSchemaId());
             }else {
             	continue ;
             }
@@ -252,9 +244,9 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
      * @param stmt  create语句解析对象
      * @return
      */
-    public  List<String> getTablePrimaryKeys(Long  schemaId, String tableName, SQLStatement stmt) {
+    public  List<String> getTablePrimaryKeys(DatabaseConnect dbInfo,String tableName, SQLStatement stmt) {
         if( stmt == null) {
-            stmt = analyzerCreateSql (schemaId, tableName);
+            stmt = analyzerCreateSql (dbInfo, tableName);
         }
         MySqlCreateTableStatement mysqlStmt = (MySqlCreateTableStatement)stmt;
         return mysqlStmt.findPrimaryKey().getColumns().stream().map(rc -> { return  ((SQLIdentifierExpr)rc.getExpr()).getName(); } ).collect(Collectors.toList()) ;
@@ -267,9 +259,9 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
      * @param stmt  create语句解析对象
      * @return
      */
-    public  List<TableIdxMysql> getTableIndexs(Long  schemaId, String tableName, SQLStatement stmt) {
+    public  List<TableIdxMysql> getTableIndexs(DatabaseConnect dbInfo,String tableName, SQLStatement stmt) {
         if( stmt == null) {
-            stmt = analyzerCreateSql (schemaId, tableName);
+            stmt = analyzerCreateSql (dbInfo, tableName);
         }
         MySqlCreateTableStatement mysqlStmt = (MySqlCreateTableStatement)stmt;
 
@@ -343,9 +335,9 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
      * @param stmt create语句解析对象
      * @return
      */
-    public List<TableColumn> getTableColumns(Long  schemaId, String tableName, SQLStatement stmt) {
+    public List<TableColumn> getTableColumns(DatabaseConnect dbInfo, String tableName, SQLStatement stmt) {
         if( stmt == null) {
-            stmt = analyzerCreateSql (schemaId, tableName);
+            stmt = analyzerCreateSql (dbInfo, tableName);
         }
         MySqlCreateTableStatement mysqlStmt = (MySqlCreateTableStatement)stmt;
 
@@ -361,9 +353,9 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
             tc.setIsPk( mysqlStmt.isPrimaryColumn(deleteQuoted( element.getName().getSimpleName()) ) );
             tc.setIsAutoIncrement( element.isAutoIncrement() );
             tc.setIsNull( (!element.containsNotNullConstaint()) );
-            tc.setDefaultValue( element.getDefaultExpr()!= null? element.getDefaultExpr().toString():"");
+            tc.setDefaultValue( element.getDefaultExpr()!= null&&!"NULL".equalsIgnoreCase(element.getDefaultExpr().toString())? element.getDefaultExpr().toString():null);
             tc.setIsUnsigned( ( element.getDataType() instanceof SQLDataTypeImpl )? ((SQLDataTypeImpl)element.getDataType()).isUnsigned() : false  );
-            tc.setDescription( element.getComment()!= null ? element.getComment().toString() :"" );
+            tc.setDescription( deleteQuoted(element.getComment()!= null ? element.getComment().toString() :"" ));
 
             result.add(tc);
         });
@@ -380,8 +372,8 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
      * @param tableName
      * @return
      */
-    public SQLStatement analyzerCreateSql( Long  schemaId, String tableName ) {
-        return analyzerSql(getCreateTableSqlFromDB(schemaId, tableName)) ;
+    public SQLStatement analyzerCreateSql( DatabaseConnect dbInfo, String tableName ) {
+        return analyzerSql(getCreateTableSqlFromDB(dbInfo, tableName)) ;
     }
 
     /**
@@ -391,16 +383,8 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
      * @param filter  不为空时 返回列表中的表信息, 否则返回所有的表信息
      * @return
      */
-    protected List<MetadataBaseVO> getTablesInfoFromDB(Long schemaId, boolean isTable, String... filter) {
+    protected List<MetadataBaseVO> getTablesInfoFromDB(DatabaseConnect dbInfo,  boolean isTable, String... filter) {
 
-        McSchemaPO schema = schemaMapper.findById( schemaId );
-        if( schema == null ) {
-            throw new MetaDataException("Schema["+schemaId+"]未找到.");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"1".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
         List<String> filterList =  Lists.newArrayList();
         if( filter != null && filter.length > 0 ) {
             for( String f : filter) {
@@ -415,7 +399,7 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
         }
         // String sql = "SELECT table_name name,  table_comment remark  from information_schema.TABLES  WHERE table_schema = '"+schema.getName()+"' ORDER BY table_name" ;
       
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
 
 			@Override
 			public void dealRow(int index, Map<String, Object> map, List<String> columnNames) throws MetaDataException {
@@ -449,21 +433,12 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
      * @param tableName
      * @return
      */
-    protected String getCreateTableSqlFromDB(Long  schemaId, String tableName) {
-
-        McSchemaPO schema = schemaMapper.findById( schemaId );
-        if( schema == null ) {
-            throw new MetaDataException("Schema["+schemaId+"]未找到.");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"1".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
+    protected String getCreateTableSqlFromDB(DatabaseConnect dbInfo, String tableName) {
 
         String sql = "show create table "+ tableName ;
         
         StringBuffer result = new StringBuffer();
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
 			@Override
 			public void dealRow(int index, Map<String, Object> map, List<String> columnNames) throws MetaDataException {
 				String key = columnNames.get(1);
@@ -481,21 +456,36 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
      * @param viewName
      * @return
      */
-    public String getCreateViewSqlFromDB(Long  schemaId, String viewName) {
+    public String getViewSelectSqlFromDB(DatabaseConnect dbInfo, String viewName) {
 
-        McSchemaPO schema = schemaMapper.findById( schemaId );
-        if( schema == null ) {
-            throw new MetaDataException("Schema["+schemaId+"]未找到.");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"1".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
+        String sql = "SELECT  view_definition  FROM  information_schema.views where table_name='"+ viewName+"'" ;
+        
+        StringBuffer result = new StringBuffer();
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
+
+			@Override
+			public void dealRow(int index, Map<String, Object> map, List<String> columnNames) throws MetaDataException {
+				String key = columnNames.get(0);
+				result.append( map.get(key).toString() );
+			}
+        	
+        });
+        return result.toString();
+    }
+    
+    /**
+     * 采集 数据库中 视图的真实创建语句 ( 包括  视图sql语句)
+     * @param schemaId
+     * @param viewName
+     * @return
+     */
+    @Deprecated
+    public String getCreateViewSqlFromDB(DatabaseConnect dbInfo, String viewName) {
 
         String sql = "SHOW  CREATE  VIEW "+ viewName ;
         
         StringBuffer result = new StringBuffer();
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
 
 			@Override
 			public void dealRow(int index, Map<String, Object> map, List<String> columnNames) throws MetaDataException {
@@ -513,28 +503,19 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
      * @param viewOrTableName
      * @return
      */
-    protected List<TableColumn> getFieldsFromDB(Long  schemaId, String viewOrTableName) {
-
-        McSchemaPO schema = schemaMapper.findById( schemaId );
-        if( schema == null ) {
-            throw new MetaDataException("Schema["+schemaId+"]未找到.");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"1".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
+    protected List<TableColumn> getFieldsFromDB(DatabaseConnect dbInfo, String viewOrTableName) {
 
         String sql = "describe "+ viewOrTableName ;
         
         List<TableColumn> res = new ArrayList<>();
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
 
 			@Override
 			public void dealRow(int index, Map<String, Object> map, List<String> columnNames) throws MetaDataException {
 				  TableColumn tc =new TableColumn();
 				  tc.setColumnName(map.get("Field").toString());
-				  tc.setIsNull( "YES".equalsIgnoreCase(map.get("Null")!= null? map.get("Null").toString(): "" ) );
-				  tc.setDefaultValue( map.get("Default")!= null ? map.get("Default").toString(): "" );
+				  tc.setIsNull( "YES".equalsIgnoreCase(map.get("Null")!= null&&!"NULL".equalsIgnoreCase(map.get("Null").toString())? map.get("Null").toString(): "" ) );
+				  tc.setDefaultValue( map.get("Default")!= null&&!"NULL".equalsIgnoreCase(map.get("Default").toString()) ? map.get("Default").toString(): null );
 
 				  String type = map.get("Type").toString();
 				  if( !StringUtils.isEmpty(type)) {

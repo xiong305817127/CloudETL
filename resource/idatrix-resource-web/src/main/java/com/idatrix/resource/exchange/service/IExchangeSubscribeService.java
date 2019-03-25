@@ -7,5 +7,5 @@ import com.idatrix.resource.exchange.vo.request.ExchangeSubscribeVO;
  */
 public interface IExchangeSubscribeService {
 
-    void processExchange(String user, ExchangeSubscribeVO exchangeSubscribeVO) throws Exception;
+    void processExchange(Long rentId, String user, ExchangeSubscribeVO exchangeSubscribeVO) throws Exception;
 }

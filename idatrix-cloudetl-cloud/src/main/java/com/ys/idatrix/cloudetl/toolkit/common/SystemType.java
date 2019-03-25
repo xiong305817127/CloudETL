@@ -17,7 +17,7 @@ import org.pentaho.di.core.util.Utils;
  */
 public enum SystemType {
 	
-	DateBase("DateBase"), File("File"), Interface("Interface"), Dummy("Dummy") ;
+	DateBase("DateBase"), File_Hdfs("HDFS"),File_Local("File"), Interface("Interface"), Dummy("Dummy") ;
 
 	private String type;
 

@@ -232,7 +232,7 @@ public class SPInsertUpdate implements StepParameter, StepDataRelationshipParser
 		
 		spInsertUpdate.setCommit(insertupdatemeta.getCommitSizeVar());
 		spInsertUpdate.setConnection(
-				insertupdatemeta.getDatabaseMeta() != null ? insertupdatemeta.getDatabaseMeta().getName() : "");
+				insertupdatemeta.getDatabaseMeta() != null ? insertupdatemeta.getDatabaseMeta().getDisplayName() : "");
 		spInsertUpdate.setTable(insertupdatemeta.getTableName());
 		spInsertUpdate.setUpdateBypassed(insertupdatemeta.isUpdateBypassed());
 		spInsertUpdate.setSchema(insertupdatemeta.getSchemaName());
@@ -284,7 +284,7 @@ public class SPInsertUpdate implements StepParameter, StepDataRelationshipParser
 		setToAttribute(stepMeta, "table.schemaId" , spInsertUpdate.getSchemaId());
 		setToAttribute(stepMeta, "table.tableId" , spInsertUpdate.getTableId() );
 
-		DatabaseMeta d = DatabaseMeta.findDatabase(databases, spInsertUpdate.getConnection());
+		DatabaseMeta d = DatabaseMeta.findDatabase(databases, spInsertUpdate.getSchemaId()!= null ? Long.toString(spInsertUpdate.getSchemaId()): null);
 		if(d != null) {
 			transMeta.addOrReplaceDatabase(d);
 			insertupdatemeta.setDatabaseMeta(d);

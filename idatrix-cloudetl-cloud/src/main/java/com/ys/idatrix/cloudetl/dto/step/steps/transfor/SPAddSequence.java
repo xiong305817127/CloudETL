@@ -41,8 +41,12 @@ public class SPAddSequence implements StepParameter, StepDataRelationshipParser,
 
 	String valuename;
 	boolean useDatabase;
+	
 	String connection;
 	String schemaName;
+	Long schemaId ;
+	Long databaseId ;
+	
 	String sequenceName;
 	boolean useCounter;
 	String counterName;
@@ -100,6 +104,22 @@ public class SPAddSequence implements StepParameter, StepDataRelationshipParser,
 	 */
 	public String getSchemaName() {
 		return schemaName;
+	}
+
+	public Long getSchemaId() {
+		return schemaId;
+	}
+
+	public void setSchemaId(Long schemaId) {
+		this.schemaId = schemaId;
+	}
+
+	public Long getDatabaseId() {
+		return databaseId;
+	}
+
+	public void setDatabaseId(Long databaseId) {
+		this.databaseId = databaseId;
 	}
 
 	/**
@@ -218,11 +238,13 @@ public class SPAddSequence implements StepParameter, StepDataRelationshipParser,
 		SPAddSequence spAddSequence = new SPAddSequence();
 		AddSequenceMeta addsequencemeta = (AddSequenceMeta) stepMetaInterface;
 
+		spAddSequence.setDatabaseId( getToAttributeLong(stepMeta, "table.databaseId" ) );
+		spAddSequence.setSchemaId( getToAttributeLong(stepMeta, "table.schemaId" ));
+
 		spAddSequence.setValuename(addsequencemeta.getValuename());
 		spAddSequence.setCounterName(addsequencemeta.getCounterName());
 		spAddSequence.setSchemaName(addsequencemeta.getSchemaName());
-		spAddSequence
-				.setConnection(addsequencemeta.getDatabase() == null ? "" : addsequencemeta.getDatabase().getName());
+		spAddSequence .setConnection(addsequencemeta.getDatabase() == null ? "" : addsequencemeta.getDatabase().getDisplayName() ) ;
 		spAddSequence.setIncrementBy(addsequencemeta.getIncrementBy());
 		spAddSequence.setMaxValue(addsequencemeta.getMaxValue());
 		spAddSequence.setSequenceName(addsequencemeta.getSequenceName());
@@ -245,7 +267,7 @@ public class SPAddSequence implements StepParameter, StepDataRelationshipParser,
 		addsequencemeta.setValuename(spAddSequence.getValuename());
 		addsequencemeta.setCounterName(spAddSequence.getCounterName());
 		
-		DatabaseMeta d = DatabaseMeta.findDatabase(databases, spAddSequence.getConnection());
+		DatabaseMeta d = DatabaseMeta.findDatabase(databases,spAddSequence.getSchemaId()!=null? Long.toString(spAddSequence.getSchemaId()):null);
 		if( d != null) {
 			transMeta.addOrReplaceDatabase(d);
 			addsequencemeta.setDatabase(d);
@@ -257,6 +279,9 @@ public class SPAddSequence implements StepParameter, StepDataRelationshipParser,
 		addsequencemeta.setStartAt(spAddSequence.getStartAt());
 		addsequencemeta.setUseCounter(spAddSequence.isUseCounter());
 		addsequencemeta.setSchemaName(spAddSequence.getSchemaName());
+		
+		setToAttribute(stepMeta, "table.databaseId" ,spAddSequence.getDatabaseId() );
+		setToAttribute(stepMeta, "table.schemaId" , spAddSequence.getSchemaId());
 
 	}
 

@@ -18,7 +18,7 @@ public interface SubTaskExecDAO {
 
     List<SubTaskExecPO> getExecInfoByTaskId(String taskId);
 
-    SubTaskExecPO getById(Long id);
+    void deleteByIdAndTaskStatus(@Param("id") Long id, @Param("status") String status);
 
     /*根据ETL的Subscribe和Running查询任务具体执行*/
     SubTaskExecPO getByEtlSubscribeAndRunningId(@Param("subscribeId") String subscribeId,

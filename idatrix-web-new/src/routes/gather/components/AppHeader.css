@@ -1,0 +1,294 @@
+/*总体*/
+.Row{
+  height: 100%;
+}
+
+/*左半边*/
+.ColLeft{
+  height: 100%;
+}
+.ContentLeft{
+  color: #FFFFFF;
+  font-size: 66px;
+  margin: 48px 0 0 255px;
+}
+/*右半边*/
+.ColRight{
+  height: 100%;
+}
+.HeaderRight{
+  height: 25px;
+  line-height: 25px;
+
+  padding: 0;
+  background: transparent;
+}
+.RowRight{
+  width: 340px;
+  float: right;
+}
+.help{
+  background: url("../image/App/help.png") no-repeat;
+}
+.setting{
+  background: url("../image/App/setting.png") no-repeat;
+  padding-left: 42px;
+  color: #93cfec;
+}
+.user{
+  background: url("../image/App/user.png") no-repeat;
+  padding-left: 35px;
+  color: #93cfec;
+}
+
+
+
+/* 右侧内容 */
+.hRight {
+  float: right;
+}
+
+.hRight .a {
+  color: #fff!important;
+  text-decoration: none;
+}
+
+.hRight :global(a) {
+  font-size: 16px;
+  margin:0 15px;
+}
+.hRight .icon {
+  vertical-align: middle;
+  font-size: 22px;
+  font-weight: normal;
+}
+.hRight .text {
+  margin-left:5px;
+}
+.hRight .virgule {
+  height:10px;
+  border-right:1px solid #fff;
+  color:#fff;
+}
+
+
+
+/*自适应*/
+/*最小宽度1366px*/
+.HeaderLeft{
+  width: 100%;
+  height: 80px;
+  line-height: 80px;
+  color: #FFFFFF;
+  font-size: 30px;
+  cursor: pointer;
+  padding: 0;
+}
+.HeaderLeft .logoImg{
+  vertical-align: center;
+  padding-right: 10px;
+}
+
+.RowRightContent{
+  width:360px ;
+  display: block;
+  height: 80px;
+  line-height: 80px;
+}
+.ColClildRight{
+  height: 80px;
+  line-height: 80px;
+  text-align: center;
+  width: 120px;
+}
+.RowRight{
+  width: 200px;
+  float: right;
+}
+.HeaderRight{
+ /*  width: 189px;*/
+  float: right;
+  height: 80px;
+  line-height: 80px;
+  padding: 0;
+}
+.ColLayout{
+  overflow: hidden;
+  height: 80px;
+  line-height: 80px;
+  background: none;
+}
+.ColLayout:hover{
+  overflow: hidden;
+  cursor: pointer;
+}
+.ColLayoutHeader{
+  height: 80px;
+  line-height: 80px;
+  background: none;
+  padding: 0;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+
+/*任务点击特效*/
+.taskCenterClick{
+  background: RGBA(0,0,0,0.2);
+}
+.taskCenterClick  .ColLayoutHeader{
+  background: transparent;
+  color: white;
+}
+.taskCenter{
+  line-height: 80px;
+  background: transparent;
+}
+.taskCenter  .ColLayoutHeader{
+  background: transparent;
+  color: white;
+}
+/*设计平台*/
+.designCenterClick{
+  background: RGBA(0,0,0,0.2);
+}
+.designCenterClick  .ColLayoutHeader{
+  background: none;
+  color: white;
+}
+.designCenter{
+  line-height: 80px;
+  background: none;
+}
+.designCenter  .ColLayoutHeader{
+  background: none;
+  color: white;
+}
+/*资源列表点击*/
+.resourceCenterClick{
+  background: RGBA(0,0,0,0.2);
+}
+.resourceCenterClick  .ColLayoutHeader{
+  background: none;
+  color: white;
+}
+.resourceCenter{
+  line-height: 80px;
+  background: none;
+}
+.resourceCenter  .ColLayoutHeader{
+  background: none;
+  color: white;
+}
+
+
+@media (min-width: 1440px) and  (min-height: 900px){
+  .HeaderLeft{
+    width: 100%;
+    height: 45px;
+    line-height: 45px;
+    margin-left: 15px;
+    color: #FFFFFF;
+    font-size: 30px;
+    cursor: pointer;
+    padding: 0;
+  }
+  .HeaderRight{
+    height: 25px;
+    line-height: 25px;
+    float: none;
+    padding: 0;
+    background: transparent;
+  }
+  .RowRight{
+    width: 340px;
+    float: right;
+  }
+  .ColClildRight{
+    height: 134px;
+    line-height: 134px;
+    text-align: center;
+    width: 21%;
+  }
+  .ColLayout{
+    overflow: hidden;
+    height: 134px;
+    line-height: 134px;
+    padding: 0 25px;
+    background: none;
+  }
+  .ColLayout:hover{
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .ColLayoutHeader{
+    height: 110px;
+    line-height: 110px;
+    padding: 45px 0 0 0 ;
+    background: none;
+  }
+  .RowRightContent{
+    width:100% ;
+    display: flex;
+  }
+
+
+  /*任务点击特效*/
+  .taskCenterClick{
+    background: url("../image/App/circle_select.png") no-repeat center;
+  }
+  .taskCenterClick  .ColLayoutHeader{
+    background: url("../image/App/task.png") no-repeat center;
+    color: white;
+  }
+  .taskCenter{
+    background: url("../image/App/circle.png") no-repeat center;
+  }
+  .taskCenter  .ColLayoutHeader{
+    background: url("../image/App/task_gray.png") no-repeat center;
+    color: #cbd5dd;
+  }
+  /*设计平台点击*/
+  .designCenterClick{
+    background: url("../image/App/circle_select.png") no-repeat center;
+  }
+  .designCenterClick  .ColLayoutHeader{
+    background: url("../image/App/design.png") no-repeat center;
+    color: white;
+  }
+  .designCenter{
+    background: url("../image/App/circle.png") no-repeat center;
+  }
+  .designCenter  .ColLayoutHeader{
+    background: url("../image/App/design_gray.png") no-repeat center;
+    color: #cbd5dd;
+  }
+  /*资源列表点击*/
+  .resourceCenterClick{
+    background: url("../image/App/circle_select.png") no-repeat center;
+  }
+  .resourceCenterClick  .ColLayoutHeader{
+    background: url("../image/App/resource.png") no-repeat center;
+    color: white;
+  }
+  .resourceCenter{
+    background: url("../image/App/circle.png") no-repeat center;
+  }
+  .resourceCenter  .ColLayoutHeader{
+    background: url("../image/App/resource_gray.png") no-repeat center;
+    color: #cbd5dd;
+  }
+}
+
+
+@media (min-width: 1680px) {
+    .RowRightContent{
+      justify-content:center;
+      -webkit-box-pack:center;
+    }
+}
+
+/*@media (min-width: 1920px) {
+  body{font-size: 33px;}
+}*/

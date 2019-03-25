@@ -14,33 +14,55 @@
 
 
     <dubbo:application name="idatrix-resource" owner="idatrix"
-                       organization="ys" />
+                       organization="ys"/>
 
-    <dubbo:registry protocol="zookeeper" address="${dubbo.registry.address}" />
+    <dubbo:registry protocol="zookeeper" address="${dubbo.registry.address}"/>
 
-    <dubbo:protocol name="dubbo"  port="${dubbo.protocol.port}" />
+    <dubbo:protocol name="dubbo" port="${dubbo.protocol.port}"/>
+
+    <!-- to etl dubbo provider -->
+    <dubbo:service interface="com.idatrix.resource.datareport.service.IETLTaskService" ref="ETLTaskService"
+                   timeout="30000"/>
 
     <!-- 设置所有服务消费的 timeout -->
-    <dubbo:consumer timeout="30000" />
+    <dubbo:consumer timeout="30000"/>
 
-<!--    <dubbo:registry file="${user.home}/output/catalog/dubbo.cache" />-->
-
-    <dubbo:reference interface= "com.ys.idatrix.metacube.api.service.dataswap.DataSwapService"
-                     id="metacubeCatalogService"/>
+    <!--    <dubbo:registry file="${user.home}/output/catalog/dubbo.cache" />-->
 
     <!-- hdfs dubbo consumer -->
     <dubbo:reference id="hdfsDao"
-                     interface="com.ys.idatrix.db.proxy.api.hdfs.HdfsDao" check="false" protocol="dubbo"/>
-    <dubbo:reference interface="com.idatrix.unisecurity.api.service.UserService" id="userService" />
-    <dubbo:reference  id="organizationService"
-                      interface="com.idatrix.unisecurity.api.service.OrganizationService"/>
-    <dubbo:reference interface="com.ys.idatrix.cloudetl.subscribe.api.service.SubscribeService" id="subscribeService" />
-    <dubbo:reference interface="com.ys.idatrix.metacube.api.service.cloudetl.CloudETLService" id="cloudETLService" /><!-- 元数据服务 -->
-    <dubbo:reference id="dataAnalysisService"
-                     interface="com.ys.idatrix.metacube.api.service.dataanalysis.DataAnalysisService" check="false"/><!-- hdfs dubbo consumer -->
+                     interface="com.ys.idatrix.db.api.hdfs.service.HdfsService" check="false" protocol="dubbo"/>
     <dubbo:reference id="hdfsUnDaoHessian"
-            interface="com.ys.idatrix.db.proxy.api.hdfs.HdfsUnrestrictedDao" check="false" protocol="hessian"/>
- <dubbo:service interface="com.idatrix.resource.datareport.service.IETLTaskService" ref="ETLTaskService"
-                   timeout="30000">
-    </dubbo:service>
+                     interface="com.ys.idatrix.db.api.hdfs.service.HdfsUnrestrictedService" check="false"
+                     protocol="hessian"/>
+
+    <!-- sql execute dao dubbo consumer -->
+    <dubbo:reference id="sqlExecuteDao" interface="com.ys.idatrix.db.api.sql.service.SqlExecService"/>
+
+    <!-- sql execute dao dubbo consumer -->
+    <dubbo:reference id="metacubeCatalogService" interface="com.ys.idatrix.metacube.api.service.MetadataToDataSwapService"/>
+
+    <!-- es dubbo consumer -->
+    <dubbo:reference id="indexManageService"
+                     interface="com.idatrix.es.api.service.IIndexManageService" check="false"/>
+    <dubbo:reference id="indexDocService"
+                     interface="com.idatrix.es.api.service.IIndexDocService" check="false"/>
+
+    <!-- etl dubbo consumer -->
+    <dubbo:reference interface="com.ys.idatrix.cloudetl.subscribe.api.service.SubscribeService" id="subscribeService"/>
+
+    <!-- security dubbo consumer -->
+    <dubbo:reference interface="com.idatrix.unisecurity.api.service.UserService" id="userService"/>
+    <dubbo:reference id="organizationService"
+                     interface="com.idatrix.unisecurity.api.service.OrganizationService"/>
+
+    <!-- metadata consumer -->
+    <!--<dubbo:reference interface="com.ys.idatrix.metacube.api.service.cloudetl.CloudETLService"
+                     id="cloudETLService"/>&lt;!&ndash; 元数据服务 &ndash;&gt;
+    <dubbo:reference id="dataAnalysisService"
+                     interface="com.ys.idatrix.metacube.api.service.dataanalysis.DataAnalysisService"
+                     check="false"/>
+    <dubbo:reference interface="com.ys.idatrix.metacube.api.service.dataswap.DataSwapService"
+                     id="metacubeCatalogService"/>-->
+
 </beans>

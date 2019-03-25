@@ -34,7 +34,6 @@ public class SourceServiceDAOTest {
 			ssp.setServiceName("测试服务001");
 			ssp.setServiceCode("ISO001");
 			ssp.setServiceType(CommonConstants.SERVICE_TYPE_SOAP);
-			ssp.setStatus(CommonConstants.STATUS_Y);
 			ssp.setRemark("测试服务备注");
 			ssp.setWsdl("WSDL".getBytes());
 

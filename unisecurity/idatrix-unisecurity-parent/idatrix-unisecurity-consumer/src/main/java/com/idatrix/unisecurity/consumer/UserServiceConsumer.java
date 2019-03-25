@@ -3,6 +3,7 @@ package com.idatrix.unisecurity.consumer;
 import com.idatrix.unisecurity.api.domain.LoginDateInfo;
 import com.idatrix.unisecurity.api.domain.NowLoginResult;
 import com.idatrix.unisecurity.api.domain.OrganizationUserLoginInfo;
+import com.idatrix.unisecurity.api.domain.User;
 import com.idatrix.unisecurity.api.service.UserService;
 import com.idatrix.unisecurity.common.utils.GsonUtil;
 import org.springframework.context.ApplicationContext;
@@ -21,7 +22,7 @@ public class UserServiceConsumer {
     static UserService userService = (UserService) applicationContext.getBean("userService");
 
     public static void main(String[] args) throws Exception {
-        findDeptUserLoginInfoByRentId();
+        findByUserName();
         /*List<User> users = userService.findUserByRoleAndRenter(1, 444l);
         System.out.println(users);
         User user = userService.findByUserName("ooyr");
@@ -57,6 +58,11 @@ public class UserServiceConsumer {
         for (Integer integer : list) {
             System.out.println(integer);
         }
+    }
+
+    public static void findByUserName() {
+        User oyr = userService.findByUserName("oyr");
+        System.out.println(GsonUtil.toJson(oyr));
     }
 
 }

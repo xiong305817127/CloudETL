@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.webservice.dao.ServiceDAO">
+    <resultMap id="BaseResultMap" type="com.idatrix.resource.webservice.po.ServicePO">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="provider_id" jdbcType="VARCHAR" property="providerId"/>
+        <result column="provider_name" jdbcType="VARCHAR" property="providerName"/>
+        <result column="service_name" jdbcType="VARCHAR" property="serviceName"/>
+        <result column="service_type" jdbcType="VARCHAR" property="serviceType"/>
+        <result column="service_code" jdbcType="VARCHAR" property="serviceCode"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
+        <result column="url" jdbcType="VARCHAR" property="url"/>
+        <result column="rent_id" jdbcType="BIGINT" property="rentId"/>
+        <result column="creator" jdbcType="VARCHAR" property="creator"/>
+        <result column="create_time" javaType="java.util.Date" jdbcType="TIMESTAMP"
+                property="createTime"/>
+        <result column="modifier" jdbcType="VARCHAR" property="modifier"/>
+        <result column="modify_time" javaType="java.util.Date" jdbcType="TIMESTAMP"
+                property="modifyTime"/>
+        <result column="technical_support_unit" property="technicalSupportUnit"/>
+        <result column="technical_support_contact" property="technicalSupportContact"/>
+        <result column="technical_support_contact_number" property="technicalSupportContactNumber"/>
+        <result column="request_example" property="requestExample"/>
+        <result column="successful_return_example" property="successfulReturnExample"/>
+        <result column="failure_return_example" property="failureReturnExample"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, provider_id, provider_name, service_name, service_type, service_code, remark, url, wsdl,
+        rent_id, creator, create_time, modifier, modify_time, technical_support_unit,
+        technical_support_contact, technical_support_contact_number, request_example,
+        successful_return_example, failure_return_example, is_deleted
+    </sql>
+
+    <select id="getServiceById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from rc_service
+        where id = #{id} and is_deleted = 0
+    </select>
+</mapper>

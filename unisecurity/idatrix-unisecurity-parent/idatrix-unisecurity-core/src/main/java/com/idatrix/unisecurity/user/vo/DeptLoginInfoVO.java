@@ -17,7 +17,7 @@ import java.util.List;
 public class DeptLoginInfoVO {
 
     // 本月登录用户数排行TOP10
-    @ApiModelProperty("本月登录用户数排行 TOP 10")
+    @ApiModelProperty("本月登录用户次数排行 TOP 10")
     private List<DeptUserLoginCountVO> monthLoginUserRankingList;
 
     // 登录用户数总排行TOP10

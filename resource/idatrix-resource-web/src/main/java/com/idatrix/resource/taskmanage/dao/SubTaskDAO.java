@@ -3,6 +3,7 @@ package com.idatrix.resource.taskmanage.dao;
 import com.idatrix.resource.taskmanage.po.SubTaskOverviewPO;
 import com.idatrix.resource.taskmanage.po.SubTaskPO;
 import com.idatrix.resource.taskmanage.vo.DescribeInfoVO;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -29,8 +30,9 @@ public interface SubTaskDAO {
     SubTaskPO getBySubTaskId(String subTaskId);
 
     /*获取任务执行数目*/
-    Long getTaskCount();
+    Long getTaskCount(Long rentId);
 
     /*获取最近几个月的任务，导入数目统计情况，其中num表示月份数*/
-    List<DescribeInfoVO> getTaskInfoByMonth(Long num);
+    List<DescribeInfoVO> getTaskInfoByMonth(@Param("rentId") Long rentId,
+                                            @Param("num") Long num);
 }

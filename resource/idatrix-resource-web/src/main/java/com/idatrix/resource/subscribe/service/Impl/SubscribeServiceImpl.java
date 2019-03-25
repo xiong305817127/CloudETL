@@ -15,15 +15,18 @@ import com.idatrix.resource.catalog.vo.ResourceColumnVO;
 import com.idatrix.resource.common.cache.SequenceNumberManager;
 import com.idatrix.resource.common.task.ExchangeTask;
 import com.idatrix.resource.common.utils.*;
+import com.idatrix.resource.portal.common.ResourceFormatTypeEnum;
 import com.idatrix.resource.subscribe.dao.SubscribeDAO;
 import com.idatrix.resource.subscribe.dao.SubscribeDbioDAO;
 import com.idatrix.resource.subscribe.po.SubscribeDbioPO;
 import com.idatrix.resource.subscribe.po.SubscribePO;
 import com.idatrix.resource.subscribe.service.ISubscribeService;
+import com.idatrix.resource.subscribe.utils.DataMaskingTypeEnum;
 import com.idatrix.resource.subscribe.utils.SubscribeStatusEnum;
 import com.idatrix.resource.subscribe.vo.SubscribeOverviewVO;
 import com.idatrix.resource.subscribe.vo.SubscribeVO;
 import com.idatrix.resource.subscribe.vo.SubscribeWebServiceVO;
+import com.idatrix.resource.subscribe.vo.request.SubscribeApproveRequestVO;
 import com.idatrix.resource.taskmanage.dao.SubTaskDAO;
 import com.idatrix.resource.taskmanage.po.SubTaskPO;
 import com.idatrix.resource.terminalmanage.dao.TerminalManageDAO;
@@ -32,15 +35,13 @@ import com.idatrix.resource.terminalmanage.service.ITerminalManageService;
 import com.idatrix.unisecurity.api.domain.Organization;
 import com.idatrix.unisecurity.api.domain.User;
 import com.idatrix.unisecurity.api.service.UserService;
-import com.idatrix.unisecurity.sso.client.UserHolder;
 import com.idatrix.unisecurity.sso.client.model.SSOUser;
-import com.ys.idatrix.metacube.api.bean.base.BaseResult;
-import com.ys.idatrix.metacube.api.bean.dataswap.MetadataField;
-import com.ys.idatrix.metacube.api.bean.dataswap.MetadataTable;
-import com.ys.idatrix.metacube.api.bean.dataswap.QueryMetadataFieldsResult;
-import com.ys.idatrix.metacube.api.bean.dataswap.SubscribeCrtTbResult;
-import com.ys.idatrix.metacube.api.service.cloudetl.CloudETLService;
-import com.ys.idatrix.metacube.api.service.dataswap.DataSwapService;
+import com.ys.idatrix.metacube.api.beans.ResultBean;
+import com.ys.idatrix.metacube.api.beans.dataswap.MetadataField;
+import com.ys.idatrix.metacube.api.beans.dataswap.MetadataTable;
+import com.ys.idatrix.metacube.api.beans.dataswap.QueryMetadataFieldsResult;
+import com.ys.idatrix.metacube.api.beans.dataswap.SubscribeCrtTbResult;
+import com.ys.idatrix.metacube.api.service.MetadataToDataSwapService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -58,7 +59,7 @@ import java.util.*;
 import static com.idatrix.resource.common.utils.ResourceTools.FormatType.DB;
 import static com.idatrix.resource.common.utils.ResourceTools.FormatType.SERVICE_INTERFACE;
 import static com.idatrix.resource.subscribe.utils.SubscribeStatusEnum.SUCCESS;
-import static com.ys.idatrix.metacube.api.bean.dataswap.AuthorizedFlowType.SUBSCRIBED;
+import static com.ys.idatrix.metacube.api.beans.dataswap.AuthorizedFlowType.SUBSCRIBED;
 
 
 @Transactional
@@ -95,8 +96,8 @@ public class SubscribeServiceImpl implements ISubscribeService {
     @Autowired
     private SequenceNumberManager sequenceNumberManager;
 
-    @Autowired
-    private DataSwapService metacubeCatalogService;
+    @Autowired(required=false)
+    private MetadataToDataSwapService metacubeCatalogService;
 
     @Autowired
     private ITerminalManageService terminalManageService;
@@ -104,8 +105,6 @@ public class SubscribeServiceImpl implements ISubscribeService {
     @Autowired
     private SubTaskDAO subTaskDAO;
 
-    @Autowired
-    private CloudETLService cloudETLService;
 
     @Autowired
     private ExchangeTask exchangeTask;
@@ -161,17 +160,14 @@ public class SubscribeServiceImpl implements ISubscribeService {
         Long resourceId = vo.getResourceId();
         ResourceConfigPO rcPO = resourceConfigDAO.getConfigById(resourceId);
         if(rcPO==null){
-            throw new RuntimeException("不存在订阅资源记录");
+            throw new Exception("不存在订阅资源记录");
         }
         String creator = rcPO.getCreator();
         User creatorInfo = userService.findByUserName(creator);
 
 
         //修改资源状态
-        SSOUser userSSOInfo = UserHolder.getUser();
-//        String user =(String) userSSOInfo.getProperty("username"); //审批人账号，
-//        String userName = (String) userSSOInfo.getProperty("realName");;    //审批人姓名
-
+        SSOUser userSSOInfo = userUtils.getCurrentUserSSO();
         String user = userUtils.getCurrentUserName();
         String userName = userUtils.getCurrentUserRealName();
         String approve = user; //审批人账号，
@@ -182,25 +178,10 @@ public class SubscribeServiceImpl implements ISubscribeService {
         if(subscribeUser!=null){
             approve = subscribeUser.getUsername();
             approveName = subscribeUser.getRealName();
+        }else{
+            throw new Exception("没有配置订阅审批人员，请先配置再注册");
         }
 
-
-//        SystemConfigPO sysConfigPO = systemConfigDAO.getLastestSysConfig();
-//        if(sysConfigPO!=null){
-//            Long deptAdminRol = sysConfigPO.getSubApproverRole();
-//            if(deptAdminRol!=null && deptAdminRol>0) {
-//                //int deptId = (Integer) userSSOInfo.getProperty("deptId");
-//                int deptId = creatorInfo.getDeptId().intValue();
-//                List<User> userList = userService.findUsersByDeptAndRole(deptId, deptAdminRol.intValue());
-//                if (userList != null && userList.size() > 0) {
-//                    User approveUser = userList.get(0);
-//                    approve = approveUser.getUsername();
-//                    approveName = approveUser.getRealName();
-//                } else {
-//                    throw new RuntimeException("还未设置订阅管理员，请先配置订阅管理员再提交订阅");
-//                }
-//            }
-//        }
         SubscribePO po = new SubscribePO();
         po.setResourceId(vo.getResourceId());
         po.setEndDate(DateTools.parseDate(vo.getEndDate()));
@@ -238,7 +219,7 @@ public class SubscribeServiceImpl implements ISubscribeService {
             return;
         }
         for(ResourceColumnVO rcVO : rcList){
-            Long columnId = rcVO.getId();
+            Long columnId = rcVO.getColumnId();
             if(columnId!=null && columnId!=0L){
 
                 SubscribeDbioPO subPo = new SubscribeDbioPO();
@@ -267,11 +248,11 @@ public class SubscribeServiceImpl implements ISubscribeService {
         }
         SubscribeVO sVO = new SubscribeVO();
         sVO.setResourceId(resourcdId);
-        Long userId = Long.valueOf(UserHolder.getUser().getId());
+        Long userId = Long.valueOf(userUtils.getCurrentUserSSO().getId());
         Organization organization = userService.getUserOrganizationByUserId(userId);
         String deptName = organization.getDeptName();
         if(StringUtils.isEmpty(deptName)){
-            LOG.error("当前用户，没有配置所属部门,当前用户为 {}",(String)UserHolder.getUser().getProperty("username"));
+            LOG.error("当前用户，没有配置所属部门,当前用户为 {}",userUtils.getCurrentUserName());
             throw new Exception("当前用户，没有配置所属部门");
         }
         sVO.setDeptName(deptName);   //TODO:从UserHolder里面获取部门字段
@@ -291,7 +272,7 @@ public class SubscribeServiceImpl implements ISubscribeService {
             for(ResourceColumnPO rcolumnPO:inputList){
                 ResourceColumnVO rcVO = new ResourceColumnVO();
 
-                rcVO.setId(rcolumnPO.getId());
+                rcVO.setColumnId(rcolumnPO.getId());
                 rcVO.setResourceId(rcolumnPO.getResourceId());
                 rcVO.setColName(rcolumnPO.getColName());
                 rcVO.setColType(rcolumnPO.getColType());
@@ -321,6 +302,7 @@ public class SubscribeServiceImpl implements ISubscribeService {
     }
 
     /*在前置机从中心库复制表信息到前置机*/
+    @Transactional(rollbackFor = Exception.class)
     public int copyDBTable(String user, Long subscribeId)throws Exception{
 
         int destMetaId = 0;
@@ -357,11 +339,11 @@ public class SubscribeServiceImpl implements ISubscribeService {
 
         //获取元数据字段
         List<MetadataField> metadataOriginFields = new ArrayList<MetadataField>();
-        QueryMetadataFieldsResult metaResult = metacubeCatalogService.getMetadataFieldsByMetaId(bindTableId.intValue());
+        ResultBean<QueryMetadataFieldsResult> metaResult = metacubeCatalogService.getMetadataFieldsByMetaId(bindTableId.intValue());
         if(metaResult.isSuccess()){
-            metadataOriginFields = metaResult.getMetadataField();
+            metadataOriginFields = metaResult.getData().getMetadataField();
         }else{
-            throw new Exception("审批订阅 "+subscribePO.getSubNo() +"失败，订阅资源所绑定的表结构获取失败，" + metaResult.getMessage());
+            throw new Exception("审批订阅 "+subscribePO.getSubNo() +"失败，订阅资源所绑定的表结构获取失败，" + metaResult.getMsg());
         }
         List<MetadataField> metaFinalFields = new ArrayList<MetadataField>();
         for(MetadataField field:metadataOriginFields){
@@ -376,6 +358,8 @@ public class SubscribeServiceImpl implements ISubscribeService {
         //获取前置机数据数据库，并且创建表格
         MetadataTable meta = new MetadataTable();
         meta.setMetaid(bindTableId.intValue());  //需要复制的元数据ID
+
+
         //订阅部门绑定在rc_tm表中绑定数据
         TerminalManagePO tPO = terminalManageDAO.getTerminalManageRecordByDeptId(subscribePO.getDeptId());
         if(tPO==null){
@@ -384,16 +368,18 @@ public class SubscribeServiceImpl implements ISubscribeService {
         Long deptId =Long.valueOf(tPO.getDeptFinalId());
         Long dsId = Long.valueOf(tPO.getTmDBId());
         //参数dsId和storeDatabase 存储一个值
-        meta.setDsId(dsId.intValue());
-        meta.setDsId(dsId.intValue());
-        meta.setDept("[\""+deptId+"\"]");
-        meta.setOwner(subscribePO.getCreator());
-        meta.setCreator(subscribePO.getCreator());
-
-        //增加schema概念，在前置机复制数据库时，需要传schema参数
-        if(StringUtils.isNotEmpty(tPO.getSchemaName())) {
-            meta.setSchema(tPO.getSchemaName());
+        if(StringUtils.isNotBlank(tPO.getSchemaId())){
+            meta.setSchemeId(Long.valueOf(tPO.getSchemaId()));
+        }else if(StringUtils.isNotBlank(tPO.getTmDBId())){
+            meta.setSchemeId(Long.valueOf(tPO.getTmDBId()));
+        }else{
+            throw new Exception("审批订阅 "+subscribePO.getSubNo() +"异常，前置机配置异常核对前置机参数。");
         }
+
+        //记录上次订阅最大metaId
+        Long lastMetaId = subscribeDAO.getDetpSubscribeMaxMetaId(bindTableId, deptId, resourceId);
+        meta.setPreviousMetaid(lastMetaId==null?0:lastMetaId.intValue());
+
 
         //现有软件需要支持 数据库之间相互订阅
 //        //判断资源绑定数据库类型和前置机配置数据库类型是否一致
@@ -405,32 +391,33 @@ public class SubscribeServiceImpl implements ISubscribeService {
 //        }
 
         //获取前置机数据数据库，并且创建表格
-        SubscribeCrtTbResult tbResult = metacubeCatalogService.createTableBySubscribe(user, meta, metaFinalFields);
-        if(tbResult.isSuccess() || tbResult.isHasExists()){
-            destMetaId = tbResult.getMetaId();
+        //2019/3/11       1.前置机绑定的数据库为当前用户部门，有权限的数据库，metaId中不存在部门一说
+        ResultBean<SubscribeCrtTbResult> tbResult = metacubeCatalogService.createTableBySubscribe(user, meta, metaFinalFields);
+        if(tbResult.isSuccess()){
+            destMetaId = tbResult.getData().getMetaId();
         }else{
             String tmInfo = "前置机地址："+ tPO.getTmIP() + "，前置机名称："+ tPO.getTmName() + " ,订阅方部门："+tPO.getDeptName()
                     + " ,数据库类型：" + tPO.getTmDBType() + " ,绑定数据库：" + tPO.getTmDBName();
 
-            LOG.error(DateTools.formatDate(new Date())+"-在部门前置机上创建数据表失败,失败原因: "+ tbResult.getMessage());
-            throw new Exception("审批订阅 "+subscribePO.getSubNo() +"异常，在部门前置机上创建数据表失败,失败原因: "+ tbResult.getMessage()+"。" +
+            LOG.error(DateTools.formatDate(new Date())+"-在部门前置机上创建数据表失败,失败原因: "+ tbResult.getMsg());
+            throw new Exception("审批订阅 "+subscribePO.getSubNo() +"异常，在部门前置机上创建数据表失败,失败原因: "+ tbResult.getMsg()+"。" +
                     tmInfo);
         }
 
-        //创建完表格时候，对中心库进行授权
-        BaseResult baseResult = metacubeCatalogService.authorizedTableForUser(subscribePO.getCreator(), bindTableId.intValue(),
-                deptId.intValue(), SUBSCRIBED);
+        //创建完表格时候，对中心库进行授权，
+        // 2019/03/11   1.  前置机配置的时候 已经通过权限过滤，部门配置在有权限数据库下面，
+        //              2.  订阅的时候需要将权限配置成订阅部门，需要强制授权一下。
+        ResultBean<Boolean> baseResult = metacubeCatalogService.authorizedTableForUser(subscribePO.getCreator(), bindTableId.intValue(),
+                tPO.getDeptCode(), SUBSCRIBED);
         if(!baseResult.isSuccess()){
-            throw new Exception("审批订阅 "+subscribePO.getSubNo() +"异常，资源对应数据表授权失败，失败原因："+baseResult.getMessage());
+            throw new Exception("审批订阅 "+subscribePO.getSubNo() +"异常，资源对应数据表授权失败，失败原因："+baseResult.getMsg());
         }
-
         return destMetaId;
     }
 
 
-
     private List<ResourceColumnVO> getRCVoList(List<SubscribeDbioPO> subList){
-        if(subList==null || subList.size()==0){
+        if(CollectionUtils.isEmpty(subList)){
             return null;
         }
         List<ResourceColumnVO> rcList = new ArrayList<ResourceColumnVO>();
@@ -440,7 +427,8 @@ public class SubscribeServiceImpl implements ISubscribeService {
             if(rcPO==null){
                 return null;
             }
-            rcVO.setId(rcPO.getId());
+            rcVO.setColumnId(rcPO.getId());
+            rcVO.setId(subPO.getId());
             rcVO.setResourceId(rcPO.getResourceId());
             rcVO.setColName(rcPO.getColName());
             rcVO.setColType(rcPO.getColType());
@@ -449,6 +437,28 @@ public class SubscribeServiceImpl implements ISubscribeService {
             rcVO.setRequiredFlag(rcPO.getRequiredFlag());
             rcVO.setTableColCode(rcPO.getTableColCode());
             rcVO.setTableColType(rcPO.getTableColType());
+
+            //处理返回给前端脱敏的特殊字段
+            int dataMaskingFlag = 0;
+            if(!rcPO.getUniqueFlag()) {
+                if (StringUtils.isNotEmpty(subPO.getDataMaskingType())) {
+                    rcVO.setDataMaskingType(subPO.getDataMaskingType());
+                    rcVO.setDataStartIndex(subPO.getDataStartIndex());
+                    rcVO.setDataLength(subPO.getDataLength());
+                    dataMaskingFlag = 1;
+                } else {
+                    Long resourceId = rcPO.getResourceId();
+                    ResourceConfigPO resourceCfgPO = resourceConfigDAO.getConfigById(resourceId);
+                    String dbType = resourceCfgPO.getFormatInfo();
+
+                    if (DataMaskingTypeEnum.verifyDataMaskingType(dbType, rcPO.getTableColType())) {
+                        dataMaskingFlag = 1;
+                        rcVO.setDataStartIndex(0);  //默认起始位置
+                        rcVO.setDataLength(1);    //默认长度
+                    }
+                }
+            }
+            rcVO.setDataMaskingFlag(dataMaskingFlag);
             rcList.add(rcVO);
         }
         return rcList;
@@ -576,9 +586,10 @@ public class SubscribeServiceImpl implements ISubscribeService {
         //入库新订阅数据:订阅是一锤子买卖，需要重新订阅资源
         Long id = subscribeVO.getId();
         SubscribePO po = transferSubscribeVOToPO(subscribeVO);
+        po.setRentId(userUtils.getCurrentUserRentId());
 
         //存储订阅部门ID信息
-        Long userId = Long.valueOf(UserHolder.getUser().getId());
+        Long userId = Long.valueOf(userUtils.getCurrentUserId());
         Organization organization = userService.getUserOrganizationByUserId(userId);
         po.setDeptId(organization.getId());
 
@@ -703,6 +714,8 @@ public class SubscribeServiceImpl implements ISubscribeService {
         Long bindTableId = rcPO.getBindTableId();
         String subscribeUser = subPO.getCreator();
 
+        Long rentId = userUtils.getCurrentUserRentId();
+
         if(subPO.getShareMethod()==1 && StringUtils.equals(status, "success")) {
 
             int metaId = copyDBTable(subscribeUser, subscribeId);
@@ -718,8 +731,9 @@ public class SubscribeServiceImpl implements ISubscribeService {
                 subTaskPO = new SubTaskPO();
                 subTaskPO.setEndTime(subPO.getEndDate());
                 subTaskPO.setTaskType(subPO.getShareMethod() == 2 ? CommonConstants.DATA_TYPE_FILE : CommonConstants.DATA_TYPE_DB);
-                subTaskPO.setId(subPO.getId());
+                //subTaskPO.setId(subPO.getId());
                 subTaskPO.setStatus(CommonConstants.WAIT_IMPORT);
+                subTaskPO.setRentId(rentId);
                 subTaskPO.setSubTaskId(subPO.getSubNo());
                 subTaskPO.setSrcMetaId(srcMetaId);
                 subTaskPO.setDestMetaId(new Long(metaId));
@@ -731,8 +745,9 @@ public class SubscribeServiceImpl implements ISubscribeService {
             }else{
                 subTaskPO.setEndTime(subPO.getEndDate());
                 subTaskPO.setTaskType(subPO.getShareMethod() == 2 ? CommonConstants.DATA_TYPE_FILE : CommonConstants.DATA_TYPE_DB);
-                subTaskPO.setId(subPO.getId());
+                //subTaskPO.setId(subPO.getId());
                 subTaskPO.setStatus(CommonConstants.WAIT_IMPORT);
+                subTaskPO.setRentId(rentId);
                 subTaskPO.setSubTaskId(subPO.getSubNo());
                 subTaskPO.setSrcMetaId(srcMetaId);
                 subTaskPO.setDestMetaId(new Long(metaId));
@@ -754,6 +769,23 @@ public class SubscribeServiceImpl implements ISubscribeService {
         subPO.setModifier(subscribeUser);
         subPO.setModifyTime(new Date());
         subscribeDAO.updateById(subPO);
+    }
+
+    @Override
+    public void processApprove(String user, SubscribeApproveRequestVO subscribeVO) throws Exception {
+        List<ResourceColumnVO> inputDbioList = subscribeVO.getInputDbioList();
+        if(CollectionUtils.isNotEmpty(inputDbioList)){
+            for(ResourceColumnVO rcVO:inputDbioList){
+                SubscribeDbioPO sdPO = subscribeDbioDAO.getById(rcVO.getId());
+                if(StringUtils.isNotEmpty(rcVO.getDataMaskingType())){
+                    sdPO.setDataMaskingType(rcVO.getDataMaskingType());
+                    sdPO.setDataLength(rcVO.getDataLength());
+                    sdPO.setDataStartIndex(rcVO.getDataStartIndex());
+                    subscribeDbioDAO.updateById(sdPO);
+                }
+            }
+        }
+        processApprove(user, subscribeVO.getId(), subscribeVO.getAction(), subscribeVO.getSuggestion());
     }
 
     @Override
@@ -890,7 +922,7 @@ public class SubscribeServiceImpl implements ISubscribeService {
 
     private List<SubscribeOverviewVO> transferSubscribePoToOverviewVO(List<SubscribePO> poList){
 
-        if(poList==null || poList.size()<=0){
+        if(CollectionUtils.isEmpty(poList)){
             return null;
         }
 
@@ -937,10 +969,10 @@ public class SubscribeServiceImpl implements ISubscribeService {
                 }
                 resourceIdMap.put(reousrceId, rcPO);
             }
+            soVO.setResourceType(ResourceFormatTypeEnum.getFormatType(rcPO.getFormatType()));
             soVO.setCode(rcPO.getCode());
             soVO.setDeptName(rcPO.getDeptName());
             soVO.setName(rcPO.getName());
-
             soList.add(soVO);
         }
         return soList;

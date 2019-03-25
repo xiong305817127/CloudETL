@@ -1,5 +1,6 @@
 package com.ys.idatrix.metacube.metamanage.vo.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ys.idatrix.metacube.common.group.Save;
 import com.ys.idatrix.metacube.common.group.Update;
 import io.swagger.annotations.ApiModelProperty;
@@ -72,9 +73,6 @@ public class MetadataBaseVO {
     @ApiModelProperty("是否为采集数据")
     private Boolean isGather;
 
-    @ApiModelProperty("部门编码，可能是多个")
-    private String deptCodes;
-
     //========================= 冗余页面显示 字段 =========================//
 
     @ApiModelProperty("模式名称。ES索引名称、HDFS根目录")
@@ -85,5 +83,9 @@ public class MetadataBaseVO {
 
     @ApiModelProperty("主题名称")
     private String themeName;
+
+    @JsonIgnore
+    @ApiModelProperty("部门编码，可能是多个")
+    private String deptCodes;
 
 }

@@ -17,8 +17,4 @@ public class DirectMiningSaveVO {
 	  @ApiModelProperty("批量直采的表或者视图列表,包含名称,备注等信息")
 	  private MetadataBaseVO[] metadataBase ;
 	  
-	  @ApiModelProperty("数据库类型不能为空，1:mysql 2:oracle 3:...")
-	  @NotNull(message = "数据库类型不能为空")
-	  private Integer databaseType;
-	  
 }

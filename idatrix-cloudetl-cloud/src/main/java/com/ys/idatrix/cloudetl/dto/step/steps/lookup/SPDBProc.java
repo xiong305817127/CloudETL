@@ -175,7 +175,7 @@ public class SPDBProc implements StepParameter, StepDataRelationshipParser, Resu
 		}
 
 		if (input.getDatabase() != null) {
-			db.setConnection(input.getDatabase().getName());
+			db.setConnection(input.getDatabase().getDisplayName());
 		}
 
 		if (input.getProcedure() != null) {
@@ -217,7 +217,7 @@ public class SPDBProc implements StepParameter, StepDataRelationshipParser, Resu
 			input.getArgumentType()[i] = ValueMetaFactory.getIdForValueMeta(dto.getType());
 		}
 		
-		DatabaseMeta d = DatabaseMeta.findDatabase(databases, db.getConnection());
+		DatabaseMeta d = DatabaseMeta.findDatabase(databases,db.getSchemaId()==null?null:Long.toString(db.getSchemaId() ) );
 		if( d != null) {
 			transMeta.addOrReplaceDatabase(d);
 			input.setDatabase(d);

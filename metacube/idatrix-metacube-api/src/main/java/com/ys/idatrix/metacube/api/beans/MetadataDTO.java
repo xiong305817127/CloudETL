@@ -38,4 +38,7 @@ public class MetadataDTO implements Serializable {
 
     /**服务器ID**/
     private Long serverId;
+
+    /** bi所需字段，1：表 2：视图 **/
+    private Integer status;
 }

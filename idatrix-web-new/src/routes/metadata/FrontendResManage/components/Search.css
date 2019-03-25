@@ -1,0 +1,53 @@
+.Content{
+  display: flex;
+  flex-direction: column;
+}
+
+.ContentHeader{
+  padding:20px;
+  background-color: #fff;
+}
+
+:global(#Search .ant-input-prefix){
+  font-size: 21px;
+}
+:global(#Search .ant-input-affix-wrapper .ant-input:not(:first-child)){
+  padding-left: 40px;
+}
+:global(#Search .ant-input-group){
+  width: 600px;
+  margin-bottom: 15px;
+}
+.search{
+  width: 50px;
+}
+.searchClass{
+}
+:global(#components-tabs-demo-card-top .code-box-demo){
+  background: #ececec;
+  overflow: hidden;
+  padding: 24px;
+}
+
+:global(#card-container .card-container  .ant-tabs-card  .ant-tabs-content) {
+  height: 120px;
+  margin-top: -16px;
+}
+
+:global(#card-container .card-container  .ant-tabs-card  .ant-tabs-content  .ant-tabs-tabpane ) {
+  background: #fff;
+  padding: 16px;
+}
+
+:global(#card-container .card-container  .ant-tabs-card  .ant-tabs-bar .ant-tabs-tab){
+  border-color: transparent;
+}
+
+:global(#card-container .card-container  .ant-tabs-card  .ant-tabs-bar .ant-tabs-tab-active) {
+  border-color: #fff;
+}
+
+:global(#card-container .ant-tabs-content){
+  display: none;
+}
+

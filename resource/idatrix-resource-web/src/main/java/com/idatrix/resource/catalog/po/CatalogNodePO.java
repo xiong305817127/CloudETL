@@ -1,5 +1,7 @@
 package com.idatrix.resource.catalog.po;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
@@ -7,6 +9,7 @@ import java.util.Date;
  * @Author: Wangbin
  * @Date: 2018/5/23
  */
+@Data
 public class CatalogNodePO {
 
     /*目录ID使用 32位*/
@@ -27,6 +30,12 @@ public class CatalogNodePO {
     /*节点所在层级深度，分为类，项目，目，细目*/
     private int dept;
 
+    /*租户ID，实现组合隔离*/
+    private Long rentId;
+
+    /*目录分类节点资源个数统计*/
+    private Long resourceCount;
+
     private String creator;
 
     private Date createTime;
@@ -35,99 +44,20 @@ public class CatalogNodePO {
 
     private Date modifyTime;
 
-    public String getParentFullCode() {
-        return parentFullCode;
+    public CatalogNodePO(){
+        super();
     }
 
-    public void setParentFullCode(String parentFullCode) {
-        this.parentFullCode = parentFullCode;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier;
-    }
-
-    public Long getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
-    }
-
-    public String getResourceName() {
-        return resourceName;
-    }
-
-    public void setResourceName(String resourceName) {
-        this.resourceName = resourceName;
-    }
-
-    public String getResourceEncode() {
-        return resourceEncode;
-    }
-
-    public void setResourceEncode(String resourceEncode) {
-        this.resourceEncode = resourceEncode;
-    }
-
-    public int getDept() {
-        return dept;
-    }
-
-    public void setDept(int dept) {
-        this.dept = dept;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public Date getModifyTime() {
-        return modifyTime;
-    }
-
-    public void setModifyTime(Date modifyTime) {
-        this.modifyTime = modifyTime;
-    }
-
-    @Override
-    public String toString() {
-        return "CatalogNodePO{" +
-                "id=" + id +
-                ", parentId=" + parentId +
-                ", parentFullCode='" + parentFullCode + '\'' +
-                ", resourceName='" + resourceName + '\'' +
-                ", resourceEncode='" + resourceEncode + '\'' +
-                ", dept=" + dept +
-                ", creator='" + creator + '\'' +
-                ", createTime=" + createTime +
-                ", modifier='" + modifier + '\'' +
-                ", modifyTime=" + modifyTime +
-                '}';
+    public CatalogNodePO(String name, String code, Long rentId, String user){
+        this.parentId = 0L;
+        this.parentFullCode = "0";
+        this.resourceName = name;
+        this.resourceEncode = code;
+        this.dept = 1;
+        this.rentId = rentId;
+        this.creator = user;
+        this.modifier = user;
+        this.createTime = new Date();
+        this.modifyTime = new Date();
     }
 }

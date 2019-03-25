@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.idatrix.resource.portal.dao.ResourceStatisticsVisitDAO">
+  <resultMap id="BaseResultMap" type="com.idatrix.resource.portal.po.ResourceStatisticsVisitPO">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="day_time" jdbcType="VARCHAR" property="dayTime" />
+    <result column="last_visit_total" jdbcType="BIGINT" property="lastVisitTotal" />
+    <result column="visit_count" jdbcType="BIGINT" property="visitCount" />
+    <result column="rent_id" jdbcType="BIGINT" property="rentId" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="updater" jdbcType="VARCHAR" property="updater" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" javaType="java.util.Date"  />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" javaType="java.util.Date" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, day_time, last_visit_total, visit_count, rent_id, creator, create_time, updater, update_time
+  </sql>
+
+
+    <select id="getVisitStatisticsByDayTime" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_statistics_visit
+        where rent_id=#{rentId}
+        AND day_time=#{dayTime}
+    </select>
+
+    <select id="queryRcVisitByTime" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_statistics_visit
+        where rent_id=#{rentId}
+        AND STR_TO_DATE(day_time,"%Y-%m-%d") &gt; #{startTime}
+        AND STR_TO_DATE(day_time,"%Y-%m-%d") &lt; #{endTime}
+        order by day_time ASC
+    </select>
+
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from rc_statistics_visit
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from rc_statistics_visit
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.idatrix.resource.portal.po.ResourceStatisticsVisitPO" useGeneratedKeys="true">
+    insert into rc_statistics_visit (day_time, last_visit_total, visit_count, 
+      rent_id, creator, create_time, updater, update_time
+      )
+    values (#{dayTime,jdbcType=VARCHAR}, #{lastVisitTotal,jdbcType=BIGINT}, #{visitCount,jdbcType=BIGINT}, 
+      #{rentId,jdbcType=BIGINT}, #{creator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
+       #{updater,jdbcType=VARCHAR}, #{updateTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.idatrix.resource.portal.po.ResourceStatisticsVisitPO" useGeneratedKeys="true">
+    insert into rc_statistics_visit
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="dayTime != null">
+        day_time,
+      </if>
+      <if test="lastVisitTotal != null">
+        last_visit_total,
+      </if>
+      <if test="visitCount != null">
+        visit_count,
+      </if>
+      <if test="rentId != null">
+        rent_id,
+      </if>
+        <if test="creator != null">
+            creator,
+        </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+        <if test="updater != null">
+            updater,
+        </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="dayTime != null">
+        #{dayTime,jdbcType=VARCHAR},
+      </if>
+      <if test="lastVisitTotal != null">
+        #{lastVisitTotal,jdbcType=BIGINT},
+      </if>
+      <if test="visitCount != null">
+        #{visitCount,jdbcType=BIGINT},
+      </if>
+      <if test="rentId != null">
+        #{rentId,jdbcType=BIGINT},
+      </if>
+        <if test="creator != null">
+            creator,
+        </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+        <if test="updater != null">
+            updater,
+        </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.idatrix.resource.portal.po.ResourceStatisticsVisitPO">
+    update rc_statistics_visit
+    <set>
+      <if test="dayTime != null">
+        day_time = #{dayTime,jdbcType=VARCHAR},
+      </if>
+      <if test="lastVisitTotal != null">
+        last_visit_total = #{lastVisitTotal,jdbcType=BIGINT},
+      </if>
+      <if test="visitCount != null">
+        visit_count = #{visitCount,jdbcType=BIGINT},
+      </if>
+      <if test="rentId != null">
+        rent_id = #{rentId,jdbcType=BIGINT},
+      </if>
+      <if test="updater != null">
+           updater = #{updater,jdbcType=VARCHAR},
+      </if>
+      <if test="creator != null">
+          creator = #{creator,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.idatrix.resource.portal.po.ResourceStatisticsVisitPO">
+    update rc_statistics_visit
+    set day_time = #{dayTime,jdbcType=VARCHAR},
+      last_visit_total = #{lastVisitTotal,jdbcType=BIGINT},
+      visit_count = #{visitCount,jdbcType=BIGINT},
+      rent_id = #{rentId,jdbcType=BIGINT},
+      creator= #{creator,jdbcType=VARCHAR},
+      updater= #{updater,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

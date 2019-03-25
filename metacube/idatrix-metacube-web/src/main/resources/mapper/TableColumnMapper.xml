@@ -160,13 +160,13 @@
                 #{isDeleted,jdbcType=BIT},
             </if>
             <if test="isPartition != null">
-                #{isPartition,jdbcType=BIT}
+                #{isPartition,jdbcType=BIT},
             </if>
             <if test="indexPartition != null">
-                #{indexPartition,jdbcType=INTEGER}
+                #{indexPartition,jdbcType=INTEGER},
             </if>
             <if test="isBucket != null">
-                #{isBucket,jdbcType=BIT}
+                #{isBucket,jdbcType=BIT},
             </if>
             <if test="creator != null">
                 #{creator,jdbcType=VARCHAR},
@@ -195,8 +195,12 @@
             <if test="columnType != null">
                 column_type = #{columnType,jdbcType=VARCHAR},
             </if>
-            type_length = #{typeLength,jdbcType=VARCHAR},
-            type_precision = #{typePrecision,jdbcType=VARCHAR},
+            <if test="typeLength != null">
+                type_length = #{typeLength,jdbcType=VARCHAR},
+            </if>
+            <if test="typePrecision != null">
+                type_precision = #{typePrecision,jdbcType=VARCHAR},
+            </if>
             <if test="isPk != null">
                 is_pk = #{isPk,jdbcType=BIT},
             </if>
@@ -219,13 +223,13 @@
                 is_deleted = #{isDeleted,jdbcType=BIT},
             </if>
             <if test="isPartition != null">
-                #{isPartition,jdbcType=BIT}
+                is_partition = #{isPartition,jdbcType=BIT},
             </if>
             <if test="indexPartition != null">
-                #{indexPartition,jdbcType=INTEGER}
+                index_partition = #{indexPartition,jdbcType=INTEGER},
             </if>
             <if test="isBucket != null">
-                #{isBucket,jdbcType=BIT}
+                is_bucket = #{isBucket,jdbcType=BIT},
             </if>
             <if test="creator != null">
                 creator = #{creator,jdbcType=VARCHAR},

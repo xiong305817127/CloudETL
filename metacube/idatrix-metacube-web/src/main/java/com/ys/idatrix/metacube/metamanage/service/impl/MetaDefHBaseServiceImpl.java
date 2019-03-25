@@ -1,22 +1,18 @@
 package com.ys.idatrix.metacube.metamanage.service.impl;
 
-import static com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum.HBASE;
-import static com.ys.idatrix.metacube.common.enums.DataStatusEnum.DELETE;
-import static com.ys.idatrix.metacube.common.enums.DataStatusEnum.DRAFT;
-import static com.ys.idatrix.metacube.common.enums.DataStatusEnum.VALID;
-import static com.ys.idatrix.metacube.common.enums.TableColumnStatusEnum.CHANGE;
-import static com.ys.idatrix.metacube.common.enums.TableColumnStatusEnum.CREATE;
-import static com.ys.idatrix.metacube.common.enums.TableColumnStatusEnum.SAME;
-
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.ys.idatrix.db.api.common.RespResult;
 import com.ys.idatrix.db.api.hbase.dto.DataType;
 import com.ys.idatrix.db.api.hbase.dto.HBaseColumn;
 import com.ys.idatrix.db.api.hbase.dto.HBaseTable;
 import com.ys.idatrix.db.api.hbase.dto.PrimaryKey;
 import com.ys.idatrix.db.api.hbase.service.HBaseService;
+import com.ys.idatrix.db.api.sql.dto.SqlExecRespDto;
 import com.ys.idatrix.graph.service.api.def.DatabaseType;
 import com.ys.idatrix.metacube.api.beans.PageResultBean;
+import com.ys.idatrix.metacube.common.enums.TableColumnStatusEnum;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
 import com.ys.idatrix.metacube.metamanage.domain.Metadata;
 import com.ys.idatrix.metacube.metamanage.domain.SnapshotMetadata;
@@ -31,9 +27,6 @@ import com.ys.idatrix.metacube.metamanage.service.IMetaDefHBaseService;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetaDefHbaseVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo;
 import com.ys.idatrix.metacube.metamanage.vo.response.MetaDefOverviewVO;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +34,14 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum.HBASE;
+import static com.ys.idatrix.metacube.common.enums.DataStatusEnum.DELETE;
+import static com.ys.idatrix.metacube.common.enums.DataStatusEnum.*;
+import static com.ys.idatrix.metacube.common.enums.TableColumnStatusEnum.*;
 
 /**
  * 元数据定义-Hbase实现
@@ -106,31 +107,56 @@ public class MetaDefHBaseServiceImpl implements IMetaDefHBaseService {
         return overviewList;
     }
 
+    private Boolean verifyColumn(List<TableColumn> columnList){
+        Collection nameSet = new HashSet();
+        Collection zhNameSet = new HashSet();
+        Collection sizeList = new ArrayList();
+        if(CollectionUtils.isNotEmpty(columnList)){
+            columnList.stream().forEach( e -> {
+                if(!e.getStatus().equals(3)) {
+                    nameSet.add(e.getColumnName());
+                    zhNameSet.add(e.getDescription());
+                    sizeList.add(e.getColumnName());
+                }
+            });
+            if(sizeList.size()!=nameSet.size() || sizeList.size()!=zhNameSet.size()){
+                return false;
+            }
+        }
+        return true;
+    }
+
     private boolean verifyConfigParam(Long rentId, MetaDefHbaseVO baseVO){
         //数据检验:1.同一个节点下面不能名字相同的配置，不同节点下名字相同没关系。2.中文必须唯一。
         if(StringUtils.isEmpty(baseVO.getName()) ||
                 StringUtils.isEmpty(baseVO.getIdentification())){
             throw new MetaDataException("表名或者表中文名称没有配置");
         }
+        if(!verifyColumn(baseVO.getColumnList())){
+            throw new MetaDataException("表数据中存在相同的字段名称");
+        }
 
         Long id = baseVO.getId();
         if(id==null||id.equals(0L)){
             List<Metadata> sameNameDataList = metadataMapper.queryMetaData(baseVO.getSchemaId(), baseVO.getName(), null);
-            if(CollectionUtils.isNotEmpty(sameNameDataList)){
+            List<Metadata> existList = sameNameDataList.stream().filter(p->p.getStatus()!=2).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(existList)){
                 throw new MetaDataException("同一模式下存在相同表名");
             }
             List<Metadata> sameDictList = metadataMapper.queryMetaData(baseVO.getSchemaId(), null, baseVO.getIdentification());
-            if(CollectionUtils.isNotEmpty(sameDictList)){
+            List<Metadata> existSameDictList =sameDictList.stream().filter(p->p.getStatus()!=2).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(existSameDictList)){
                 throw new MetaDataException("配置的表中文名称已经存在，请修改");
             }
         }else{
             List<Metadata> sameNameDataList = metadataMapper.queryMetaData(baseVO.getSchemaId(), baseVO.getName(), null);
-            if(CollectionUtils.isNotEmpty(sameNameDataList)){
+            List<Metadata> existSameNameDataList =sameNameDataList.stream().filter(p->p.getStatus()!=2).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(existSameNameDataList)){
 
-                if(sameNameDataList.size()>1){
+                if(existSameNameDataList.size()>1){
                     throw new MetaDataException("同一模式下存在相同表名");
                 }else{
-                    Metadata sameMetaData = sameNameDataList.get(0);
+                    Metadata sameMetaData = existSameNameDataList.get(0);
                     if(!sameMetaData.getId().equals(id)){
                         throw new MetaDataException("同一模式下存在相同表名");
                     }
@@ -138,12 +164,13 @@ public class MetaDefHBaseServiceImpl implements IMetaDefHBaseService {
             }
 
             List<Metadata> sameDictList = metadataMapper.queryMetaData(baseVO.getSchemaId(), null, baseVO.getIdentification());
-            if(CollectionUtils.isNotEmpty(sameDictList)){
+            List<Metadata> existSameDictList =sameDictList.stream().filter(p->p.getStatus()!=2).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(existSameDictList)){
 
-                if(sameDictList.size()>1){
+                if(existSameDictList.size()>1){
                     throw new MetaDataException("配置的表中文名称已经存在，请修改");
                 }else{
-                    Metadata sameMetaData = sameDictList.get(0);
+                    Metadata sameMetaData = existSameDictList.get(0);
                     if(!sameMetaData.getId().equals(id)){
                         throw new MetaDataException("配置的表中文名称已经存在，请修改");
                     }
@@ -164,7 +191,7 @@ public class MetaDefHBaseServiceImpl implements IMetaDefHBaseService {
     @Override
     public Metadata saveDraft(Long rentId, String user, MetaDefHbaseVO baseVO) {
 
-        if(verifyConfigParam(rentId, baseVO)){
+        if(!verifyConfigParam(rentId, baseVO)){
             return null;
         }
         return saveHBaseInfo(rentId, user, baseVO, false);
@@ -175,13 +202,14 @@ public class MetaDefHBaseServiceImpl implements IMetaDefHBaseService {
      * @param user
      * @param filedTotalList
      */
-    private void saveHBaseColumn(String user,List<TableColumn> filedTotalList){
+    private void saveHBaseColumn(String user,Long tableId, List<TableColumn> filedTotalList){
         if(CollectionUtils.isNotEmpty(filedTotalList)){
             for(TableColumn column: filedTotalList){
                 Integer status = column.getStatus();
                 if(status==null || status.equals(SAME.getValue())){
                     continue;
                 }else if(status.equals(CREATE.getValue())){
+                    column.setTableId(tableId);
                     column.setCreator(user);
                     column.setModifier(user);
                     column.setCreateTime(new Date());
@@ -195,18 +223,20 @@ public class MetaDefHBaseServiceImpl implements IMetaDefHBaseService {
                 }else if(status.equals(CHANGE.getValue())){
                     TableColumn tableInfo = tableColumnMapper.selectByPrimaryKey(column.getId());
                     if(tableInfo!=null){
-                        column.setCreator(tableInfo.getCreator());
-                        column.setCreateTime(tableInfo.getCreateTime());
+                        BeanUtils.copyProperties(column, tableInfo);
+                        column.setModifyTime(new Date());
+                        column.setModifier(user);
                         tableColumnMapper.updateByPrimaryKeySelective(column);
                     }
 
-                }else if(status.equals(DELETE.getValue())){
+                }else if(status.equals(TableColumnStatusEnum.DELETE.getValue())){
                     TableColumn tableInfo = tableColumnMapper.selectByPrimaryKey(column.getId());
                     if(tableInfo!=null){
+                        tableInfo.setStatus(column.getStatus());
                         tableInfo.setIsDeleted(true);
-                        tableInfo.setCreator(tableInfo.getCreator());
-                        tableInfo.setCreateTime(tableInfo.getCreateTime());
-                        tableColumnMapper.updateByPrimaryKeySelective(column);
+                        tableInfo.setModifier(user);
+                        tableInfo.setModifyTime(new Date());
+                        tableColumnMapper.updateByPrimaryKeySelective(tableInfo);
                     }
                     //tableColumnMapper.delete(column.getId());
                 }
@@ -238,12 +268,13 @@ public class MetaDefHBaseServiceImpl implements IMetaDefHBaseService {
                 int version = mainData.getVersion();
                 mainData.setVersion(version+1);
             }
+            BeanUtils.copyProperties(baseVO, mainData);
         }
-        BeanUtils.copyProperties(baseVO, mainData);
+
         mainData.setModifier(user);
         mainData.setModifyTime(new Date());
         int status = DRAFT.getValue();
-        if(!execFlag){
+        if(execFlag){
             status = VALID.getValue();
         }
         mainData.setStatus(status);
@@ -254,7 +285,7 @@ public class MetaDefHBaseServiceImpl implements IMetaDefHBaseService {
             metadataMapper.updateByPrimaryKeySelective(mainData);
         }
         List<TableColumn> filedTotalList = baseVO.getColumnList();
-        saveHBaseColumn(user, filedTotalList);
+        saveHBaseColumn(user, mainData.getId(), filedTotalList);
         return mainData;
     }
 
@@ -273,7 +304,7 @@ public class MetaDefHBaseServiceImpl implements IMetaDefHBaseService {
         if(CollectionUtils.isEmpty(baseVO.getColumnList())){
             throw new MetaDataException("HBase字段没有配置");
         }
-        if(verifyConfigParam(rentId, baseVO)){
+        if(!verifyConfigParam(rentId, baseVO)){
             return null;
         };
 
@@ -281,7 +312,7 @@ public class MetaDefHBaseServiceImpl implements IMetaDefHBaseService {
         HBaseTable hBaseTable = new HBaseTable();
         PrimaryKey pk = null;
         hBaseTable.setNamespace(baseVO.getDbDatabasename());
-        hBaseTable.setTableName(baseVO.getIdentification());
+        hBaseTable.setTableName(baseVO.getName());
         List<TableColumn> columnList = baseVO.getColumnList();
 
         for (TableColumn pro : columnList) {
@@ -289,9 +320,9 @@ public class MetaDefHBaseServiceImpl implements IMetaDefHBaseService {
             HBaseColumn col = new HBaseColumn(pro.getDescription(), pro.getColumnName(),
                     DataType.valueOf(pro.getColumnType().toUpperCase()));
             hBaseTable.addColumn(col);
-            if (StringUtils.isNotEmpty(pro.getDescription())) {
+            if (pro.getIsPk()) {
                 if (null == pk) {
-                    pk = new PrimaryKey(baseVO.getIdentification(), col);
+                    pk = new PrimaryKey("PK", col);
                     hBaseTable.setPrimaryKey(pk);
                 } else {
                     pk.getColumns().add(col);
@@ -301,14 +332,21 @@ public class MetaDefHBaseServiceImpl implements IMetaDefHBaseService {
         }
 
         //HBase 目前只支持建表
-        if (baseVO.getId()==null||baseVO.getId().equals(0)) {
+        int status = 0;
+        if(baseVO.getId()!=null && !baseVO.getId().equals(0L)){
+            Metadata mainData = metadataMapper.selectByPrimaryKey(baseVO.getId());
+            if(mainData!=null){
+                status = mainData.getStatus();
+            }
+        }
+        if (status==DRAFT.getValue()) {
 
-//            log.info("元数据定义HBase调用-user:{},HBaseTable :{}", user, JSON.toJSONString(hBaseTable));
-//            SqlExecuteResult sr = hBaseService.createTable(user, hBaseTable);
-//            log.info("元数据定义HBase返回-{}",sr.toString());
-//            if(!sr.isSuccess()){
-//                throw new MetaDataException("HBase创建表格失败 "+ sr.getMessage());
-//            }
+            log.info("元数据定义HBase调用-user:{},HBaseTable :{}", user, JSON.toJSONString(hBaseTable));
+            RespResult<SqlExecRespDto> sr = hBaseService.createTable(user, hBaseTable);
+            log.info("元数据定义HBase返回-{}",sr.toString());
+            if(!sr.isSuccess()){
+                throw new MetaDataException("HBase创建表格失败 "+ sr.getMsg());
+            }
         } else {
             //暂时元数据未提供修改 HBase 操作
             log.warn("HBase 暂时不提供表修改操作");

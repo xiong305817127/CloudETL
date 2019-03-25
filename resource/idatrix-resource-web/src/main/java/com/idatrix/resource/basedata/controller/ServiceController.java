@@ -1,13 +1,17 @@
 package com.idatrix.resource.basedata.controller;
 
 import com.idatrix.resource.basedata.service.IServiceService;
+import com.idatrix.resource.basedata.vo.ServiceQueryVO;
 import com.idatrix.resource.basedata.vo.ServiceVO;
 import com.idatrix.resource.common.controller.BaseController;
-import com.idatrix.resource.common.utils.CommonConstants;
 import com.idatrix.resource.common.utils.CommonUtils;
 import com.idatrix.resource.common.utils.Result;
 import com.idatrix.resource.common.utils.ResultPager;
-import org.apache.commons.lang3.StringUtils;
+import com.idatrix.resource.common.utils.UserUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 资源服务增删改查
@@ -25,143 +27,134 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/service")
+@Api(value = "/service", tags="服务管理-共享服务管理接口")
 public class ServiceController extends BaseController {
 
-	@Autowired
-	private IServiceService iServiceService;
+    @Autowired
+    private IServiceService iServiceService;
 
-	private static final Logger LOG = LoggerFactory.getLogger(ServiceController.class);
+    @Autowired
+    private UserUtils userUtils;
 
-	/*根据ID查询源服务信息*/
-	@RequestMapping("/getAllServices")
-	@ResponseBody
-	public Result getAllService() {
-		List<ServiceVO> servicesList = iServiceService.getAllService();
+    private static final Logger LOG = LoggerFactory.getLogger(ServiceController.class);
+
+    /**
+     * 根据ID查询源服务信息
+     */
+    @ApiOperation(value = "获取所有共享服务", notes="获取所有共享服务", httpMethod = "GET")
+    @RequestMapping("/getAllServices")
+    @ResponseBody
+    public Result<List<ServiceVO>> getAllService() {
+        Long rentId = userUtils.getCurrentUserRentId();
+        List<ServiceVO> servicesList = iServiceService.getAllService(rentId);
         return Result.ok(servicesList);
+    }
 
-//		if (servicesList != null)
-//			return Result.ok(servicesList);
-//		else
-//			return Result.error(CommonConstants.EC_NOT_EXISTED_VALUE, "资源服务不存在");
-	}
+    /**
+     * 新增资源服务
+     */
+    @ApiOperation(value = "增加或修改共享服务", notes="增加或修改共享服务", httpMethod = "POST")
+    @RequestMapping(value = "/saveOrUpdate", method = RequestMethod.POST)
+    @ResponseBody
+    public Result saveOrUpdateService(@RequestBody ServiceVO serviceVO) {
+        String user = userUtils.getCurrentUserName();
+        Long rentId = userUtils.getCurrentUserRentId();
+        String errMsg = iServiceService.saveOrUpdateService(rentId, user, serviceVO);
 
-	/*新增资源服务*/
-	@RequestMapping(value="/saveOrUpdate", method= RequestMethod.POST)
-	@ResponseBody
-	public Result saveOrUpdateService(@RequestBody ServiceVO serviceVO) {
-		String user = getUserName(); //"admin";
-		String errMsg = iServiceService.saveOrUpdateService(user, serviceVO);
+        if ("".equals(errMsg)) {
+            return Result.ok("保存或更新操作成功");
+        } else {
+            return Result.error(errMsg);
+        }
+    }
 
-		if (errMsg.equals("")) {
-			return Result.ok("保存或更新操作成功");
-		} else {
-			return Result.error(CommonConstants.FAILURE_VALUE, errMsg);
-		}
-	}
+    /**
+     * 根据ID查询资源服务信息
+     */
+    @ApiOperation(value = "获取共享服务详情", notes="获取共享服务详情", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "共享服务ID", required = true, dataType="Long"),
+    })
+    @RequestMapping("/getServiceById")
+    @ResponseBody
+    public Result getSourceServiceById(@RequestParam(value = "id", required = true) Long id) {
+        ServiceVO serviceVO;
+        try {
+            serviceVO = iServiceService.getServiceById(id, userUtils.getCurrentUserName());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(e.getMessage());
+        }
+        return Result.ok(serviceVO);
+    }
 
-	/*根据ID查询资源服务信息*/
-	@RequestMapping("/getServiceById")
-	@ResponseBody
-	public Result getSourceServiceById(@RequestParam(value = "id", required = true) Long id) {
-		ServiceVO serviceVO;
-		try {
-			serviceVO =  iServiceService.getServiceById(id);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Result.error(6001000, e.getMessage());
-		}
-		return Result.ok(serviceVO);
+    /**
+     * 根据一个或多个ID删除资源服务信息
+     */
+    @ApiOperation(value = "删除共享服务", notes="删除共享服务", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "共享服务ID", required = true, dataType="String"),
+    })
+    @RequestMapping("/deleteServiceById")
+    @ResponseBody
+    public Result deleteServiceById(@RequestParam(value = "id") String id) {
 
-//		if (serviceVO != null)
-//			return Result.ok(serviceVO);
-//		else
-//			return Result.error(CommonConstants.EC_NOT_EXISTED_VALUE, "当前资源服务资源不存在");
-	}
+        try {
+            if (!CommonUtils.isEmptyStr(id)) {
+                String[] ids = id.split(",");
+                List<Long> idList = new ArrayList<Long>();
 
-	/*根据一个或多个ID删除资源服务信息*/
-	@RequestMapping("/deleteServiceById")
-	@ResponseBody
-	public Result deleteServiceById(@RequestParam(value = "id") String id) {
+                for (int i = 0; i < ids.length; i++) {
+                    Long idValue = Long.valueOf(ids[i]);
+                    idList.add(idValue);
+                }
 
-		try {
-			if (!CommonUtils.isEmptyStr(id)) {
-				String[] ids = id.split(",");
+                String result = iServiceService.deleteServiceByIds(idList);
+                if (result != null) {
+                    return Result.error("共享服务: " + result + " 已经与已发布的资源绑定，无法删除");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("删除失败" + e.getMessage());
+        }
 
-				List<Long> idList = new ArrayList<Long>();
+        return Result.ok("删除成功");
+    }
 
-				for (int i = 0; i < ids.length; i++) {
-					Long idValue = Long.valueOf(ids[i]);
-					idList.add(idValue);
-				}
+    /**
+     * 分页查询服务信息
+     */
+    @ApiOperation(value = "查询共享服务", notes="查询共享服务", httpMethod = "GET")
+    @RequestMapping("/getAllServicePages")
+    @ResponseBody
+    public Result getServicesByCondition(ServiceQueryVO queryVO) {
+        queryVO.setRentId(userUtils.getCurrentUserRentId());
+        try {
+            ResultPager resultPager
+                    = iServiceService.getServicesByCondition(queryVO);
+            return Result.ok(resultPager);
+        } catch (Exception e) {
+            LOG.error(e.toString());
+            return Result.error(e.getMessage());
+        }
+    }
 
-				String result = iServiceService.deleteServiceByIds(idList);
+    /*根据ID查询资源服务信息*/
+    @ApiOperation(value = "根据URL获取WSDL信息", notes="根据URL获取WSDL信息", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "url", value = "地址信息", required = true, dataType="String"),
+    })
+    @RequestMapping("/getWSDLContents")
+    @ResponseBody
+    public Result getWSDLContentsByRemoteAddress(@RequestParam(value = "url") String url) {
 
-				if (result != null)
-					return Result.error(CommonConstants.FAILURE_VALUE,
-							"共享服务: " + result + " 已经与已发布的资源绑定，无法删除");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Result.error(CommonConstants.EC_UNEXPECTED, "删除失败" + e.getMessage());
-		}
-
-		return Result.ok("删除成功");
-	}
-
-	/*查询所有资源服务信息*/
-	@RequestMapping("/getAllServicePages")
-	@ResponseBody
-	public Result getServicesByCondition(
-			@RequestParam(value = "serviceName", required = false) String  serviceName,
-			@RequestParam(value = "serviceCode", required = false) String  serviceCode,
-			@RequestParam(value = "serviceType", required = false) String  serviceType,
-			@RequestParam(value = "providerName", required = false) String providerName,
-			@RequestParam(value = "page", required = false) Integer pageNum,
-			@RequestParam(value = "pageSize", required = false) Integer pageSize) {
-
-		Map<String, String> queryCondition = new HashMap<String, String>();
-
-		if(StringUtils.isNotEmpty(serviceName)
-				&& !CommonUtils.isOverLimitedLength(serviceName, 255)){
-			queryCondition.put("serviceName", serviceName);
-		}
-		if(StringUtils.isNotEmpty(serviceCode)
-				&& !CommonUtils.isOverLimitedLength(serviceCode, 100)){
-			queryCondition.put("serviceCode", serviceCode);
-		}
-		if(StringUtils.isNotEmpty(serviceType)
-				&& (serviceType.equals(CommonConstants.SERVICE_TYPE_SOAP)
-				|| serviceType.equals(CommonConstants.SERVICE_TYPE_RESTFUL))){
-			queryCondition.put("serviceType", serviceType);
-		}
-		if(StringUtils.isNotEmpty(providerName)
-				&& !CommonUtils.isOverLimitedLength(providerName, 100)){
-			queryCondition.put("providerName", providerName);
-		}
-
-		try {
-			ResultPager tasks
-					= iServiceService.getServicesByCondition(queryCondition, pageNum, pageSize);
-
-			return Result.ok(tasks);
-		}catch(Exception e){
-			e.printStackTrace();
-			return Result.error(6001000, e.getMessage()); //调试Ajax屏蔽掉
-		}
-	}
-
-	/*根据ID查询资源服务信息*/
-	@RequestMapping("/getWSDLContents")
-	@ResponseBody
-	public Result getWSDLContentsByRemoteAddress(@RequestParam(value = "url") String url) {
-
-		try {
-			String content = CommonUtils.getWSDLContentsByRemoteAddress(url);
-			return Result.ok(content);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Result.error(6001000, e.getMessage());
-		}
-	}
+        try {
+            String content = CommonUtils.getWSDLContentsByRemoteAddress(url);
+            return Result.ok(content);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(e.getMessage());
+        }
+    }
 }

@@ -1,0 +1,62 @@
+
+:global(#worktools){
+  height: 100%;
+}
+:global(#worktools) .menuStyle{
+    background: #EAEFF3;
+    height: calc(100% - 90px);
+    overflow: scroll;
+}
+
+:global(#worktools) .menuStyle::-webkit-scrollbar {
+  display: none;
+}
+
+.headercolor{
+    background: #EAEFF3;
+    height: 50px;
+    line-height: 50px;
+}
+:global(#worktools .ant-menu-submenu-title){
+    background: white;
+    width: 200px;
+}
+
+
+:global(#worktools .ant-menu-inline:after){
+  content: " ";
+  display: table;
+  clear: both;
+  visibility: hidden;
+  font-size: 0;
+  height: 0;
+}
+
+:global(#worktools .liStyle){
+  height: 60px;
+  line-height: 60px;
+  width: 33.3%;
+  float: left;
+  padding: 0;
+  border: none;
+}
+/*:global(#worktools .ant-menu-item:hover){
+
+  background: white;
+
+}*/
+
+.type{
+  width: 50px;
+  text-align: center;
+}
+.resselect{
+  height: 40px;
+  line-height: 40px;
+  background:#DBE2E8;
+}
+
+
+:global(#worktools .ant-menu-inline .ant-menu-item:after){
+  border: none;
+}

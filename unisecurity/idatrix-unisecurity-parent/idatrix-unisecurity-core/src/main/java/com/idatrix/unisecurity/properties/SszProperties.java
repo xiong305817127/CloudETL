@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 /**
  * 神算子的属性类
  * @ClassName SszProperties
- * @Description TODO
+ * @Description
  * @Author ouyang
  * @Date 2018/9/28 14:01
  * @Version 1.0

@@ -1,10 +1,13 @@
 package com.idatrix.resource.basedata.po;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
  * Created by Robin Wing on 2018-6-14.
  */
+@Data
 public class SystemConfigPO {
 
     /*主键*/
@@ -32,6 +35,9 @@ public class SystemConfigPO {
     /*订阅审批角色*/
     private Long subApproverRole;
 
+    /*组合ID，租户隔离使用*/
+    private Long rentId;
+
     private String creator;
 
     private Date createTime;
@@ -45,133 +51,5 @@ public class SystemConfigPO {
         this.dbUploadSize = 50;
         this.fileUploadSize = 200;
         this.importInterval = 5;
-    }
-
-    public Long getDeptStaffRole() {
-        return deptStaffRole;
-    }
-
-    public void setDeptStaffRole(Long deptStaffRole) {
-        this.deptStaffRole = deptStaffRole;
-    }
-
-    public String getFileRootIds() {
-        return fileRootIds;
-    }
-
-    public void setFileRootIds(String fileRootIds) {
-        this.fileRootIds = fileRootIds;
-    }
-
-    public String getOriginFileRootIds() {
-        return originFileRootIds;
-    }
-
-    public void setOriginFileRootIds(String originFileRootIds) {
-        this.originFileRootIds = originFileRootIds;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getFileRoot() {
-        return fileRoot;
-    }
-
-    public void setFileRoot(String fileRoot) {
-        this.fileRoot = fileRoot;
-    }
-
-    public String getOriginFileRoot() {
-        return originFileRoot;
-    }
-
-    public void setOriginFileRoot(String originFileRoot) {
-        this.originFileRoot = originFileRoot;
-    }
-
-    public int getDbUploadSize() {
-        return dbUploadSize;
-    }
-
-    public void setDbUploadSize(int dbUploadSize) {
-        this.dbUploadSize = dbUploadSize;
-    }
-
-    public int getFileUploadSize() {
-        return fileUploadSize;
-    }
-
-    public void setFileUploadSize(int fileUploadSize) {
-        this.fileUploadSize = fileUploadSize;
-    }
-
-    public int getImportInterval() {
-        return importInterval;
-    }
-
-    public void setImportInterval(int importInterval) {
-        this.importInterval = importInterval;
-    }
-
-    public Long getDeptAdminRole() {
-        return deptAdminRole;
-    }
-
-    public void setDeptAdminRole(Long deptAdminRole) {
-        this.deptAdminRole = deptAdminRole;
-    }
-
-    public Long getCenterAdminRole() {
-        return centerAdminRole;
-    }
-
-    public void setCenterAdminRole(Long centerAdminRole) {
-        this.centerAdminRole = centerAdminRole;
-    }
-
-    public Long getSubApproverRole() {
-        return subApproverRole;
-    }
-
-    public void setSubApproverRole(Long subApproverRole) {
-        this.subApproverRole = subApproverRole;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier;
-    }
-
-    public Date getModifyTime() {
-        return modifyTime;
-    }
-
-    public void setModifyTime(Date modifyTime) {
-        this.modifyTime = modifyTime;
     }
 }

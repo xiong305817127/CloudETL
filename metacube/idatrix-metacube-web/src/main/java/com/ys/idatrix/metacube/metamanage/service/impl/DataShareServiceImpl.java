@@ -1,14 +1,22 @@
 package com.ys.idatrix.metacube.metamanage.service.impl;
 
+import com.google.common.collect.ImmutableList;
+import com.idatrix.unisecurity.api.domain.Organization;
+import com.ys.idatrix.metacube.api.beans.ActionTypeEnum;
+import com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum;
+import com.ys.idatrix.metacube.api.beans.ModuleTypeEnum;
+import com.ys.idatrix.metacube.authorize.service.AuthorityService;
 import com.ys.idatrix.metacube.dubbo.consumer.SecurityConsumer;
+import com.ys.idatrix.metacube.metamanage.domain.McSchemaPO;
 import com.ys.idatrix.metacube.metamanage.domain.Metadata;
 import com.ys.idatrix.metacube.metamanage.mapper.McDatabaseMapper;
 import com.ys.idatrix.metacube.metamanage.mapper.MetadataMapper;
-import com.ys.idatrix.metacube.metamanage.service.AuthorityService;
 import com.ys.idatrix.metacube.metamanage.service.DataShareService;
 import com.ys.idatrix.metacube.metamanage.service.McSchemaService;
 import com.ys.idatrix.metacube.metamanage.vo.request.ApprovalProcessVO;
+import com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo;
 import com.ys.idatrix.metacube.metamanage.vo.response.DBConnectionVO;
+import com.ys.idatrix.metacube.metamanage.vo.response.DatasourceVO;
 import com.ys.idatrix.metacube.metamanage.vo.response.TableVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -16,9 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName DataShareServiceImpl
@@ -52,6 +59,7 @@ public class DataShareServiceImpl implements DataShareService {
 
     @Override
     public List<DBConnectionVO> findTableOrView(String username) {
+        /*
         // TODO 先使用数据拼接方式返回数据，后面再来实现
         if (username.equals("oyr")) {
             List<DBConnectionVO> dbConnections = new ArrayList<>();
@@ -115,8 +123,8 @@ public class DataShareServiceImpl implements DataShareService {
 
             return dbConnections;
         }
-        return null;
-        /*// 当前需要查询出 mysql 和 oracle 的数据，如果数据库类型不为mysql与oracle的ResourceType都是为null的
+        return null;*/
+        // 当前需要查询出 mysql 和 oracle 的数据，如果数据库类型不为mysql与oracle的ResourceType都是为null的
         Set<TableVO> tableResult = new HashSet<>();
         Set<TableVO> viewResult = new HashSet<>();
 
@@ -176,7 +184,7 @@ public class DataShareServiceImpl implements DataShareService {
             connectionVO.setViewList(viewList);
             result.add(connectionVO);
         });
-        return result;*/
+        return result;
     }
 
     public void addTableOrView(List<ApprovalProcessVO> resourceList, Set<TableVO> target, Integer resourceType) {

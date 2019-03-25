@@ -70,4 +70,15 @@ public interface ApprovalProcessMapper {
                                              @Param("resourceTypes") List<Integer> resourceTypes,
                                              @Param("authValues") List<Integer> authValues);
 
+    /**
+     * 查询固定资源给某个部门授权通过的列表
+     * @param resourceId
+     * @param deptCode
+     * @param status 默认等于2
+     * @return
+     */
+    List<ApprovalProcess> getAuthByResourceIdAndValue(@Param("resourceId")Long resourceId,
+                                                      @Param("deptCode") String deptCode,
+                                                      @Param("status") Integer status);
+
 }

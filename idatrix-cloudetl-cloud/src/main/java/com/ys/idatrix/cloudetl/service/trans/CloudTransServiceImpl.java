@@ -1140,7 +1140,7 @@ public class CloudTransServiceImpl extends CloudBaseService implements CloudTran
 		if ( executionInfo != null ) {
 			BaseTransExecutor transExecutor = executionInfo.getTransExecutor();
 			if (transExecutor != null) {
-				s = transExecutor.execStatus();
+				s = transExecutor.getStatus();
 			}
 		}
 		if ( Utils.isEmpty(s)) {

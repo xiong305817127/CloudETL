@@ -80,7 +80,7 @@
     </appender>
 
     <root>
-        <level value="DEBUG" />
+        <level value="info" />
         <appender-ref ref="console" />
         <appender-ref ref="infoLog" />
         <appender-ref ref="errorLog" />

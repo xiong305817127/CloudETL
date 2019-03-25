@@ -53,7 +53,7 @@ public class ExternalInvokeAspect {
     /**
      * 扫描所有含有提供给外部调用的接口实现类
      */
-    @Pointcut("execution(* com.ys.idatrix.db.service.external.impl..*.*(..))")
+    @Pointcut("execution(* com.ys.idatrix.db.service.external.provider.impl..*.*(..))")
     public void invokeMonitor() {
     }
 
@@ -156,7 +156,7 @@ public class ExternalInvokeAspect {
                         SqlQueryRespDto realRt = (SqlQueryRespDto) data;
                         log.info(LOG_QUERY_SUCCESS, className, methodName, CollectionUtils.isNotEmpty(realRt.getData()) ? realRt.getData().size() : 0);
                     } else if (data instanceof List<?>) {
-                        List realRt = (List) obj;
+                        List realRt = (List) data;
                         log.info(LOG_QUERY_SUCCESS, className, methodName, CollectionUtils.isNotEmpty(realRt) ? realRt.size() : 0);
                     } else {
                         log.info(LOG_SUCCESS, className, methodName);

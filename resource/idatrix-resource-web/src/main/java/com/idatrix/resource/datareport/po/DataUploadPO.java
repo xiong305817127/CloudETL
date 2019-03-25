@@ -1,5 +1,7 @@
 package com.idatrix.resource.datareport.po;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
@@ -7,7 +9,7 @@ import java.util.Date;
  * @Description： 数据上报时,上传数据所生成的信息
  * @Date: 2018/06/11
  */
-
+@Data
 public class DataUploadPO {
 	/*主键*/
 	private Long id;
@@ -69,6 +71,9 @@ public class DataUploadPO {
 	/*ETL任务出现异常时, 记录错误信息*/
 	private String importErrmsg;
 
+	/*租户ID，用于租户隔离*/
+	private Long rentId;
+
 	private String creator;
 
 	private Date createTime;
@@ -77,180 +82,4 @@ public class DataUploadPO {
 
 	private Date modifyTime;
 
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public Long getResourceId() {
-		return resourceId;
-	}
-
-	public void setResourceId(Long resourceId) {
-		this.resourceId = resourceId;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public String getDataBatch() {
-		return dataBatch;
-	}
-
-	public void setDataBatch(String dataBatch) {
-		this.dataBatch = dataBatch;
-	}
-
-	public String getDataType() {
-		return dataType;
-	}
-
-	public void setDataType(String dataType) {
-		this.dataType = dataType;
-	}
-
-	public Date getImportTime() {
-		return importTime;
-	}
-
-	public void setImportTime(Date importTime) {
-		this.importTime = importTime;
-	}
-
-	public Long getImportCount() {
-		return importCount;
-	}
-
-	public void setImportCount(Long importCount) {
-		this.importCount = importCount;
-	}
-
-	public Long getInsertCount() {
-		return insertCount;
-	}
-
-	public void setInsertCount(Long insertCount) {
-		this.insertCount = insertCount;
-	}
-
-	public Long getUpdateCount() {
-		return updateCount;
-	}
-
-	public void setUpdateCount(Long updateCount) {
-		this.updateCount = updateCount;
-	}
-
-	public Long getFailCount() {
-		return failCount;
-	}
-
-	public void setFailCount(Long failCount) {
-		this.failCount = failCount;
-	}
-
-	public String getImportTaskId() {
-		return importTaskId;
-	}
-
-	public void setImportTaskId(String importTaskId) {
-		this.importTaskId = importTaskId;
-	}
-
-	public Long getTaskSeq() {
-		return taskSeq;
-	}
-
-	public void setTaskSeq(Long taskSeq) {
-		this.taskSeq = taskSeq;
-	}
-
-	public String getSubscribeId() {
-		return subscribeId;
-	}
-
-	public void setSubscribeId(String subscribeId) {
-		this.subscribeId = subscribeId;
-	}
-
-	public String getExecId() {
-		return execId;
-	}
-
-	public void setExecId(String execId) {
-		this.execId = execId;
-	}
-
-	public String getImportErrmsg() {
-		return importErrmsg;
-	}
-
-	public void setImportErrmsg(String importErrmsg) {
-		this.importErrmsg = importErrmsg;
-	}
-
-	public String getCreator() {
-		return creator;
-	}
-
-	public void setCreator(String creator) {
-		this.creator = creator;
-	}
-
-	public Date getCreateTime() {
-		return createTime;
-	}
-
-	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
-	}
-
-	public String getModifier() {
-		return modifier;
-	}
-
-	public void setModifier(String modifier) {
-		this.modifier = modifier;
-	}
-
-	public Date getModifyTime() {
-		return modifyTime;
-	}
-
-	public void setModifyTime(Date modifyTime) {
-		this.modifyTime = modifyTime;
-	}
-
-	@Override
-	public String toString() {
-		return "DataUploadPO{" +
-				"id=" + id +
-				", resourceId=" + resourceId +
-				", status='" + status + '\'' +
-				", dataBatch='" + dataBatch + '\'' +
-				", dataType='" + dataType + '\'' +
-				", importTime=" + importTime +
-				", importCount=" + importCount +
-				", insertCount=" + insertCount +
-				", updateCount=" + updateCount +
-				", failCount=" + failCount +
-				", importTaskId='" + importTaskId + '\'' +
-				", taskSeq=" + taskSeq +
-				", subscribeId='" + subscribeId + '\'' +
-				", execId='" + execId + '\'' +
-				", importErrmsg='" + importErrmsg + '\'' +
-				", creator='" + creator + '\'' +
-				", createTime=" + createTime +
-				", modifier='" + modifier + '\'' +
-				", modifyTime=" + modifyTime +
-				'}';
-	}
 }

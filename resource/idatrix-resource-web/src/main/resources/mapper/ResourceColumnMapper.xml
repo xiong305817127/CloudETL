@@ -26,11 +26,6 @@
         modifier, modify_time
     </sql>
 
-    <select id="getAllResourceColumn" resultMap="BaseResultMap">
-        select
-        <include refid="Base_Column_List" />
-        from rc_resource_column
-    </select>
     <select id="getColumnById" resultMap="BaseResultMap" parameterType="java.lang.Long">
         select
         <include refid="Base_Column_List" />

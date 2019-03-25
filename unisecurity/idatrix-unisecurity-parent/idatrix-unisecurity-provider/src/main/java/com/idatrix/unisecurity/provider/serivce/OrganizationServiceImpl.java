@@ -3,11 +3,13 @@ package com.idatrix.unisecurity.provider.serivce;
 import com.idatrix.unisecurity.api.domain.Organization;
 import com.idatrix.unisecurity.api.service.OrganizationService;
 import com.idatrix.unisecurity.common.dao.OrganizationProviderMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -78,6 +80,15 @@ public class OrganizationServiceImpl implements OrganizationService {
         log.debug(" === findByCode ===");
         Organization organization = organizationMapper.findByCode(code);
         return organization;
+    }
+
+    @Override
+    public List<Organization> findByCodes(String codes) {
+        if(StringUtils.isBlank(codes)) {
+            return null;
+        }
+        List<String> codeList = Arrays.asList(codes.split(","));
+        return organizationMapper.findByCodeList(codeList);
     }
 
     private Organization getAscriptionDept(Organization organization) {

@@ -6,13 +6,15 @@ import com.ys.idatrix.metacube.metamanage.domain.ViewDetail;
 import com.ys.idatrix.metacube.metamanage.mapper.MetadataMapper;
 import com.ys.idatrix.metacube.metamanage.mapper.ViewDetailMapper;
 import com.ys.idatrix.metacube.metamanage.service.*;
-import com.ys.idatrix.metacube.metamanage.service.impl.sqlAnalyzer.BaseSQLAnalyzer;
 import com.ys.idatrix.metacube.metamanage.vo.request.AlterSqlVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.DBViewVO;
+import com.ys.idatrix.metacube.sysmanage.service.ThemeService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,14 +30,10 @@ import java.util.List;
 @Slf4j
 @Transactional
 @Service("mysqlViewService")
-public class MysqlViewServiceImpl implements ViewService {
+public class MysqlViewServiceImpl implements ViewService, ApplicationContextAware {
 
     @Autowired
     private GraphSyncService graphSyncService;
-
-    @Autowired
-    @Qualifier("mysqlSQLAnalyzer")
-    private BaseSQLAnalyzer baseSQLAnalyzer;
 
     @Autowired
     private TableColumnService columnService;
@@ -58,6 +56,15 @@ public class MysqlViewServiceImpl implements ViewService {
     @Autowired
     private ViewDetailMapper viewDetailMapper;
 
+    private ApplicationContext applicationContext;
+
+    private McDirectMiningService directMiningService;
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
     @Override
     public MetadataMapper getMetadataMapper() {
         return metadataMapper;
@@ -69,8 +76,11 @@ public class MysqlViewServiceImpl implements ViewService {
     }
 
     @Override
-    public BaseSQLAnalyzer getBaseSQLAnalyzer() {
-        return baseSQLAnalyzer;
+    public McDirectMiningService getDirectMiningService() {
+        if(directMiningService == null) {
+            directMiningService = applicationContext.getBean(McDirectMiningService.class);
+        }
+        return directMiningService;
     }
 
     @Override
@@ -94,8 +104,13 @@ public class MysqlViewServiceImpl implements ViewService {
     }
 
     @Override
-    public void validatedView(DBViewVO viewVo, Boolean hasFilter) {
+    public void validatedView(DBViewVO viewVo) {
         validatedService.validatedView(viewVo);
+    }
+
+    @Override
+    public MysqlSnapshotService getSnapshotService() {
+        return snapshotService;
     }
 
     @Override
@@ -151,4 +166,5 @@ public class MysqlViewServiceImpl implements ViewService {
         // 生效到数据库中
         mySqlDDLService.goToDatabase(copy, commands);
     }
+
 }

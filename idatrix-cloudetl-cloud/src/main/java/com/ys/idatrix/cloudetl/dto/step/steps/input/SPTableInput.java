@@ -188,7 +188,7 @@ public class SPTableInput implements StepParameter, StepDataRelationshipParser, 
 		SPTableInput jti = new SPTableInput();
 		TableInputMeta tableInputMeta = (TableInputMeta) stepMetaInterface;
 
-		jti.setConnection(tableInputMeta.getDatabaseMeta() != null ? tableInputMeta.getDatabaseMeta().getName() : "");
+		jti.setConnection(tableInputMeta.getDatabaseMeta() != null ? tableInputMeta.getDatabaseMeta().getDisplayName() : "");
 		jti.setExecuteEachRow(tableInputMeta.isExecuteEachInputRow());
 		jti.setLazyConversionActive(tableInputMeta.isLazyConversionActive());
 		jti.setLimit(tableInputMeta.getRowLimit());
@@ -220,7 +220,7 @@ public class SPTableInput implements StepParameter, StepDataRelationshipParser, 
 		TableInputMeta tableInputMeta = (TableInputMeta) stepMetaInterface;
 		SPTableInput jti = (SPTableInput) po;
 		
-		DatabaseMeta d = DatabaseMeta.findDatabase(databases, jti.getConnection());
+		DatabaseMeta d = DatabaseMeta.findDatabase(databases, jti.getSchemaId()!= null ? Long.toString(jti.getSchemaId()) : null );
 		if( d != null) {
 			transMeta.addOrReplaceDatabase(d);
 			tableInputMeta.setDatabaseMeta(d);

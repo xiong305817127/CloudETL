@@ -79,4 +79,19 @@ public class CookieUtil {
         }
         return vt;
     }
+
+    public static String getLT(HttpServletRequest request) {
+        // 先从cookie中获取VT，如果没有那么从请求头中获取VT
+        String vt = CookieUtils.getCookieValue(request, "LT");
+        if (vt == null) {// cookie VT 为空，则从请求头中获取VT
+            Enumeration<String> enums = request.getHeaders("LT");
+            if (enums.hasMoreElements()) {
+                vt = enums.nextElement();
+            }
+        }
+        if (vt == null) {// 如果cookie和请求头中VT都是为空，那么从参数中获取VT
+            vt = request.getParameter("LT");
+        }
+        return vt;
+    }
 }

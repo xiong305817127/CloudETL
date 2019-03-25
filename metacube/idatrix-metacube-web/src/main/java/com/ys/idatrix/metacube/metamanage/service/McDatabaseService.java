@@ -9,7 +9,7 @@ import java.util.List;
  *
  * @author wzl
  */
-public interface McDatabaseService {
+public interface McDatabaseService extends Connectable{
 
     /**
      * 注册数据库 鉴权、数据校验、业务处理
@@ -53,14 +53,7 @@ public interface McDatabaseService {
     /**
      * 获取数据库列表
      *
-     * @param orgCode 用户所属组织
-     */
-    List<McDatabasePO> list(String orgCode);
-
-    /**
-     * 获取数据库列表
-     *
      * @param dbIds 数据库id列表
      */
-    List<DatabaseServerAggregationVO> list(List<Long> dbIds);
+    List<DatabaseServerAggregationVO> list(List<Long> dbIds, Long renterId, List<Integer> dbTypes);
 }

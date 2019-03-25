@@ -29,6 +29,16 @@
         where id = #{id}
     </select>
 
+
+
+    <select id="getLastestServiceLog" parameterType="java.lang.Long" resultMap="BaseResultMap" >
+        select
+        <include refid="Base_Column_List" />
+        from rc_service_log
+        order by create_time desc
+        limit #{num}
+    </select>
+
     <select id="getServiceLogInfoByCondition" parameterType="hashmap" resultMap="BaseResultMap" >
         select
           <include refid="Base_Column_List" />

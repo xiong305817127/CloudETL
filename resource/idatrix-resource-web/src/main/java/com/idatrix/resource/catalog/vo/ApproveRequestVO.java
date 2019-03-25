@@ -1,39 +1,23 @@
 package com.idatrix.resource.catalog.vo;
 
-import org.springframework.web.bind.annotation.RequestParam;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 /**
  * Created by Robin Wing on 2018-6-13.
  */
+@Data
+@ApiModel("注册审批流程请求")
 public class ApproveRequestVO {
 
+    @ApiModelProperty("ID")
     private Long id;
 
+    @ApiModelProperty("是否同意")
     private String action;
 
+    @ApiModelProperty("审批意见")
     private String suggestion;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getAction() {
-        return action;
-    }
-
-    public void setAction(String action) {
-        this.action = action;
-    }
-
-    public String getSuggestion() {
-        return suggestion;
-    }
-
-    public void setSuggestion(String suggestion) {
-        this.suggestion = suggestion;
-    }
 }

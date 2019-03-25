@@ -1,10 +1,11 @@
 package com.idatrix.resource.catalog.vo;
 
-import java.util.Date;
+import lombok.Data;
 
 /**
  * Created by Robin Wing on 2018-6-1.
  */
+@Data
 public class ResourceStatisticsVO {
 
     /*资源ID，用来查看详情时候查询*/
@@ -25,51 +26,4 @@ public class ResourceStatisticsVO {
     /*订阅人数*/
     private  int subCount;
 
-    public Long getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(Long resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public String getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(String updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public int getVisitCount() {
-        return visitCount;
-    }
-
-    public void setVisitCount(int visitCount) {
-        this.visitCount = visitCount;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
-    public int getSubCount() {
-        return subCount;
-    }
-
-    public void setSubCount(int subCount) {
-        this.subCount = subCount;
-    }
 }

@@ -33,6 +33,9 @@ public class DbSchemaDto {
 	@ApiModelProperty("schema名")
     private String schema;
 	
+	@ApiModelProperty("serverName或者SID,oracle专用")
+    private String serverName;
+	
 	 public String getOwner() {
 		 if( Utils.isEmpty( owner )) {
 			 owner = CloudSession.getResourceUser() ;
@@ -61,10 +64,17 @@ public class DbSchemaDto {
 	public void setConnection(String connection) {
 		this.connection = connection;
 	}
+	
+	public String getServerName() {
+		return serverName;
+	}
+	public void setServerName(String serverName) {
+		this.serverName = serverName;
+	}
 	@Override
 	public String toString() {
 		return "DbSchemaDto [owner=" + owner + ", connection=" + connection + ", schemaId=" + schemaId + ", schema="
-				+ schema + "]";
+				+ schema + ", serverName=" + serverName + "]";
 	}
-
+	
 }

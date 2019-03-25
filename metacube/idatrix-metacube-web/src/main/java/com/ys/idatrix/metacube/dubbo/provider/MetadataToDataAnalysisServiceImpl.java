@@ -6,10 +6,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.internal.util.ImmutableList;
 import com.idatrix.unisecurity.api.domain.Organization;
+import com.idatrix.unisecurity.api.service.OrganizationService;
 import com.ys.idatrix.metacube.api.beans.*;
 import com.ys.idatrix.metacube.api.service.MetadataSchemaService;
 import com.ys.idatrix.metacube.api.service.MetadataToDataAnalysisService;
-import com.ys.idatrix.metacube.common.utils.UserUtils;
 import com.ys.idatrix.metacube.dubbo.consumer.SecurityConsumer;
 import com.ys.idatrix.metacube.metamanage.domain.*;
 import com.ys.idatrix.metacube.metamanage.mapper.*;
@@ -67,6 +67,9 @@ public class MetadataToDataAnalysisServiceImpl implements MetadataToDataAnalysis
     @Autowired
     private MetadataSchemaService metadataSchemaService;
 
+    @Autowired(required = false)
+    private OrganizationService organizationService;
+
 
     @Override
     public ResultBean<List<MetaDbResourceDTO>> getDatabaseResource(String username) {
@@ -107,13 +110,23 @@ public class MetadataToDataAnalysisServiceImpl implements MetadataToDataAnalysis
                 MetaDbResourceDTO metaDbResourceDTO = new MetaDbResourceDTO();
                 Long schemaId = entry.getKey();
                 List<Metadata> metadataList = entry.getValue();
-                Map<Long, String> metadataMap = metadataList.stream().collect(Collectors.toMap((key -> key.getId()), (value -> value.getName())));
-                metaDbResourceDTO.setMetadataMap(metadataMap);
+                //表名排序
+                Collections.sort(metadataList, Comparator.comparing(me -> me.getName().toUpperCase()));
+
+                List<Map<String, Object>> tableAndViewList = Lists.newArrayList();
+                for (Metadata metadata : metadataList) {
+                    Map<String, Object> tableAndViewMap = Maps.newHashMap();
+                    tableAndViewMap.put("metaId", metadata.getId());
+                    tableAndViewMap.put("metaName", metadata.getName());
+                    tableAndViewList.add(tableAndViewMap);
+                }
+
+                metaDbResourceDTO.setTableAndViewList(tableAndViewList);
                 ResultBean<SchemaDetails> result = metadataSchemaService.getSchemaById(username, schemaId);
                 if (result.isSuccess()) {
                     SchemaDetails schemaDetails = result.getData();
                     BeanUtils.copyProperties(schemaDetails, metaDbResourceDTO);
-                    if(StringUtils.isNotBlank(schemaDetails.getServiceName())){
+                    if (StringUtils.isNotBlank(schemaDetails.getServiceName())) {
                         metaDbResourceDTO.setSchemaName(schemaDetails.getServiceName());
                     }
                 } else {
@@ -123,6 +136,7 @@ public class MetadataToDataAnalysisServiceImpl implements MetadataToDataAnalysis
             }
 
             return ResultBean.ok(metaDbResourceList);
+
         } catch (Exception e) {
             log.error("getDatabaseResource 失败", e);
             return ResultBean.error(e.getMessage());
@@ -191,7 +205,7 @@ public class MetadataToDataAnalysisServiceImpl implements MetadataToDataAnalysis
     public ResultBean<List<MetaEsDTO>> getEsIndices(String username) {
         try {
             //用户所属组织是资源的所属组织
-            String deptCode = securityConsumer.getAscriptionDeptByUserName(UserUtils.getUserName()).getDeptCode();
+            String deptCode = securityConsumer.getAscriptionDeptByUserName(username).getDeptCode();
             MetadataSearchVo searchVo = new MetadataSearchVo();
             searchVo.setStatus(1);
             searchVo.setRegCode(deptCode);
@@ -287,7 +301,7 @@ public class MetadataToDataAnalysisServiceImpl implements MetadataToDataAnalysis
                 String orgCode = org.getDeptCode();
                 if (StringUtils.isNotEmpty(orgCode)) {
                     //所属组织查询
-                    List<Metadata> orgHdfsList = metadataMapper.getAllHDFSFolderInfo(null, orgCode, null);
+                    List<Metadata> orgHdfsList = metadataMapper.getAllHDFSFolderInfo(null, orgCode, null, null);
                     if (CollectionUtils.isNotEmpty(orgHdfsList)) {
                         dataList.addAll(orgHdfsList);
                     }
@@ -306,14 +320,19 @@ public class MetadataToDataAnalysisServiceImpl implements MetadataToDataAnalysis
                 }
             }
 
-            for (Metadata data : dataList) {
+            //去重
+            List<Metadata> distinctMetadataList = dataList.stream().collect(
+                    Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(o -> o.getId()))),
+                            ArrayList::new));
+
+            for (Metadata data : distinctMetadataList) {
                 MetaHdfsDTO hdfsDTO = new MetaHdfsDTO();
-                hdfsDTO.setCreatetime(data.getCreateTime());
+                hdfsDTO.setCreatetime(data.getModifyTime());
                 hdfsDTO.setId(data.getId().intValue());
                 hdfsDTO.setParentId(data.getSchemaId().intValue());
                 hdfsDTO.setPath(data.getIdentification());
-                hdfsDTO.setDesc(data.getName());
-                hdfsDTO.setOrganization(data.getDeptCodes());
+                hdfsDTO.setDesc(data.getRemark());
+                hdfsDTO.setOrganization(getDeptNamesByCode(data.getDeptCodes()));
 
                 hdfsList.add(hdfsDTO);
             }
@@ -321,6 +340,34 @@ public class MetadataToDataAnalysisServiceImpl implements MetadataToDataAnalysis
         } catch (Exception e) {
             log.error("getHdfsPaths 失败", e);
             return ResultBean.error(e.getMessage());
+        }
+
+    }
+
+
+      /**
+     * 根据部门code获取部门名称
+     *
+     * @param deptCode
+     * @return
+     */
+    private String getDeptNamesByCode(String deptCode) {
+        List<String> deptNames = Lists.newArrayList();
+        try {
+            for (String code : deptCode.split(",")) {
+                Organization organization = organizationService.findByCode(code);
+                if (null != organization) {
+                    deptNames.add(organization.getDeptName());
+                }
+            }
+        } catch (Exception e) {
+            log.error("根据deptCode:{} 获取部门名称异常:{}", deptCode, e.getMessage());
+        }
+
+        if (CollectionUtils.isNotEmpty(deptNames)) {
+            return StringUtils.join(deptNames, ",");
+        } else {
+            return null;
         }
 
     }
@@ -338,10 +385,10 @@ public class MetadataToDataAnalysisServiceImpl implements MetadataToDataAnalysis
             databaseDTO.setPort(datasource.getPort());
             databaseDTO.setUsername(mcSchemaPO.getUsername());
             databaseDTO.setPassword(mcSchemaPO.getPassword());
-            if(StringUtils.isNotBlank(mcSchemaPO.getServiceName())){
+            if (StringUtils.isNotBlank(mcSchemaPO.getServiceName())) {
                 databaseDTO.setDbName(mcSchemaPO.getServiceName());
-            }else{
-                databaseDTO.setDbName(mcSchemaPO.getServiceName());
+            } else {
+                databaseDTO.setDbName(mcSchemaPO.getName());
             }
             return ResultBean.ok(databaseDTO);
         } catch (Exception e) {
@@ -429,8 +476,8 @@ public class MetadataToDataAnalysisServiceImpl implements MetadataToDataAnalysis
             return ResultBean.error("HDFS地址参数不准确，应该修改成:/path1/path2");
         }
 
-        List<Metadata> dataList = Lists.newArrayList();
-        //用户创建: 存在用户为其他人创建的情况，所以不用查询用户创建
+//        List<Metadata> dataList = Lists.newArrayList();
+//        用户创建: 存在用户为其他人创建的情况，所以不用查询用户创建
 //        List<Metadata> dataList =metadataMapper.getAllHDFSFolderInfo(username, null, pathPrefix);
 //        if (CollectionUtils.isEmpty(dataList)) {
 //            return ResultBean.error("HDFS列表为空");
@@ -443,7 +490,7 @@ public class MetadataToDataAnalysisServiceImpl implements MetadataToDataAnalysis
             String orgCode = org.getDeptCode();
             if (StringUtils.isNotEmpty(orgCode)) {
                 //所属组织查询
-                List<Metadata> orgHdfsList = metadataMapper.getAllHDFSFolderInfo(null, orgCode, pathPrefix);
+                List<Metadata> orgHdfsList = metadataMapper.getAllHDFSFolderInfo(null, orgCode, pathPrefix, null);
                 if (CollectionUtils.isNotEmpty(orgHdfsList)) {
                     matchLen = getMaxMatchLen(orgHdfsList, hdfsPath);
                 }

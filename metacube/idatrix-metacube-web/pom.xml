@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>idatrix-metacube</artifactId>
         <groupId>com.ys</groupId>
@@ -88,6 +88,12 @@
             <artifactId>dubbo-spring-boot-starter</artifactId>
             <version>2.0.0</version>
         </dependency>
+        
+		<!-- redis 配置 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency> 
 
         <!--监控+refresh配置-->
         <dependency>
@@ -124,7 +130,7 @@
         </dependency>
 
         <!-- db proxy -->
-		<dependency>
+        <dependency>
             <groupId>com.ys</groupId>
             <artifactId>idatrix-db-api</artifactId>
             <version>2.0.0-SNAPSHOT</version>
@@ -137,6 +143,7 @@
             <version>2.0.0-SNAPSHOT</version>
         </dependency>
 
+        <!-- graph -->
         <dependency>
             <groupId>com.ys</groupId>
             <artifactId>idatrix-graph-service-api</artifactId>
@@ -169,6 +176,23 @@
             <version>${poi.version}</version>
         </dependency>
         <!-- poi end -->
+
+        <!--json-lib -->
+        <dependency>
+            <groupId>net.sf.json-lib</groupId>
+            <artifactId>json-lib</artifactId>
+            <version>2.4</version>
+            <classifier>jdk15</classifier>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-redis -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+            <version>2.1.5.RELEASE</version>
+        </dependency>
+
+
 
     </dependencies>
 
@@ -246,7 +270,7 @@
 
         </plugins>
 
-        <!--打包过滤文件，最后读取外部config下配置文件。打包时开启；本地启动运行需注释掉-->
+        <!-- 打包过滤文件，最后读取外部config下配置文件。打包时开启；本地启动运行需注释掉
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -254,10 +278,12 @@
                 <excludes>
                     <exclude>**/*.properties</exclude>
                     <exclude>**/*.yml</exclude>
-                    <exclude>**/*.xml</exclude>
+                    <exclude>*.xml</exclude>
                 </excludes>
             </resource>
         </resources>
+-->
+
     </build>
 
 </project>

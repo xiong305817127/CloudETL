@@ -26,11 +26,12 @@ import com.ys.idatrix.cloudetl.subscribe.api.dto.parts.OutputFieldsDto;
 import com.ys.idatrix.cloudetl.subscribe.api.dto.parts.SearchFieldsDto;
 import com.ys.idatrix.cloudetl.subscribe.api.dto.step.*;
 import com.ys.idatrix.cloudetl.subscribe.api.service.SubscribeService;
-import com.ys.idatrix.metacube.api.bean.cloudetl.DataBaseInfo;
-import com.ys.idatrix.metacube.api.bean.dataswap.MetadataField;
-import com.ys.idatrix.metacube.api.bean.dataswap.QueryMetadataFieldsResult;
-import com.ys.idatrix.metacube.api.service.cloudetl.CloudETLService;
-import com.ys.idatrix.metacube.api.service.dataswap.DataSwapService;
+import com.ys.idatrix.metacube.api.beans.MetadataDTO;
+import com.ys.idatrix.metacube.api.beans.ResultBean;
+import com.ys.idatrix.metacube.api.beans.dataswap.MetadataField;
+import com.ys.idatrix.metacube.api.beans.dataswap.QueryMetadataFieldsResult;
+import com.ys.idatrix.metacube.api.service.MetadataToDataSwapService;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,11 +68,8 @@ public class ExchangeETLTask{
 	@Autowired
 	private SubscribeService subscribeService;
 
-	@Autowired
-	private CloudETLService cloudETLService;
-
-    @Autowired
-    private DataSwapService metacubeCatalogService;
+    @Autowired(required=false)
+    private MetadataToDataSwapService metacubeCatalogService;
 
     @Autowired
     private ISystemConfigService systemConfigService;
@@ -106,7 +104,7 @@ public class ExchangeETLTask{
 			List<DataUploadDetailPO> dataUploadDetailPOList
 					= dataUploadDetailDAO.getUploadDetailsByParentId(dataUploadPO.getId());
 
-			if (dataUploadDetailPOList != null && !dataUploadDetailPOList.isEmpty()) {
+			if (CollectionUtils.isNotEmpty(dataUploadDetailPOList)) {
 				if (existedDataUploadPO != null && !CommonUtils.isEmptyStr(existedDataUploadPO.getSubscribeId())) {
 
 					//如果该资源已存在上报记录，则需要校验当前ETL任务类型与当前新上报数据是否相同
@@ -162,26 +160,33 @@ public class ExchangeETLTask{
 				List<ResourceColumnPO> columnPOList
 						= resourceColumnDAO.getColumnByResourceId(dataUploadPO.getResourceId());
 
-				String remoteFilePath = sourceFileDirectory + dataUploadDetailPOList.get(0).getOriginFileName();
+//				String remoteFilePath = sourceFileDirectory + dataUploadDetailPOList.get(0).getOriginFileName();
 
+				String remoteFilePath = dataUploadDetailPOList.get(0).getOriginFileName();
 				Map<String, Object> map = new HashMap<String, Object>();
 				map.put("remoteFilePath", remoteFilePath);
 
 				//根据黄义元数据接口获取资源相对应的表信息, 用于生成ETL任务
 				ResourceConfigPO resourceConfigPO = resourceConfigDAO.getConfigById(dataUploadPO.getResourceId());
 				Long bindTableId = resourceConfigPO.getBindTableId();
-				DataBaseInfo dataBaseInfo;
+
+                MetadataDTO metadataDTO = new MetadataDTO();
+                ResultBean<MetadataDTO> respon = metacubeCatalogService.findTableInfoByID(bindTableId);
+                if(!respon.isSuccess()){
+                    LOG.error("元数据表metaId "+bindTableId+",获取元数据信息失败："+respon.getMsg());
+                    throw new Exception("元数据表metaId "+bindTableId+",获取元数据信息失败："+respon.getMsg());
+                }
+                LOG.info("元数据查询返回信息：{}",respon.toString());
+                metadataDTO = respon.getData();
+
 
 				try {
-					dataBaseInfo = cloudETLService.getDbInfoByMetaId(bindTableId);
-
 					/************************dataInput FileInputDto参数拼装****************************/
-					FileInputDto fileInputDto = assembleFileInputDtoParams(columnPOList, dataBaseInfo.getTableName());
+					FileInputDto fileInputDto = assembleFileInputDtoParams(sourceFileDirectory, columnPOList, metadataDTO.getMetaName());
 					createJobDto.setDataInput(fileInputDto);
 
 					/************************dataOutput InsertUpdateDto参数拼装************************/
-					InsertUpdateDto insertUpdateDto = assembleInsertUpdateDto(bindTableId, columnPOList, dataBaseInfo.getTableName(),
-							dataBaseInfo.getName(), dataBaseInfo.getSchema());
+					InsertUpdateDto insertUpdateDto = assembleInsertUpdateDto(bindTableId, columnPOList, metadataDTO);
 					createJobDto.setDataOutput(insertUpdateDto);
 
 					//2018-08-08 根据需求，将数据批次传递至ETL
@@ -195,11 +200,7 @@ public class ExchangeETLTask{
 			} else {
 
                 SftpPutDto sftpPutDto = new SftpPutDto();
-
-
-
-
-				List<FileTransmitDto> targetList = new ArrayList<FileTransmitDto>();
+                List<FileTransmitDto> targetList = new ArrayList<FileTransmitDto>();
 
 				for (DataUploadDetailPO model : dataUploadDetailPOList) {
 					String fullFilePath = sourceFileDirectory + model.getOriginFileName();
@@ -336,8 +337,8 @@ public class ExchangeETLTask{
                 }
             }
 		} else {
-			String remoteFilePath = sourceFileDirectory + dataUploadDetailPOList.get(0).getOriginFileName();
-
+//			String remoteFilePath = sourceFileDirectory + dataUploadDetailPOList.get(0).getOriginFileName();
+			String remoteFilePath = dataUploadDetailPOList.get(0).getOriginFileName();
 			params.put("remoteFilePath", remoteFilePath);
 			//2018-08-08 根据需求，将数据批次传递至ETL
 			params.put("ds_batch", dataUploadPO.getDataBatch());
@@ -389,9 +390,9 @@ public class ExchangeETLTask{
 	}
 
 	/*dataInput FileInputDto参数拼装*/
-	private FileInputDto assembleFileInputDtoParams(List<ResourceColumnPO> columnPOList, String tableNameVal) {
+	private FileInputDto assembleFileInputDtoParams(String dirPrefix, List<ResourceColumnPO> columnPOList, String tableNameVal) {
 		FileInputDto fileInputDto = new FileInputDto();
-		fileInputDto.addFile("${remoteFilePath}");
+		fileInputDto.addFile(dirPrefix+"${remoteFilePath}");
 
 		String tableName = tableNameVal;
 		fileInputDto.setAccessTable(tableName);
@@ -419,15 +420,13 @@ public class ExchangeETLTask{
 	}
 
 	/*dataInput InsertUpdateDto参数拼装*/
-	private InsertUpdateDto assembleInsertUpdateDto(Long metaId, List<ResourceColumnPO> columnPOList, String tableNameVal,
-													String connectionVal, String schemaVal) {
-		InsertUpdateDto insertUpdateDto = new InsertUpdateDto();
-		String connection = connectionVal;
-		String schema = schemaVal;
+	private InsertUpdateDto assembleInsertUpdateDto(Long metaId, List<ResourceColumnPO> columnPOList, MetadataDTO metadataDTO) {
 
-		insertUpdateDto.setConnection(connection);
-		insertUpdateDto.setSchema(schema);
-		insertUpdateDto.setTable(tableNameVal);
+	    InsertUpdateDto insertUpdateDto = new InsertUpdateDto();
+
+        insertUpdateDto.setSchemaId(new Long(metadataDTO.getSchemaId()));
+        insertUpdateDto.setTableId(new Long(metadataDTO.getMetaId()));
+        insertUpdateDto.setTable(metadataDTO.getMetaName());
 
 		SearchFieldsDto primaryKey = new SearchFieldsDto();
 
@@ -448,11 +447,12 @@ public class ExchangeETLTask{
 		//配置好交换需要用到的字段 robin 2018/08/28
         //获取元数据字段
         List<MetadataField> metadataOriginFields = new ArrayList<MetadataField>();
-        QueryMetadataFieldsResult metaResult = metacubeCatalogService.getMetadataFieldsByMetaId(metaId.intValue());
+
+        ResultBean<QueryMetadataFieldsResult> metaResult = metacubeCatalogService.getMetadataFieldsByMetaId(metaId.intValue());
         if(metaResult.isSuccess()){
-            metadataOriginFields = metaResult.getMetadataField();
+            metadataOriginFields = metaResult.getData().getMetadataField();
         }else{
-            LOG.error("获取资源绑定元数据结构异常：metaId {},错误原因：{}", metaId, metaResult.getMessage());
+            LOG.error("获取资源绑定元数据结构异常：metaId {},错误原因：{}", metaId, metaResult.getMsg());
         }
         List<MetadataField> metaFinalFields = new ArrayList<MetadataField>();
         for(MetadataField field:metadataOriginFields){

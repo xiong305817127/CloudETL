@@ -14,7 +14,7 @@ import com.ys.idatrix.metacube.dubbo.consumer.SecurityConsumer;
 import com.ys.idatrix.metacube.metamanage.domain.McDatabasePO;
 import com.ys.idatrix.metacube.metamanage.domain.McSchemaPO;
 import com.ys.idatrix.metacube.metamanage.domain.McServerPO;
-import com.ys.idatrix.metacube.metamanage.service.AuthorityService;
+import com.ys.idatrix.metacube.authorize.service.AuthorityService;
 import com.ys.idatrix.metacube.metamanage.service.McDatabaseService;
 import com.ys.idatrix.metacube.metamanage.service.McSchemaService;
 import com.ys.idatrix.metacube.metamanage.service.McServerService;
@@ -71,6 +71,8 @@ public class MetadataSchemaServiceImpl implements MetadataSchemaService {
         List<Integer> databaseTypes = new ArrayList<>();
         databaseTypes.add(databaseType.getCode());
 
+        User user = securityConsumer.findByUserName(username);
+
         List<ApprovalProcessVO> processVOList = null;
         // 根据操作权限类型返回数据
         if (module.equals(ModuleTypeEnum.ETL)) {
@@ -78,12 +80,12 @@ public class MetadataSchemaServiceImpl implements MetadataSchemaService {
                     .getAuthorizedResource(username, module, actionType, databaseTypes, null);
         }
 
-        List<McSchemaPO> authSchemaList =
-                schemaService.listSchemaBySchemaIds(
-                        processVOList.stream().map(e -> e.getSchemaId())
-                                .collect(Collectors.toList()));
+        List<Long> schemaIds =
+                processVOList.stream().map(e -> e.getSchemaId()).collect(Collectors.toList());
+        List<McSchemaPO> authSchemaList = schemaService.listSchemaBySchemaIds(schemaIds,
+                user.getRenterId(), ip, databaseTypes);
 
-        List<McSchemaPO> orgSchemaList = listSchemaByUsername(username, databaseTypes);
+        List<McSchemaPO> orgSchemaList = listSchemaByUsername(username, databaseTypes, ip);
 
         List<McSchemaPO> schemaList = merge(orgSchemaList, authSchemaList);
         List<Schema> schemas = convertSchema(schemaList);
@@ -118,11 +120,12 @@ public class MetadataSchemaServiceImpl implements MetadataSchemaService {
     /**
      * 根据用户所属组织获取模式列表
      */
-    private List<McSchemaPO> listSchemaByUsername(String username, List<Integer> databaseTypes) {
+    private List<McSchemaPO> listSchemaByUsername(String username, List<Integer> databaseTypes,
+            String ip) {
         Organization org = securityConsumer.getAscriptionDeptByUserName(username);
         String orgCode = org.getDeptCode();
         User user = securityConsumer.findByUserName(username);
-        return schemaService.listSchema(orgCode, user.getRenterId(), databaseTypes);
+        return schemaService.listSchema(orgCode, user.getRenterId(), databaseTypes, ip);
     }
 
     /**

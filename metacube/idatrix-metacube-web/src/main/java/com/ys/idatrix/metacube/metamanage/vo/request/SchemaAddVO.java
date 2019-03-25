@@ -2,6 +2,7 @@ package com.ys.idatrix.metacube.metamanage.vo.request;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import java.util.List;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
@@ -39,8 +40,8 @@ public class SchemaAddVO {
     @ApiModelProperty("数据库密码")
     private String password;
 
-    @ApiModelProperty("组织编码 多个以英文逗号分隔")
-    private String orgCode;
+    @ApiModelProperty("组织编码")
+    private List<String> orgCode;
 
     @ApiModelProperty("备注")
     private String remark;

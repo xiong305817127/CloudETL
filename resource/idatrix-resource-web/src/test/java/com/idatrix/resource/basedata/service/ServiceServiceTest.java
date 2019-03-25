@@ -33,9 +33,8 @@ public class ServiceServiceTest {
 		ssp.setServiceType(CommonConstants.SERVICE_TYPE_SOAP);
 		ssp.setRemark("测试服务备注2");
 		ssp.setUrl("http://www.webxml.com.cn/WebServices/WeatherWebService.asmx?WSDL");
-		ssp.setWsdl("WSDL");
 
-		String msg = iServiceService.saveOrUpdateService(user, ssp);
+		String msg = iServiceService.saveOrUpdateService(642L, user, ssp);
 
 		System.out.println("******************************************************");
 		System.out.println(msg);
@@ -44,7 +43,7 @@ public class ServiceServiceTest {
 
 	@Test
 	public void getAllService() {
-		List<ServiceVO> servicesList = iServiceService.getAllService();
+		List<ServiceVO> servicesList = iServiceService.getAllService(642L);
 
 		System.out.println("**********************************************************");
 		if (servicesList != null) {

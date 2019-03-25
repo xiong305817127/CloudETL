@@ -80,7 +80,7 @@ public class TransController extends BaseAction {
 		saveResourceOwner(owner);
 		if(isMap ) {
 			Map<String,List<String> > result = Maps.newHashMap() ;
-			if( CloudSession.isRenterPrivilege()) {
+			if( CloudSession.isPrivilegeEnable()) {
 				if(Utils.isEmpty(owner)) {
 					//获取所有的用户
 					for(String ownerUser : cloudTransService.getCloudTransUserList()) {
@@ -158,6 +158,8 @@ public class TransController extends BaseAction {
 	public @ResponseBody Object newTrans(@RequestBody TransInfoDto transInfo) throws Exception {
 		//只能新建 登录用户 自己的转换
 		CloudSession.setThreadResourceUser(CloudSession.getLoginUser());
+		checkPrivilege();
+		
 		return cloudTransService.newTrans(transInfo);
 	}
 

@@ -33,7 +33,7 @@ public class PageResultBean<T> {
     public PageResultBean() {
     }
 
-    public static <T> PageResultBean<List<T>> of(int pageNum, long total, List<T> data) {
+    public static <T> PageResultBean<T> of(int pageNum, long total, List<T> data) {
         return new PageResultBean(pageNum, total, data);
     }
 

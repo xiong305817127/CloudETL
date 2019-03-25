@@ -3,14 +3,13 @@ package com.ys.idatrix.metacube.metamanage.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.idatrix.unisecurity.api.domain.Organization;
-import com.ys.idatrix.graph.service.api.def.DatabaseType;
+import com.idatrix.unisecurity.api.service.OrganizationService;
 import com.ys.idatrix.graph.service.api.dto.node.SchemaNodeDto;
 import com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum;
 import com.ys.idatrix.metacube.api.beans.PageResultBean;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
-import com.ys.idatrix.metacube.common.utils.UserUtils;
+import com.ys.idatrix.metacube.common.helper.GraphDatabaseTypeConvert;
 import com.ys.idatrix.metacube.dubbo.consumer.GraphConsumer;
-import com.ys.idatrix.metacube.dubbo.consumer.SecurityConsumer;
 import com.ys.idatrix.metacube.metamanage.domain.McDatabasePO;
 import com.ys.idatrix.metacube.metamanage.domain.McSchemaPO;
 import com.ys.idatrix.metacube.metamanage.domain.McServerPO;
@@ -19,12 +18,18 @@ import com.ys.idatrix.metacube.metamanage.service.IMetaDefBaseService;
 import com.ys.idatrix.metacube.metamanage.service.McDatabaseService;
 import com.ys.idatrix.metacube.metamanage.service.McSchemaService;
 import com.ys.idatrix.metacube.metamanage.service.McServerService;
-import com.ys.idatrix.metacube.metamanage.service.SystemSettingsService;
 import com.ys.idatrix.metacube.metamanage.vo.request.SchemaSearchVO;
+import com.ys.idatrix.metacube.metamanage.vo.response.SchemaListVO;
+import com.ys.idatrix.metacube.sysmanage.service.SystemSettingsService;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("schemaServiceImpl")
 public class McSchemaServiceImpl implements McSchemaService {
@@ -69,10 +74,10 @@ public class McSchemaServiceImpl implements McSchemaService {
     private IMetaDefBaseService metaDefBaseService;
 
     @Autowired
-    private SecurityConsumer securityConsumer;
+    private GraphConsumer graphConsumer;
 
     @Autowired
-    private GraphConsumer graphConsumer;
+    private OrganizationService organizationService;
 
     @Override
     public McSchemaMapper getSchemaMapper() {
@@ -100,102 +105,128 @@ public class McSchemaServiceImpl implements McSchemaService {
     /**
      * 新建模式
      */
+    @Transactional(rollbackFor = {RuntimeException.class, SQLException.class})
     @Override
     public McSchemaPO create(McSchemaPO schemaPO) {
         authentication();
 
+        McSchemaPO result = null;
         if (schemaPO.getDbType().equals(DatabaseTypeEnum.MYSQL.getCode())) {
-            return mySqlSchemaService.create(schemaPO);
+            result = mySqlSchemaService.create(schemaPO);
         }
         if (schemaPO.getDbType().equals(DatabaseTypeEnum.ORACLE.getCode())) {
-            return oracleSchemaService.create(schemaPO);
+            result = oracleSchemaService.create(schemaPO);
         }
         if (schemaPO.getDbType().equals(DatabaseTypeEnum.HDFS.getCode())) {
-            return hdfsSchemaService.create(schemaPO);
+            result = hdfsSchemaService.create(schemaPO);
         }
         if (schemaPO.getDbType().equals(DatabaseTypeEnum.HBASE.getCode())) {
-            return hbaseSchemaService.create(schemaPO);
+            result = hbaseSchemaService.create(schemaPO);
         }
         if (schemaPO.getDbType().equals(DatabaseTypeEnum.HIVE.getCode())) {
-            return hiveSchemaService.create(schemaPO);
+            result = hiveSchemaService.create(schemaPO);
         }
         if (schemaPO.getDbType().equals(DatabaseTypeEnum.ELASTICSEARCH.getCode())) {
-            return esSchemaService.create(schemaPO);
+            result = esSchemaService.create(schemaPO);
         }
 
         // 新建模式节点
+        createGraphSchemaNode(schemaPO);
+
+        // TODO 需回写安全的所属组织使用计数器
+        return result;
+    }
+
+    /**
+     * 注册模式 只在模式表新增记录
+     */
+    @Transactional(rollbackFor = {RuntimeException.class, SQLException.class})
+    @Override
+    public McSchemaPO register(McSchemaPO schemaPO) {
+        authentication();
+        McSchemaPO result;
+        McDatabasePO databasePO = databaseService.getDatabaseById(schemaPO.getDbId());
+        // mysql修改信息需测试连接
+        if (databasePO.getType().equals(DatabaseTypeEnum.MYSQL.getCode())) {
+            result = mySqlSchemaService.register(schemaPO);
+            createGraphSchemaNode(result);
+            return result;
+        }
+        if (databasePO.getType().equals(DatabaseTypeEnum.ELASTICSEARCH.getCode())) {
+            return esSchemaService.register(schemaPO);
+        }
+
+        result = insert(schemaPO);
+        // 新建模式节点
+        createGraphSchemaNode(result);
+        // TODO 需回写安全的所属组织使用计数器
+        return result;
+    }
+
+    /**
+     * 新建数据地图模式节点
+     */
+    private void createGraphSchemaNode(McSchemaPO schemaPO) {
         if (!schemaPO.getDbType().equals(DatabaseTypeEnum.ELASTICSEARCH.getCode())) {
             SchemaNodeDto nodeDto = new SchemaNodeDto();
             nodeDto.setDatabaseId(schemaPO.getDbId());
-            nodeDto.setDatabaseType(getGraphDatabaseType(schemaPO.getDbType()));
+            nodeDto.setDatabaseType(
+                    GraphDatabaseTypeConvert.getGraphDatabaseType(schemaPO.getDbType()));
             nodeDto.setRenterId(schemaPO.getRenterId());
             nodeDto.setSchemaId(schemaPO.getId());
             nodeDto.setSchemaName(schemaPO.getName());
             nodeDto.setServerId(databaseService.getDatabaseById(schemaPO.getDbId()).getServerId());
             graphConsumer.createSchemaNode(nodeDto);
         }
-
-        // TODO 需回写安全的所属组织使用计数器
-        return null;
-    }
-
-    private DatabaseType getGraphDatabaseType(int type) {
-        if (type == DatabaseTypeEnum.MYSQL.getCode()) {
-            return DatabaseType.MySQL;
-        }
-        if (type == DatabaseTypeEnum.ORACLE.getCode()) {
-            return DatabaseType.Oracle;
-        }
-        if (type == DatabaseTypeEnum.POSTGRESQL.getCode()) {
-            return DatabaseType.PostgreSQL;
-        }
-        if (type == DatabaseTypeEnum.HDFS.getCode()) {
-            return DatabaseType.HDFS;
-        }
-        if (type == DatabaseTypeEnum.HIVE.getCode()) {
-            return DatabaseType.Hive;
-        }
-        if (type == DatabaseTypeEnum.HBASE.getCode()) {
-            return DatabaseType.Hbase;
-        }
-        return null;
     }
 
     /**
-     * 注册模式 只在模式表新增记录
+     * 删除模式
      */
-    @Override
-    public McSchemaPO register(McSchemaPO schemaPO) {
-        authentication();
-        // TODO 需回写安全的所属组织使用计数器
-        return insert(schemaPO);
-    }
-
-    /**
-     * 删除模式 逻辑删除
-     */
+    @Transactional(rollbackFor = {RuntimeException.class, SQLException.class})
     @Override
     public McSchemaPO delete(McSchemaPO schemaPO) {
-        McDatabasePO database = getDatabaseById(schemaPO.getDbId());
-        DatabaseTypeEnum.getInstance(database.getType());
 
+        McDatabasePO database = getDatabaseById(schemaPO.getDbId());
         if (metaDefBaseService.verifySchemaUse(DatabaseTypeEnum.getInstance(database.getType()),
                 schemaPO.getId()) > 0L) {
             throw new MetaDataException("模式已被使用，不允许删除");
         }
         schemaPO.setIsDeleted(1);
-        update(schemaPO);
+        schemaMapper.update(schemaPO);
 
-        graphConsumer.deleteSchemaNode(schemaPO.getId());
+        if (database.getType().equals(DatabaseTypeEnum.MYSQL.getCode())) {
+            mySqlSchemaService.delete(schemaPO);
+        }
+        if (database.getType().equals(DatabaseTypeEnum.HDFS.getCode())) {
+            hdfsSchemaService.delete(schemaPO);
+        }
+        if (database.getType().equals(DatabaseTypeEnum.HBASE.getCode())) {
+            hbaseSchemaService.delete(schemaPO);
+        }
+        if (database.getType().equals(DatabaseTypeEnum.HIVE.getCode())) {
+            hiveSchemaService.delete(schemaPO);
+        }
+
+        if (!database.getType().equals(DatabaseTypeEnum.ELASTICSEARCH.getCode())) {
+            graphConsumer.deleteSchemaNode(schemaPO.getId());
+        }
         return schemaPO;
     }
 
     /**
      * 修改模式信息 模式名称不能修改
      */
+    @Transactional(rollbackFor = {RuntimeException.class, SQLException.class})
     @Override
     public McSchemaPO update(McSchemaPO schemaPO) {
         authentication();
+        McSchemaPO oldSchemaPO = schemaMapper.getSchemaById(schemaPO.getId());
+        McDatabasePO databasePO = databaseService.getDatabaseById(oldSchemaPO.getDbId());
+        // mysql修改信息需测试连接
+        if (databasePO.getType().equals(DatabaseTypeEnum.MYSQL.getCode())) {
+            return mySqlSchemaService.update(schemaPO);
+        }
         schemaMapper.update(schemaPO);
         return schemaPO;
     }
@@ -204,23 +235,38 @@ public class McSchemaServiceImpl implements McSchemaService {
      * 模式列表
      */
     @Override
-    public PageResultBean<List<McSchemaPO>> listByPage(SchemaSearchVO searchVO) {
+    public PageResultBean<SchemaListVO> listByPage(SchemaSearchVO searchVO) {
         // 普通用户返回空
         if (!systemSettingsService.isDataCentreAdmin()
                 && !systemSettingsService.isDatabaseAdmin()) {
             return PageResultBean.empty();
         }
 
-        // 数据库管理员只能查看本部门数据
-        if (systemSettingsService.isDatabaseAdmin()) {
-            Organization org =
-                    securityConsumer.getAscriptionDeptByUserName(UserUtils.getUserName());
-            searchVO.setOrgCode(org.getDeptCode());
-        }
-
         PageHelper.startPage(searchVO.getPageNum(), searchVO.getPageSize());
         List<McSchemaPO> schemaPOList = schemaMapper.listByPage(searchVO);
         PageInfo<McSchemaPO> info = new PageInfo<>(schemaPOList);
-        return PageResultBean.of(searchVO.getPageNum(), info.getTotal(), schemaPOList);
+
+        List<SchemaListVO> schemaVOList = convertSchemaListVO(schemaPOList);
+
+        // 填充组织名称
+        List<String> orgCodeList =
+                schemaVOList.stream().map(e -> e.getOrgCode()).collect(Collectors.toList());
+        String orgCodes = String.join(",", orgCodeList);
+        List<Organization> orgList = organizationService.findByCodes(orgCodes);
+        List<SchemaListVO> result = fillOrgNameIntoSchemaVO(schemaVOList, orgList);
+
+        return PageResultBean.of(searchVO.getPageNum(), info.getTotal(), result);
+    }
+
+    @Override
+    public SchemaListVO getSchemaListVOById(Long id) {
+        McSchemaPO schemaPO = getSchemaById(id);
+        List<Organization> orgList = organizationService.findByCodes(schemaPO.getOrgCode());
+        List<SchemaListVO> schemaVOList = new ArrayList<>();
+        SchemaListVO schemaVO = new SchemaListVO();
+        BeanUtils.copyProperties(schemaPO, schemaVO);
+        schemaVOList.add(schemaVO);
+        List<SchemaListVO> result = fillOrgNameIntoSchemaVO(schemaVOList, orgList);
+        return result.get(0);
     }
 }

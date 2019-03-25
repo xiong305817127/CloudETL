@@ -392,7 +392,7 @@ public class CloudApp {
 
 	public  Map<String,DelegatingMetaStore> getMetaStoreMaps( String owner ) throws Exception {
 		 Map<String,DelegatingMetaStore> result = Maps.newHashMap();
-		if( CloudSession.isRenterPrivilege() ) {
+		if( CloudSession.isPrivilegeEnable() ) {
 			if(Utils.isEmpty(owner)) {
 				for(String user  : CloudRepository.getCurrentRenterUsers(null) ){
 					result.put(user , getMetaStore(user));

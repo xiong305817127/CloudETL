@@ -2,8 +2,7 @@ package com.idatrix.resource.common.task;
 
 import com.idatrix.resource.basedata.dao.SystemConfigDAO;
 import com.idatrix.resource.datareport.dao.DataUploadDAO;
-import com.ys.idatrix.metacube.api.bean.cloudetl.DataBaseInfo;
-import com.ys.idatrix.metacube.api.service.cloudetl.CloudETLService;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +20,6 @@ import javax.annotation.Resource;
 @ContextConfiguration({"classpath:META-INF/spring/catalog-root.xml"})
 public class ETLExchangeTaskTest {
 
-	@Resource
-	private CloudETLService cloudETLService;
 
 	@Resource
 	private SystemConfigDAO systemConfigDAO;
@@ -35,14 +32,14 @@ public class ETLExchangeTaskTest {
 
 	@Test
 	public void getDbInfoByMetaId() {
-		long bindTableId = 6372;
-		DataBaseInfo dataBaseInfo = cloudETLService.getDbInfoByMetaId(bindTableId);
-
-		if (dataBaseInfo != null) {
-			System.out.println("***********************************************************************");
-			System.out.println(dataBaseInfo.toString());
-			System.out.println("***********************************************************************");
-		}
+//		long bindTableId = 6372;
+//		DataBaseInfo dataBaseInfo = cloudETLService.getDbInfoByMetaId(bindTableId);
+//
+//		if (dataBaseInfo != null) {
+//			System.out.println("***********************************************************************");
+//			System.out.println(dataBaseInfo.toString());
+//			System.out.println("***********************************************************************");
+//		}
 	}
 
 	@Test

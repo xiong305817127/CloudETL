@@ -3,11 +3,12 @@ package com.idatrix.resource.basedata.dao;
 
 import com.idatrix.resource.basedata.po.ServicePO;
 
+import com.idatrix.resource.basedata.vo.ServiceQueryVO;
 import java.util.List;
 import java.util.Map;
 
 public interface ServiceDAO {
-	List<ServicePO> getAllService();
+	List<ServicePO> getAllService(Long rentId);
 
 	ServicePO getServiceById(Long id);
 
@@ -23,5 +24,5 @@ public interface ServiceDAO {
 
 	int updateService(ServicePO servicePO);
 
-	List<ServicePO> getServicesByCondition(Map<String, String> conditionMap);
+	List<ServicePO> getServicesByCondition(ServiceQueryVO queryVO);
 }

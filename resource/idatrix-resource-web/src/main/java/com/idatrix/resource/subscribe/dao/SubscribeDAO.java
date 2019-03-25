@@ -36,4 +36,9 @@ public interface SubscribeDAO {
 
     /*根据SUBXXXXX 获取订阅信息*/
     SubscribePO getBySubNo(String subNo);
+
+    /*获取资源被订阅的最大MetaID*/
+    Long getDetpSubscribeMaxMetaId(@Param("srcMetaId")Long srcMetaId,
+                                   @Param("deptId")Long deptId,
+                                   @Param("resourceId")Long resourceId);
 }

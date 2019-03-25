@@ -5,6 +5,7 @@ import com.idatrix.resource.catalog.vo.ResourceOverviewVO;
 import com.idatrix.resource.catalog.vo.ResourceStatisticsVO;
 import com.idatrix.resource.catalog.vo.request.ResourceCatalogSearchVO;
 import com.idatrix.resource.common.utils.ResultPager;
+
 import java.util.List;
 import java.util.Map;
 
@@ -16,17 +17,17 @@ public interface IOverviewService {
     /**
      * 资源总体情况查询
      */
-    MonthStatisticsVO getOverall();
+    MonthStatisticsVO getOverall(Long rentId);
 
     /**
      * 查找最新的几个资源信息
      */
-    List<ResourceStatisticsVO> getLatestResourceInfo(Long num);
+    List<ResourceStatisticsVO> getLatestResourceInfo(Long rentId, Long num);
 
     /**
      * 获取每月(基础库,部门库,主题库)三库合计的注册量,发布量,订阅量概览
      */
-    List<MonthStatisticsVO> getMonthlyTotalAmount(int months);
+    List<MonthStatisticsVO> getMonthlyTotalAmount(Long rentId, int months);
 
     /**
      * 资源查询：可以按照资源名称、资源代码、提供方名称、提供方代码等方式查询已上架的资源,按照发布日期倒序进行排序 查询对象: 所有库、三大库各个库里面信息。
@@ -42,6 +43,15 @@ public interface IOverviewService {
      * 资源查询：可以按照资源名称、资源代码、提供方名称、提供方代码等方式查询已上架的资源,按照发布日期倒序进行排序 查询对象: 所有库、三大库各个库里面信息。
      */
     ResultPager<ResourceOverviewVO> getLibResourcesByCondition(String status,
-            Map<String, String> conditionMap,
-            Integer pageNum, Integer pageSize);
+            Map<String, String> conditionMap, Integer pageNum, Integer pageSize)throws Exception;
+
+
+
+    /**
+     * 根据用户和资源ID判断是否有订阅权限
+     * @param user
+     * @param resourceId
+     * @return 订阅标志Flag-0表示没有订阅权限，1表示可以订阅，2，表示已经订阅
+     */
+    int getSubscribeFlagByUserAndResourceId(String user, Long resourceId);
 }

@@ -17,6 +17,7 @@ import com.ys.idatrix.cloudetl.dto.step.parts.ElasticSearchBulkFieldDto;
 import com.ys.idatrix.cloudetl.dto.step.parts.ElasticSearchBulkServerDto;
 import com.ys.idatrix.cloudetl.dto.step.parts.ElasticSearchBulkSettingDto;
 import com.ys.idatrix.cloudetl.dto.step.steps.bulkloading.SPElasticSearchBulk;
+import com.ys.idatrix.cloudetl.dto.step.steps.bulkloading.SPElasticSearchBulk5;
 import com.ys.idatrix.cloudetl.dto.step.steps.script.SPScriptValueMod;
 import com.ys.idatrix.cloudetl.dto.step.steps.transfor.SPConcatFields;
 import com.ys.idatrix.cloudetl.subscribe.api.dto.parts.ElasticSearchServerDto;
@@ -39,7 +40,7 @@ public class ElasticSearchService extends StepServiceInterface<ElasticSearchDto>
 
 		ElasticSearchDto elasticSearch = getStepDto();
 
-		SPElasticSearchBulk esb = new SPElasticSearchBulk();
+		SPElasticSearchBulk5 esb = new SPElasticSearchBulk5();
 
 		esb.setIndex(elasticSearch.getIndex());
 		esb.setType(elasticSearch.getIndexType());
@@ -172,7 +173,7 @@ public class ElasticSearchService extends StepServiceInterface<ElasticSearchDto>
 		}
 
 
-		SPElasticSearchBulk esb = (SPElasticSearchBulk) createParameter(contentFieldName);
+		SPElasticSearchBulk5 esb = (SPElasticSearchBulk5) createParameter(contentFieldName);
 
 		// 增加到TransMeta
 		stepService.addAndUpdateStepMeta(transName, group, outputName, elasticSearch.getType(), esb);

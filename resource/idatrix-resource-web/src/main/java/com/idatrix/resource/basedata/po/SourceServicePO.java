@@ -1,6 +1,7 @@
 package com.idatrix.resource.basedata.po;
 
-import java.util.Arrays;
+import lombok.Data;
+
 import java.util.Date;
 
 /**
@@ -9,6 +10,7 @@ import java.util.Date;
  * @Author: Wangbin
  * @Date: 2018/5/23
  */
+@Data
 public class SourceServicePO {
     /*主键*/
     private Long id;
@@ -37,6 +39,9 @@ public class SourceServicePO {
     /*webservice服务，wsdl内容*/
     private byte wsdl[];
 
+    /*组合ID，租户隔离使用*/
+    private Long rentId;
+
     /*状态(软删除用n)*/
     private String status;
 
@@ -48,131 +53,4 @@ public class SourceServicePO {
 
     private Date modifyTime;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getProviderId() {
-        return providerId;
-    }
-
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
-    }
-
-    public String getProviderName() {
-        return providerName;
-    }
-
-    public void setProviderName(String providerName) {
-        this.providerName = providerName;
-    }
-
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    public String getServiceType() {
-        return serviceType;
-    }
-
-    public void setServiceType(String serviceType) {
-        this.serviceType = serviceType;
-    }
-
-    public String getServiceCode() {
-        return serviceCode;
-    }
-
-    public void setServiceCode(String serviceCode) {
-        this.serviceCode = serviceCode;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public byte[] getWsdl() {
-        return wsdl;
-    }
-
-    public void setWsdl(byte[] wsdl) {
-        this.wsdl = wsdl;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreateTime() { return createTime; }
-
-    public void setCreateTime(Date createTime) { this.createTime = createTime; }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier;
-    }
-
-    public Date getModifyTime() {
-        return modifyTime;
-    }
-
-    public void setModifyTime(Date modifyTime) {
-        this.modifyTime = modifyTime;
-    }
-
-    @Override
-    public String toString() {
-        return "SourceServicePO{" +
-                "id=" + id +
-                ", providerId='" + providerId + '\'' +
-                ", providerName='" + providerName + '\'' +
-                ", serviceName='" + serviceName + '\'' +
-                ", serviceType='" + serviceType + '\'' +
-                ", serviceCode='" + serviceCode + '\'' +
-                ", remark='" + remark + '\'' +
-                ", url='" + url + '\'' +
-                ", wsdl=" + Arrays.toString(wsdl) +
-                ", status='" + status + '\'' +
-                ", creator='" + creator + '\'' +
-                ", createTime=" + createTime +
-                ", modifier='" + modifier + '\'' +
-                ", modifyTime=" + modifyTime +
-                '}';
-    }
 }

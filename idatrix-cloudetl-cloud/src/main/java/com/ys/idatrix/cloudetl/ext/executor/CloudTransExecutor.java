@@ -565,7 +565,7 @@ public class CloudTransExecutor extends BaseTransExecutor implements Runnable {
 			}
 		}
 		
-		return  Const.NVL(s, super.getStatus()) ;
+		return  Const.NVL(s, getStatus()) ;
 	}
 
 	@Override

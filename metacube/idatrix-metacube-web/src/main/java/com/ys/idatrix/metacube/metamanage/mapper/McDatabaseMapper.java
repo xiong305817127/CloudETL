@@ -47,5 +47,6 @@ public interface McDatabaseMapper {
 
     int update(McDatabasePO databasePO);
 
-    List<DatabaseServerAggregationVO> listDatabaseByDbIds(@Param("dbIds") List<Long> dbIds);
+    List<DatabaseServerAggregationVO> listDatabaseByDbIds(@Param("dbIds") List<Long> dbIds,
+            @Param("renterId") Long renterId, @Param("dbTypes") List<Integer> dbTypes);
 }

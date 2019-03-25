@@ -102,6 +102,9 @@
     </if>
     group by r.resource_id) rra
     on rr.id=rra.resource_id
+    <if test="rentId!=null">
+      and rr.rent_id=#{rentId}
+    </if>
     <if test="activeFlag!=null">
       and rra.active_flag=#{activeFlag}
     </if>
@@ -122,67 +125,6 @@
     </if>
     order by rr.update_time DESC
   </select>
-
-  <!--<select id="getMaintainResourceByCondition" resultMap="BaseResultMap">
-      select
-          <include refid="Base_Column_List" />
-      FROM (select id,status from rc_resource
-      where 1=1
-          <if test="name!=null">
-              and name like '%${name}%'
-          </if>
-          <if test="code!=null">
-              and code like '%${code}%'
-          </if>
-          <if test="dept_name!=null">
-              and dept_name like '%${dept_name}%'
-          </if>
-          <if test="dept_code!=null">
-              and dept_code like '%${dept_code}%'
-          </if>) rr
-      INNER JOIN (
-          SELECT MAX(a.approve_time) AS approve_time, id, resource_id, approver, approver_name, current_status, next_status, approve_action, suggestion, active_flag,
-            creator, create_time, modifier, modify_time
-          FROM rc_resource_approve a
-          WHERE a.active_flag=#{activeFlag}
-          GROUP BY a.resource_id
-          ORDER BY a.approve_time DESC) b
-      ON rr.id=b.resource_id AND rr.status in (#{status})
-      <if test="currentStatus!=null">
-          and b.current_status = #{currentStatus}
-      </if>
-      ORDER BY b.approve_time DESC;
-  </select>-->
-
-
-  <!--<select id="getApproveByCondition" resultMap="BaseResultMap" parameterType="java.lang.Long">
-      select
-        id, resource_id, approver, approver_name, current_status, next_status, approve_action, suggestion, max(approve_time) as approve_time, active_flag,
-        creator, create_time, modifier, modify_time
-      from rc_resource_approve
-      where approver = #{approver}
-      and active_flag=#{activeFlag}
-      <if test="currentStatus!=null">
-        and current_status = #{currentStatus}
-      </if>
-      and resource_id IN
-        (select id from rc_resource
-          where 1=1
-          <if test="name!=null">
-            and name like '%${name}%'
-          </if>
-          <if test="code!=null">
-              and code like '%${code}%'
-          </if>
-          <if test="dept_name!=null">
-              and dept_name like '%${dept_name}%'
-          </if>
-          <if test="dept_code!=null">
-              and dept_code like '%${dept_code}%'
-          </if>)
-      group by resource_id
-      order by approve_time DESC
-  </select>-->
 
   <select id="getApproveByCondition" resultMap="BaseResultMap" parameterType="java.lang.Long">
     SELECT

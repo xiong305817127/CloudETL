@@ -2,6 +2,7 @@ package com.ys.idatrix.metacube.metamanage.vo.request;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import java.util.List;
 import lombok.Data;
 
 /**
@@ -26,7 +27,7 @@ public class SchemaUpdateVO {
     private String password;
 
     @ApiModelProperty("组织编码 多个以英文逗号分隔")
-    private String orgCode;
+    private List<String> orgCode;
 
     @ApiModelProperty("备注")
     private String remark;

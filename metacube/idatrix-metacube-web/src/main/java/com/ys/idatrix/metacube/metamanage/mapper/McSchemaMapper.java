@@ -38,8 +38,12 @@ public interface McSchemaMapper {
      * 根据模式id列表查找模式
      *
      * @param ids 数据库id列表
+     * @param renterId 租户id
+     * @param ip 服务器ip
      */
-    List<McSchemaPO> listSchemaBySchemaIds(@Param("ids") List<Long> ids);
+    List<McSchemaPO> listSchemaBySchemaIds(@Param("ids") List<Long> ids,
+            @Param("renterId") Long renterId, @Param("ip") String ip,
+            @Param("databaseTypes") List<Integer> databaseTypes);
 
     /**
      * 获取模式列表
@@ -50,5 +54,15 @@ public interface McSchemaMapper {
      */
     List<McSchemaPO> listSchema(@Param("orgCode") String orgCode,
             @Param("renterId") Long renterId,
-            @Param("dbTypeList") List<Integer> dbTypeList);
+            @Param("dbTypeList") List<Integer> dbTypeList,
+            @Param("ip") String ip);
+
+    /**
+     * 返回目录列表
+     *
+     * @param pathList 目录列表
+     * @param renterId 租户id
+     */
+    List<McSchemaPO> listDirectory(@Param("pathList") List<String> pathList,
+            @Param("renterId") Long renterId);
 }

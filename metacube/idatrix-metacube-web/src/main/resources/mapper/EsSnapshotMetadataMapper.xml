@@ -13,7 +13,6 @@
         <result column="theme_id" property="themeId" jdbcType="BIGINT"/>
         <result column="tags" property="tags" jdbcType="VARCHAR"/>
         <result column="remark" property="remark" jdbcType="VARCHAR"/>
-        <result column="dept_codes" property="deptCodes" jdbcType="VARCHAR"/>
         <result column="status" property="status" jdbcType="INTEGER"/>
         <result column="is_open" property="isOpen" jdbcType="BIT"/>
         <result column="schema_id" property="schemaId" jdbcType="BIGINT"/>
@@ -28,8 +27,7 @@
 
     <sql id="Base_Column_List">
         id, version, details, meta_id, name, identification, public_status, theme_id, tags,
-        remark, dept_codes, status, is_open, schema_id,renter_id,
-        creator, create_time, modifier, modify_time,max_version, max_location
+        remark, status, is_open, schema_id,renter_id,creator, create_time, modifier, modify_time,max_version, max_location
     </sql>
 
     <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
@@ -56,7 +54,6 @@
         theme_id,
         tags,
         remark,
-        dept_codes,
         status,
         is_open,
         schema_id,
@@ -79,7 +76,6 @@
         #{themeId,jdbcType=BIGINT},
         #{tags,jdbcType=VARCHAR},
         #{remark,jdbcType=VARCHAR},
-        #{deptCodes,jdbcType=VARCHAR},
         #{status,jdbcType=INTEGER},
         #{isOpen,jdbcType=BIT},
         #{schemaId,jdbcType=BIGINT},
@@ -125,9 +121,6 @@
             </if>
             <if test="remark != null">
                 remark,
-            </if>
-            <if test="deptCodes != null">
-                dept_codes,
             </if>
             <if test="status != null">
                 status,
@@ -191,9 +184,6 @@
             <if test="remark != null">
                 #{remark,jdbcType=VARCHAR},
             </if>
-            <if test="deptCodes != null">
-                #{deptCodes,jdbcType=VARCHAR},
-            </if>
             <if test="status != null">
                 #{status,jdbcType=INTEGER},
             </if>
@@ -239,7 +229,6 @@
         theme_id = #{themeId,jdbcType=BIGINT},
         tags = #{tags,jdbcType=VARCHAR},
         remark = #{remark,jdbcType=VARCHAR},
-        dept_codes = #{deptCodes,jdbcType=VARCHAR},
         status = #{status,jdbcType=INTEGER},
         is_open = #{isOpen, jdbcType=BIT},
         schema_id = #{schemaId,jdbcType=BIGINT},
@@ -254,7 +243,8 @@
     </update>
 
 
-    <update id="updateByPrimaryKeySelective" parameterType="com.ys.idatrix.metacube.metamanage.domain.EsSnapshotMetadata">
+    <update id="updateByPrimaryKeySelective"
+            parameterType="com.ys.idatrix.metacube.metamanage.domain.EsSnapshotMetadata">
         update mc_snapshot_metadata_es
         <set>
             <if test="version != null">
@@ -283,9 +273,6 @@
             </if>
             <if test="remark != null">
                 remark = #{remark,jdbcType=VARCHAR},
-            </if>
-            <if test="deptCodes != null">
-                dept_codes = #{deptCodes,jdbcType=VARCHAR},
             </if>
             <if test="status != null">
                 status = #{status,jdbcType=INTEGER},
@@ -324,18 +311,18 @@
         where id = #{id,jdbcType=BIGINT}
     </update>
 
-    <select id="getSnapshotMetadataByMetaId" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    <select id="getSnapshotMetadataByMetaId" resultMap="BaseResultMap" parameterType="java.lang.Long">
         select
-        <include refid="Base_Column_List" />
+        <include refid="Base_Column_List"/>
         from mc_snapshot_metadata_es
         where meta_id = #{metaId,jdbcType=BIGINT}
         ORDER BY version
         DESC
     </select>
 
-    <select id="selectByMetaIdAndVersion" resultMap="BaseResultMap" >
+    <select id="selectByMetaIdAndVersion" resultMap="BaseResultMap">
         SELECT
-        <include refid="Base_Column_List" />
+        <include refid="Base_Column_List"/>
         FROM
         mc_snapshot_metadata_es
         WHERE meta_id = #{metadataId, jdbcType=BIGINT}

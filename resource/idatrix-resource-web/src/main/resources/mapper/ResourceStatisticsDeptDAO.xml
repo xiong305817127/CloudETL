@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.idatrix.resource.portal.dao.ResourceStatisticsDeptDAO">
+    <resultMap id="BaseResultMap" type="com.idatrix.resource.portal.po.ResourceStatisticsDeptPO">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="resource_id" jdbcType="BIGINT" property="resourceId" />
+        <result column="dept_id" jdbcType="BIGINT" property="deptId" />
+        <result column="dept_name" jdbcType="VARCHAR" property="deptName" />
+        <result column="resource_type" jdbcType="VARCHAR" property="resourceType" />
+        <result column="db_count" jdbcType="BIGINT" property="dbCount" />
+        <result column="file_count" jdbcType="BIGINT" property="fileCount" />
+        <result column="interface_count" jdbcType="BIGINT" property="interfaceCount" />
+        <result column="rent_id" jdbcType="BIGINT" property="rentId" />
+        <result column="creator" jdbcType="VARCHAR" property="creator" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="updater" jdbcType="VARCHAR" property="updater" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    </resultMap>
+    <sql id="Base_Column_List">
+        id, resource_id, dept_id, dept_name, resource_type, db_count, file_count, interface_count,
+        rent_id, creator, create_time, updater, update_time
+    </sql>
+
+
+
+    <select id="getStatisticsDept" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_statistics_dept
+        where rent_id=#{rentId} and resource_id=#{resourceId} and dept_id=#{deptId}
+    </select>
+
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_statistics_dept
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from rc_statistics_dept
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.idatrix.resource.portal.po.ResourceStatisticsDeptPO" useGeneratedKeys="true">
+        insert into rc_statistics_dept (resource_id, dept_id, dept_name,
+        resource_type, db_count, file_count,
+        interface_count, rent_id, creator,
+        create_time, updater, update_time
+        )
+        values (#{resourceId,jdbcType=BIGINT}, #{deptId,jdbcType=BIGINT}, #{deptName,jdbcType=VARCHAR},
+        #{resourceType,jdbcType=VARCHAR}, #{dbCount,jdbcType=BIGINT}, #{fileCount,jdbcType=BIGINT},
+        #{interfaceCount,jdbcType=BIGINT}, #{rentId,jdbcType=BIGINT}, #{creator,jdbcType=VARCHAR},
+        #{createTime,jdbcType=TIMESTAMP}, #{updater,jdbcType=VARCHAR}, #{updateTime,jdbcType=TIMESTAMP}
+        )
+    </insert>
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.idatrix.resource.portal.po.ResourceStatisticsDeptPO" useGeneratedKeys="true">
+        insert into rc_statistics_dept
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="resourceId != null">
+                resource_id,
+            </if>
+            <if test="deptId != null">
+                dept_id,
+            </if>
+            <if test="deptName != null">
+                dept_name,
+            </if>
+            <if test="resourceType != null">
+                resource_type,
+            </if>
+            <if test="dbCount != null">
+                db_count,
+            </if>
+            <if test="fileCount != null">
+                file_count,
+            </if>
+            <if test="interfaceCount != null">
+                interface_count,
+            </if>
+            <if test="rentId != null">
+                rent_id,
+            </if>
+            <if test="creator != null">
+                creator,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updater != null">
+                updater,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="resourceId != null">
+                #{resourceId,jdbcType=BIGINT},
+            </if>
+            <if test="deptId != null">
+                #{deptId,jdbcType=BIGINT},
+            </if>
+            <if test="deptName != null">
+                #{deptName,jdbcType=VARCHAR},
+            </if>
+            <if test="resourceType != null">
+                #{resourceType,jdbcType=VARCHAR},
+            </if>
+            <if test="dbCount != null">
+                #{dbCount,jdbcType=BIGINT},
+            </if>
+            <if test="fileCount != null">
+                #{fileCount,jdbcType=BIGINT},
+            </if>
+            <if test="interfaceCount != null">
+                #{interfaceCount,jdbcType=BIGINT},
+            </if>
+            <if test="rentId != null">
+                #{rentId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updater != null">
+                #{updater,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.idatrix.resource.portal.po.ResourceStatisticsDeptPO">
+        update rc_statistics_dept
+        <set>
+            <if test="resourceId != null">
+                resource_id = #{resourceId,jdbcType=BIGINT},
+            </if>
+            <if test="deptId != null">
+                dept_id = #{deptId,jdbcType=BIGINT},
+            </if>
+            <if test="deptName != null">
+                dept_name = #{deptName,jdbcType=VARCHAR},
+            </if>
+            <if test="resourceType != null">
+                resource_type = #{resourceType,jdbcType=VARCHAR},
+            </if>
+            <if test="dbCount != null">
+                db_count = #{dbCount,jdbcType=BIGINT},
+            </if>
+            <if test="fileCount != null">
+                file_count = #{fileCount,jdbcType=BIGINT},
+            </if>
+            <if test="interfaceCount != null">
+                interface_count = #{interfaceCount,jdbcType=BIGINT},
+            </if>
+            <if test="rentId != null">
+                rent_id = #{rentId,jdbcType=BIGINT},
+            </if>
+            <if test="creator != null">
+                creator = #{creator,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updater != null">
+                updater = #{updater,jdbcType=VARCHAR},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.idatrix.resource.portal.po.ResourceStatisticsDeptPO">
+        update rc_statistics_dept
+        set resource_id = #{resourceId,jdbcType=BIGINT},
+        dept_id = #{deptId,jdbcType=BIGINT},
+        dept_name = #{deptName,jdbcType=VARCHAR},
+        resource_type = #{resourceType,jdbcType=VARCHAR},
+        db_count = #{dbCount,jdbcType=BIGINT},
+        file_count = #{fileCount,jdbcType=BIGINT},
+        interface_count = #{interfaceCount,jdbcType=BIGINT},
+        rent_id = #{rentId,jdbcType=BIGINT},
+        creator = #{creator,jdbcType=VARCHAR},
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+        updater = #{updater,jdbcType=VARCHAR},
+        update_time = #{updateTime,jdbcType=TIMESTAMP}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+</mapper>

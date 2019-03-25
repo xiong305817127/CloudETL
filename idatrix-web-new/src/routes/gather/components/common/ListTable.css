@@ -1,0 +1,14 @@
+#ListTable{
+  margin-top: 15px;
+}
+#ListTable :global(.ant-pagination ){
+    margin-top: 20px;
+   text-align: center;
+}
+#ListTable :global(.ant-table-thead) > :global(tr) > :global(th){
+  background: #EDF3F3;
+}
+
+#ListTable :global(.ant-table-tbody) > :global(.ant-table-row):nth-child(even){
+  background: #FAFAFA;
+}

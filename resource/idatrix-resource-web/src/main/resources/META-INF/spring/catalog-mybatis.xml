@@ -39,7 +39,8 @@
 		<property name="basePackage" value="com.idatrix.resource.catalog.dao,
 		com.idatrix.resource.basedata.dao,com.idatrix.resource.subscribe.dao,com.idatrix.resource.servicelog.dao,
 		com.idatrix.resource.datareport.dao,com.idatrix.resource.terminalmanage.dao,
-		com.idatrix.resource.taskmanage.dao,com.idatrix.resource.exchange.dao" />
+		com.idatrix.resource.taskmanage.dao,com.idatrix.resource.exchange.dao,
+        com.idatrix.resource.portal.dao, com.idatrix.resource.report.dao" />
 	</bean>
 
 	<!-- 配置事务管理器bean -->

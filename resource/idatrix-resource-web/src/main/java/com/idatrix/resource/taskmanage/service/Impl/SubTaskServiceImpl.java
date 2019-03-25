@@ -11,6 +11,7 @@ import com.idatrix.resource.taskmanage.po.SubTaskExecPO;
 import com.idatrix.resource.taskmanage.po.SubTaskOverviewPO;
 import com.idatrix.resource.taskmanage.service.ISubTaskService;
 import com.idatrix.resource.taskmanage.vo.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,21 +57,21 @@ public class SubTaskServiceImpl implements ISubTaskService {
     public List<SubTaskHistoryVO> getHistory(String user, String taskId) throws Exception{
 
         List<SubTaskExecPO> taskList = subTaskExecDAO.getExecInfoByTaskId(taskId);
-        if(taskList==null || taskList.size()==0){
+        if(CollectionUtils.isEmpty(taskList)){
             return null;
         }
         return transferTaskExecPoTOHistory(taskList);
     }
 
     @Override
-    public TaskStatisticsVO getTaskStatistics(Long num) {
+    public TaskStatisticsVO getTaskStatistics(Long rentId, Long num) {
 
         TaskStatisticsVO statisVO = new TaskStatisticsVO();
         //作业总数
-        Long allCount = subTaskDAO.getTaskCount();
+        Long allCount = subTaskDAO.getTaskCount(rentId);
         statisVO.setCount(allCount);
         //最近几个月数字
-        List<DescribeInfoVO> infoList = subTaskDAO.getTaskInfoByMonth(num);
+        List<DescribeInfoVO> infoList = subTaskDAO.getTaskInfoByMonth(rentId, num);
 
         List<DescribeInfoVO> finalInfoList = new ArrayList<DescribeInfoVO>();
         List<String> monthList = CommonUtils.getRecentMonthStr(num.intValue());
@@ -100,14 +101,15 @@ public class SubTaskServiceImpl implements ISubTaskService {
     }
 
     @Override
-    public RunnningTaskVO getRunningTask(Long num) {
+    public RunnningTaskVO getRunningTask(Long rentId, Long num) {
 
         Map<String, String> conditionMap = new HashMap<String, String>();
         conditionMap.put("status", "IMPORTING");
+        conditionMap.put("rentId", rentId.toString());
         List<SubTaskOverviewPO> overviewList = subTaskDAO.queryOverview(conditionMap);
         RunnningTaskVO taskVO = new RunnningTaskVO();
 
-        if(overviewList==null || overviewList.size()==0){
+        if(CollectionUtils.isEmpty(overviewList)){
             taskVO.setCount(0L);
             taskVO.setExchangTaskInfo(null);
         }else{
@@ -134,7 +136,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     private List<SubTaskHistoryVO> transferTaskExecPoTOHistory(List<SubTaskExecPO> poList){
         List<SubTaskHistoryVO> historyList = new ArrayList<SubTaskHistoryVO>();
-        if(poList==null || poList.size()==0){
+        if(CollectionUtils.isEmpty(poList)){
             return historyList;
         }
 
@@ -163,7 +165,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     private List<SubTaskOverviewVO> transferUploadTaskOverviewPoToVO(List<SubTaskOverviewPO> poList){
         List<SubTaskOverviewVO> uploadVOList= new ArrayList<SubTaskOverviewVO>();
-        if(poList==null){
+        if(CollectionUtils.isEmpty(poList)){
             return uploadVOList;
         }
 

@@ -99,7 +99,7 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Override
     public void wrapMetadataBaseVO(MetadataBaseVO metadataBaseVO) {
-        //模式名称
+        // 模式名称
         if (null != metadataBaseVO.getSchemaId()) {
             McSchemaPO mcSchemaPO = mcSchemaMapper.findById(metadataBaseVO.getSchemaId());
             if (null == mcSchemaPO) {
@@ -116,7 +116,7 @@ public class MetadataServiceImpl implements MetadataService {
             }
         }
 
-        //主题
+        // 主题
         if (null != metadataBaseVO.getThemeId()) {
             Theme theme = themeMapper.selectByPrimaryKey(metadataBaseVO.getThemeId());
             if (null != theme) {
@@ -125,7 +125,7 @@ public class MetadataServiceImpl implements MetadataService {
             }
         }
 
-        //组织
+        // 组织
         if (null != metadataBaseVO.getDeptCodes()) {
             String deptCode = metadataBaseVO.getDeptCodes();
             if (StringUtils.isNotBlank(deptCode)) {

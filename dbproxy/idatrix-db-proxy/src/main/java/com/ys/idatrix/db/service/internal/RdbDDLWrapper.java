@@ -995,7 +995,7 @@ public abstract class RdbDDLWrapper implements IRdbDDL {
 
 
     @Override
-    public List<String> getDropDatabaseCommands(String dbName) {
+    public List<String> getDropDatabaseCommands(RdbDropDatabase database) {
         return null;
     }
 

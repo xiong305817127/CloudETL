@@ -10,13 +10,13 @@ import java.util.Map;
  * 源服务相关增删改查功能
  */
 public interface ISourceServiceService {
-	String saveOrUpdateSourceService(String user, SourceServiceVO sourceServiceVO);
+	String saveOrUpdateSourceService(Long rentId, String user, SourceServiceVO sourceServiceVO);
 
 	SourceServiceVO getSourceServiceById(Long id);
 
 	void deleteSourceServiceByIds(List<Long> ids);
 
-	List<SourceServiceVO> getAllSourceService();
+	List<SourceServiceVO> getAllSourceService(Long rentId);
 
 	ResultPager<SourceServiceVO> getSourceServicesByCondition(Map<String, String> conditionMap,
 																	 Integer pageNum, Integer pageSize);

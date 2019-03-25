@@ -16,6 +16,9 @@ public class MetaFieldDTO implements Serializable {
 
     private static final long serialVersionUID = -1956562569865983681L;
 
+    // 列id
+    private Long id;
+
     // 列名
     private String columnName;
 

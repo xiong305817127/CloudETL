@@ -62,6 +62,9 @@ public interface OracleTableService {
     // 新增表数据 ，并生效
     void add(OracleTableVO oracleTable);
     
+    // 新增直采数据库
+    void addMiningTable(OracleTableVO oracleTable );
+    
     // 新增表数据,只插入数据库不生成表
 	 void addTable(OracleTableVO oracleTable) ;
 	 

@@ -9,6 +9,8 @@ import com.ys.idatrix.metacube.api.beans.ActionTypeEnum;
 import com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum;
 import com.ys.idatrix.metacube.api.beans.ModuleTypeEnum;
 import com.ys.idatrix.metacube.api.beans.PageResultBean;
+import com.ys.idatrix.metacube.authorize.service.AuthorityService;
+import com.ys.idatrix.metacube.authorize.service.ResourceAuthService;
 import com.ys.idatrix.metacube.common.enums.AuthorityApprovalStatus;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
 import com.ys.idatrix.metacube.common.utils.UserUtils;
@@ -22,6 +24,7 @@ import com.ys.idatrix.metacube.metamanage.service.*;
 import com.ys.idatrix.metacube.metamanage.vo.request.ApprovalProcessSearchVo;
 import com.ys.idatrix.metacube.metamanage.vo.request.ApprovalProcessVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.ResourceAuthVO;
+import com.ys.idatrix.metacube.sysmanage.service.SystemSettingsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -83,7 +86,7 @@ public class AuthorityServiceImpl implements AuthorityService {
     public List<ResourceAuth> getAuthorityListByMetadataId(Long metadataId, Integer resourceType) {
         if (!resourceType.equals(DatabaseTypeEnum.ELASTICSEARCH.getCode())) {
             Metadata metadata = metadataService.findById(metadataId);
-            if (metadata.getResourceType().equals(2)) {
+            if (metadata.getResourceType() != null && metadata.getResourceType().equals(2)) {
                 // 当前元数据为视图，则返回读的权限列表
                 List<ResourceAuth> list = resourceAuthMapper.findByAuthType(1);
                 return list;
@@ -103,9 +106,9 @@ public class AuthorityServiceImpl implements AuthorityService {
          * 2. 与当前用户相同“所属组织”的元数据，无法申请
          * 3. 如果当前用户“所属组织”已经申请或申请已经通过，无法申请
          */
-        if (settingsService.isDataCentreAdmin()) {
+        /*if (settingsService.isDataCentreAdmin()) {
             return true;
-        }
+        }*/
 
         // 获取当前用户所属部门
         Organization ascriptionDept = getAscriptionOrganization(UserUtils.getUserName());

@@ -1,8 +1,11 @@
 package com.idatrix.resource.taskmanage.vo;
 
+import lombok.Data;
+
 /**
  * Created by Administrator on 2018/8/11.
  */
+@Data
 public class SubTaskHistoryVO {
 
     /*对应 sub id*/
@@ -26,59 +29,4 @@ public class SubTaskHistoryVO {
     /*数据量*/
     private Long dataCount;
 
-    public String getEtlSubscribeId() {
-        return etlSubscribeId;
-    }
-
-    public void setEtlSubscribeId(String etlSubscribeId) {
-        this.etlSubscribeId = etlSubscribeId;
-    }
-
-    public String getEtlRunningId() {
-        return etlRunningId;
-    }
-
-    public void setEtlRunningId(String etlRunningId) {
-        this.etlRunningId = etlRunningId;
-    }
-
-    public String getTaskId() {
-        return taskId;
-    }
-
-    public void setTaskId(String taskId) {
-        this.taskId = taskId;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
-    }
-
-    public String getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
-    }
-
-    public Long getDataCount() {
-        return dataCount;
-    }
-
-    public void setDataCount(Long dataCount) {
-        this.dataCount = dataCount;
-    }
 }

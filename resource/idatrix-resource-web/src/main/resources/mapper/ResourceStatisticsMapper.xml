@@ -21,13 +21,12 @@
         modifier, modify_time
     </sql>
 
-    <select id="getLatest" resultMap="BaseResultMap"
-            parameterType="java.lang.Long">
+    <select id="getLatestByRentId" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List" />
         from rc_resource_statistics
         where id in
-        (select id from rc_resource where status="pub_success")
+        (select id from rc_resource where status="pub_success" and rent_id=#{rentId})
         order by data_update_time DESC
         limit #{count};
     </select>

@@ -2,6 +2,8 @@ package com.idatrix.unisecurity.common.dao;
 
 import com.idatrix.unisecurity.common.domain.LoginCount;
 import com.idatrix.unisecurity.user.vo.DeptUserLoginCountVO;
+import com.idatrix.unisecurity.user.vo.LoginDetailsInfoVO;
+import com.idatrix.unisecurity.user.vo.LoginSearchVO;
 import com.idatrix.unisecurity.user.vo.UserLoginCountVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -40,4 +42,7 @@ public interface LoginCountMapper {
 
     // 登录用户数总排行 TOP 10
     List<DeptUserLoginCountVO> findSumLoginUserCountRankingList(@Param("renterId") Long renterId);
+
+    // 查询用户登陆详情
+    List<LoginDetailsInfoVO> searchLoginDetailsInfo(LoginSearchVO search);
 }

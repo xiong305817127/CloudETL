@@ -33,7 +33,7 @@ public class AmbariPlatformServiceImpl implements AmbariPlatformService {
         String hbase = AmbariClusterInfoBeanUtils.getHBASE(bean);
         String hive = AmbariClusterInfoBeanUtils.getHIVE(bean);
         String es = AmbariClusterInfoBeanUtils.getELASTICSEARCH(bean);
-        String cloudETL = AmbariClusterInfoBeanUtils.getELASTICSEARCH(bean);
+        String cloudETL = AmbariClusterInfoBeanUtils.getCLOUDETL(bean);
         dto.setCloudETL(cloudETL).setHdfs(hdfs).setHbase(hbase).setHive(hive).setElasticsearch(es);
         return ResultBean.ok(dto);
     }

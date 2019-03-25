@@ -7,6 +7,7 @@ import com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum;
 import com.ys.idatrix.metacube.api.beans.ResultBean;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
 import com.ys.idatrix.metacube.common.utils.UserUtils;
+import com.ys.idatrix.metacube.common.utils.ValidateUtil;
 import com.ys.idatrix.metacube.metamanage.domain.McDatabasePO;
 import com.ys.idatrix.metacube.metamanage.service.McDatabaseService;
 import com.ys.idatrix.metacube.metamanage.vo.request.DatabaseAddOrUpdateVO;
@@ -47,10 +48,6 @@ public class McDatabaseController {
     @Autowired
     private McDatabaseService databaseService;
 
-    @Autowired
-    private RdbService rdbService;
-
-
     @GetMapping(value = "exists")
     @ApiOperation(value = "检查数据库是否已存在")
     @ApiImplicitParams({
@@ -58,6 +55,7 @@ public class McDatabaseController {
             @ApiImplicitParam(name = "type", value = "数据库类型 1 MySQL 2 Oracle 3 DM 4 PostgreSQL 5 Hive 6 HBase 7 HDFS 8 Elasticsearch", required = true),
     })
     public ResultBean<Boolean> existsByIpAndType(String ip, Integer type) {
+        ValidateUtil.checkIp(ip);
         checkDatabaseType(type);
         return ResultBean.ok(databaseService.exists(ip, type, UserUtils.getRenterId()));
     }
@@ -118,7 +116,7 @@ public class McDatabaseController {
      */
     @ApiOperation(value = "连接测试")
     @GetMapping("connection/test")
-    public ResultBean<Boolean> testDBLink(TestDatabaseConnectionVO connectionVO) {
+    public ResultBean<Boolean> testDBLink(@Validated TestDatabaseConnectionVO connectionVO) {
         RdbLinkDto dto = new RdbLinkDto(connectionVO.getUsername(),
                 connectionVO.getPassword(),
                 "MYSQL",
@@ -126,7 +124,7 @@ public class McDatabaseController {
                 connectionVO.getPort(),
                 connectionVO.getDbName());
 
-        RespResult<Boolean> result = rdbService.testDBLink(dto);
+        RespResult<Boolean> result = databaseService.testDbLink(dto);
         return result.isSuccess() ? ResultBean.ok(Boolean.TRUE) :
                 ResultBean.ok(result.getMsg(), Boolean.FALSE);
     }

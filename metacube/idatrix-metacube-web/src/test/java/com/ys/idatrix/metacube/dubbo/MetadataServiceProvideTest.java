@@ -1,13 +1,16 @@
 package com.ys.idatrix.metacube.dubbo;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.ys.idatrix.metacube.api.beans.*;
 import com.ys.idatrix.metacube.api.service.MetadataServiceProvide;
+import com.ys.idatrix.metacube.common.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
@@ -17,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RunWith(SpringRunner.class)
-//@SpringBootTest
+@SpringBootTest
 public class MetadataServiceProvideTest {
 
     @Reference //(url = "10.0.0.116:20779")
@@ -25,8 +28,8 @@ public class MetadataServiceProvideTest {
 
     @Test
     public void testFindHDFSId() {
-//        MetadataDTO metadata = metadataServiceProvide.findHDFSId("/wzl/test/tmp");
-//        log.info("查询到文件信息: {}", metadata);
+        ResultBean<MetadataDTO> metadata = metadataServiceProvide.findHDFSId("/new88/hdfs1111/asdfa/bbabab");
+        log.info("查询到文件信息: {}", metadata);
     }
 
     @Test
@@ -104,6 +107,57 @@ public class MetadataServiceProvideTest {
         log.info("路径前缀 {}",prefix);
 
     }
+
+    @Test
+    public void findTableListBySchemaId() {
+        ResultBean<List<MetadataDTO>> result =
+                metadataServiceProvide.findTableListBySchemaId(33l);
+        System.out.println(JsonUtils.toJson(result));
+    }
+
+    @Test
+    public void findTableId() {
+        ResultBean<MetadataDTO> table =
+                metadataServiceProvide.findTableId(445l, "10.0.0.85", 1, null, "test_mysql_create1", "table_2");
+        System.out.println(JsonUtils.toJson(table));
+    }
+
+    @Test
+    public void findColumnListByTable() {
+        ResultBean<List<MetaFieldDTO>> columnList =
+                metadataServiceProvide.findColumnListByTable(57l);
+        System.out.println(JsonUtils.toJson(columnList));
+    }
+
+    @Test
+    public void findViewListBySchemaId() {
+        ResultBean<List<MetadataDTO>> viewList = metadataServiceProvide.findViewListBySchemaId(33l);
+        System.out.println(JsonUtils.toJson(viewList));
+    }
+
+    @Test
+    public void findViewId() {
+        ResultBean<MetadataDTO> view = metadataServiceProvide.findViewId(445l, "10.0.0.85", 1, null, "test_mysql_create1", "view_cs1");
+        System.out.println(JsonUtils.toJson(view));
+    }
+
+    @Test
+    public void findTableOrViewBySchemaId() {
+        Long schemaId = 59l;
+        String username = "new88";
+        ModuleTypeEnum module = ModuleTypeEnum.ETL;
+        ActionTypeEnum actionType = ActionTypeEnum.READ;
+        ResultBean<TableViewDTO> result = metadataServiceProvide.findTableOrViewBySchemaId(schemaId, username, module, actionType);
+        System.out.println(JsonUtils.toJson(result));
+    }
+
+    @Test
+    public void findColumnListByTableIdOrViewId() {
+        ResultBean<List<MetaFieldDTO>> columnList = metadataServiceProvide.findColumnListByTableIdOrViewId(57l);
+        System.out.println(JsonUtils.toJson(columnList));
+    }
+
+
 
 
 }

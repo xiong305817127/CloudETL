@@ -23,7 +23,7 @@ public class ServerSearchVO extends SearchVO {
     private List<String> orgList;
 
     @JsonIgnore
-    @ApiModelProperty(value = "服务器名称", hidden = true)
+    @ApiModelProperty(value = "服务器名称")
     private String name;
 
     @JsonIgnore

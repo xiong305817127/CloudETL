@@ -31,6 +31,11 @@ public class ServiceLogPO {
     /*是否成功：0失败，1成功*/
     private Integer isSuccess;
 
+    /**
+     * 服务接口返回数据量
+     */
+    private Integer num;
+
     private String creator;
 
     private Date createTime;
@@ -38,6 +43,8 @@ public class ServiceLogPO {
     private String modifier;
 
     private Date modifyTime;
+
+    private Long renterId;
 
     public Long getId() {
         return id;
@@ -143,6 +150,22 @@ public class ServiceLogPO {
         this.modifyTime = modifyTime;
     }
 
+    public Integer getNum() {
+        return num;
+    }
+
+    public void setNum(Integer num) {
+        this.num = num;
+    }
+
+    public Long getRenterId() {
+        return renterId;
+    }
+
+    public void setRenterId(Long renterId) {
+        this.renterId = renterId;
+    }
+
     @Override
     public String toString() {
         return "ServiceLogPO{" +
@@ -150,14 +173,17 @@ public class ServiceLogPO {
                 ", serviceName='" + serviceName + '\'' +
                 ", serviceType='" + serviceType + '\'' +
                 ", serviceCode='" + serviceCode + '\'' +
+                ", callerDeptId=" + callerDeptId +
                 ", callerDeptCode='" + callerDeptCode + '\'' +
-                ", callerDeptName=" + callerDeptName +
+                ", callerDeptName='" + callerDeptName + '\'' +
                 ", execTime=" + execTime +
                 ", isSuccess=" + isSuccess +
+                ", num=" + num +
                 ", creator='" + creator + '\'' +
                 ", createTime=" + createTime +
                 ", modifier='" + modifier + '\'' +
                 ", modifyTime=" + modifyTime +
+                ", renterId=" + renterId +
                 '}';
     }
 }

@@ -1,83 +1,102 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.idatrix.resource.basedata.dao.ServiceDAO">
     <resultMap id="BaseResultMap" type="com.idatrix.resource.basedata.po.ServicePO">
-        <id column="id" property="id" jdbcType="BIGINT" />
-        <result column="provider_id" property="providerId" jdbcType="VARCHAR" />
-        <result column="provider_name" property="providerName" jdbcType="VARCHAR" />
-        <result column="service_name" property="serviceName" jdbcType="VARCHAR" />
-        <result column="service_type" property="serviceType" jdbcType="VARCHAR" />
-        <result column="service_code" property="serviceCode" jdbcType="VARCHAR" />
-        <result column="remark" property="remark" jdbcType="VARCHAR" />
-        <result column="url" property="url" jdbcType="VARCHAR" />
-        <result column="wsdl" property="wsdl" jdbcType="BLOB"  typeHandler="org.apache.ibatis.type.BlobTypeHandler"/>
-        <result column="status" property="status" jdbcType="VARCHAR" />
-        <result column="creator" property="creator" jdbcType="VARCHAR" />
-        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
-        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
-        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="provider_id" jdbcType="VARCHAR" property="providerId"/>
+        <result column="provider_name" jdbcType="VARCHAR" property="providerName"/>
+        <result column="service_name" jdbcType="VARCHAR" property="serviceName"/>
+        <result column="service_type" jdbcType="VARCHAR" property="serviceType"/>
+        <result column="service_code" jdbcType="VARCHAR" property="serviceCode"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
+        <result column="url" jdbcType="VARCHAR" property="url"/>
+        <result column="wsdl" jdbcType="BLOB" property="wsdl"
+                typeHandler="org.apache.ibatis.type.BlobTypeHandler"/>
+        <result column="rent_id" jdbcType="BIGINT" property="rentId"/>
+        <result column="creator" jdbcType="VARCHAR" property="creator"/>
+        <result column="create_time" javaType="java.util.Date" jdbcType="TIMESTAMP"
+                property="createTime"/>
+        <result column="modifier" jdbcType="VARCHAR" property="modifier"/>
+        <result column="modify_time" javaType="java.util.Date" jdbcType="TIMESTAMP"
+                property="modifyTime"/>
+        <result column="technical_support_unit" property="technicalSupportUnit"/>
+        <result column="technical_support_contact" property="technicalSupportContact"/>
+        <result column="technical_support_contact_number" property="technicalSupportContactNumber"/>
+        <result column="request_example" property="requestExample"/>
+        <result column="successful_return_example" property="successfulReturnExample"/>
+        <result column="failure_return_example" property="failureReturnExample"/>
+        <result column="is_deleted" property="isDeleted"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, provider_id, provider_name, service_name, service_type, service_code, remark, url, wsdl, status, creator,
-        create_time, modifier, modify_time
+        id, provider_id, provider_name, service_name, service_type, service_code, remark, url, wsdl,
+        rent_id, creator, create_time, modifier, modify_time, technical_support_unit,
+        technical_support_contact, technical_support_contact_number, request_example,
+        successful_return_example, failure_return_example, is_deleted
     </sql>
 
     <select id="getAllService" resultMap="BaseResultMap">
         select
-        <include refid="Base_Column_List" />
-        from rc_service WHERE status = 'Y'
+        <include refid="Base_Column_List"/>
+        from rc_service WHERE is_deleted = 0
+        AND rent_id=#{rentId}
     </select>
 
-    <select id="getServiceById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    <select id="getServiceById" parameterType="java.lang.Long" resultMap="BaseResultMap">
         select
-        <include refid="Base_Column_List" />
+        <include refid="Base_Column_List"/>
         from rc_service
-        where id = #{id} and status = 'Y'
+        where id = #{id} and is_deleted = 0
     </select>
 
-    <select id="getServiceByServiceCode" resultMap="BaseResultMap" parameterType="java.lang.String">
+    <select id="getServiceByServiceCode" parameterType="java.lang.String" resultMap="BaseResultMap">
         select
-        <include refid="Base_Column_List" />
+        <include refid="Base_Column_List"/>
         from rc_service
-        where service_code = #{serviceCode} and status = 'Y'
+        where service_code = #{serviceCode} and is_deleted = 0
     </select>
 
-    <select id="getServiceByServiceName" resultMap="BaseResultMap" parameterType="java.lang.String">
+    <select id="getServiceByServiceName" parameterType="java.lang.String" resultMap="BaseResultMap">
         select
-        <include refid="Base_Column_List" />
+        <include refid="Base_Column_List"/>
         from rc_service
-        where service_name = #{serviceName} and status = 'Y'
+        where service_name = #{serviceName} and is_deleted = 0
     </select>
 
     <update id="deleteByIds" parameterType="java.util.List">
         UPDATE rc_service
-        set status = 'N'
+        set is_deleted = 1
         where id in
-        <foreach item="id" collection="list" open="(" close=")" separator=",">
+        <foreach close=")" collection="list" item="id" open="(" separator=",">
             #{id}
         </foreach>
     </update>
 
-    <select id="getOccupiedServicePOList" resultMap="BaseResultMap" parameterType="java.util.List">
+    <select id="getOccupiedServicePOList" parameterType="java.util.List" resultMap="BaseResultMap">
         select
-        <include refid="Base_Column_List" />
+        <include refid="Base_Column_List"/>
         from rc_service s
         where s.id in
-            <foreach item="id" collection="list" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
-        and EXISTS (select * from rc_resource r where r.bind_service_id = s.id and r.status = 'pub_success')
+        <foreach close=")" collection="list" item="id" open="(" separator=",">
+            #{id}
+        </foreach>
+        and EXISTS (select * from rc_resource r where r.bind_service_id = s.id and r.status =
+        'pub_success')
     </select>
 
-    <insert id="insert" parameterType="com.idatrix.resource.basedata.po.ServicePO"
-            useGeneratedKeys="true" keyProperty="id">
+    <insert id="insert" keyProperty="id"
+            parameterType="com.idatrix.resource.basedata.po.ServicePO" useGeneratedKeys="true">
         insert into rc_service (
         provider_id, provider_name, service_name, service_type, service_code, remark,
-        url, wsdl, status, creator, create_time, modifier, modify_time)
+        url, wsdl, rent_id, creator, create_time, modifier, modify_time, technical_support_unit,
+        technical_support_contact, technical_support_contact_number, request_example,
+        successful_return_example, failure_return_example)
         values (#{providerId}, #{providerName}, #{serviceName}, #{serviceType}, #{serviceCode},
         #{remark}, #{url}, #{wsdl,typeHandler=org.apache.ibatis.type.BlobTypeHandler},
-        #{status}, #{creator}, #{createTime}, #{modifier}, #{modifyTime})
+        #{rentId}, #{creator}, #{createTime}, #{modifier}, #{modifyTime}, #{technicalSupportUnit},
+        #{technicalSupportContact}, #{technicalSupportContactNumber}, #{requestExample},
+        #{successfulReturnExample}, #{failureReturnExample})
     </insert>
 
     <update id="updateService" parameterType="com.idatrix.resource.basedata.po.ServicePO">
@@ -91,27 +110,36 @@
         remark = #{remark},
         url = #{url},
         wsdl = #{wsdl,typeHandler=org.apache.ibatis.type.BlobTypeHandler},
-        status = #{status},
+        rent_id=#{rentId},
         modifier = #{modifier},
-        modify_time = #{modifyTime}
+        modify_time = #{modifyTime},
+        technical_support_unit = #{technicalSupportUnit},
+        technical_support_contact = #{technicalSupportContact},
+        technical_support_contact_number = #{technicalSupportContactNumber},
+        request_example = #{requestExample},
+        successful_return_example = #{successfulReturnExample},
+        failure_return_example = #{failureReturnExample}
         where id = #{id}
     </update>
 
-    <select id="getServicesByCondition" resultMap="BaseResultMap" parameterType="hashmap">
+    <select id="getServicesByCondition" parameterType="com.idatrix.resource.basedata.vo.ServiceQueryVO" resultMap="BaseResultMap">
         select
-        <include refid="Base_Column_List" />
+        <include refid="Base_Column_List"/>
         from rc_service
-        where 1=1 and status = 'Y'
-        <if test="serviceName!=null">
+        where 1=1 and is_deleted = 0
+        <if test="serviceName!=null and serviceName!=''">
             and service_name like '%${serviceName}%'
         </if>
-        <if test="serviceCode!=null">
+        <if test="serviceCode!=null and serviceCode!=''">
             and service_code like '%${serviceCode}%'
         </if>
-        <if test="serviceType!=null">
+        <if test="serviceType!=null and serviceType!=''">
             and service_type = #{serviceType}
         </if>
-        <if test="providerName!=null">
+        <if test="rentId!= null">
+            and rent_id = #{rentId}
+        </if>
+        <if test="providerName!=null and providerName!=''">
             and provider_name like '%${providerName}%'
         </if>
         order by create_time desc

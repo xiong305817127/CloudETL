@@ -1,0 +1,31 @@
+.search-group {
+  display: inline-block;
+  /*max-width:600px;*/
+  width: 500px;
+  top: -2px;
+}
+
+.search-input {
+  line-height: 1;
+  border-radius: 5px;
+}
+.search-button {
+  background-color: rgb(234, 239, 243);
+  color: rgb(187, 192, 197);
+  font-size:20px;
+  height:28px;
+}
+
+.search-group:hover :global(input),
+.search-input:focus {
+  outline: none;
+  border-color:rgb(72, 193, 228);
+  box-shadow: none;
+}
+.search-group:hover :global(button),
+.search-input:focus+.search-button {
+  outline: none;
+  border-color:rgb(72, 193, 228);
+  background-color: rgb(72, 193, 228);
+  color: #fff;
+}

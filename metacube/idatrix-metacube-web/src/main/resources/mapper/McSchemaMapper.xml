@@ -26,7 +26,7 @@
 
     <sql id="Base_Column_List">
         id, db_id, service_name, name, name_cn, username, password, org_code, remark, type, status,
-        creator, create_time, modifier, modify_time, renter_id
+        creator, create_time, modifier, modify_time, renter_id, is_deleted
     </sql>
 
     <sql id="Association_Query_Column_List">
@@ -178,7 +178,7 @@
         AND `schema`.is_deleted = 0
     </select>
 
-    <select id="getSchemaPOById" resultMap="BaseResultMap">
+    <select id="getSchemaById" resultMap="BaseResultMap">
         SELECT
         <include refid="Base_Column_List"/>
         FROM
@@ -188,7 +188,7 @@
         AND is_deleted = 0
     </select>
 
-    <!-- 查询服务器列表 -->
+    <!-- 查询模式列表 -->
     <select id="listByPage"
             parameterType="com.ys.idatrix.metacube.metamanage.vo.request.SchemaSearchVO"
             resultMap="BaseResultMap">
@@ -246,15 +246,47 @@
 
     <select id="listSchemaBySchemaIds" resultMap="BaseResultMap">
         SELECT
-        <include refid="Base_Column_List"/>
-        FROM mc_schema
+        ms.id,
+        ms.db_id,
+        ms.service_name,
+        ms. NAME,
+        ms.name_cn,
+        ms.username,
+        ms.PASSWORD,
+        ms.org_code,
+        ms.remark,
+        ms.type,
+        ms. STATUS,
+        ms.creator,
+        ms.create_time,
+        ms.modifier,
+        ms.modify_time,
+        ms.renter_id
+        FROM
+        mc_server s
+        LEFT JOIN mc_database db ON s.id = db.server_id
+        LEFT JOIN mc_schema ms ON db.id = ms.db_id
         <where>
-            is_deleted = 0
-            <if test="dbIds != null and dbIds.size() > 0">
-                AND id IN
+            s.is_deleted = 0
+            AND db.is_deleted = 0
+            AND ms.is_deleted = 0
+            <if test="ids != null and ids.size() > 0">
+                AND ms.id IN
                 <foreach close=")" collection="ids" item="id" open="(" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="databaseTypes != null and databaseTypes.size() > 0">
+                AND db.type IN
+                <foreach close=")" collection="databaseTypes" item="type" open="(" separator=",">
+                    #{type}
+                </foreach>
+            </if>
+            <if test="ip != null and ip != ''">
+                AND s.ip = #{ip}
+            </if>
+            <if test="renterId != null">
+                AND ms.renter_id = #{renterId}
             </if>
         </where>
     </select>
@@ -294,11 +326,16 @@
         SELECT
         <include refid="Association_Query_Column_List"/>
         FROM
-        mc_schema ms
-        INNER JOIN mc_database md ON ms.db_id = md.id
+        mc_server s
+        INNER JOIN mc_database db ON s.id = db.server_id
+        INNER JOIN mc_schema ms ON db.id = ms.db_id
         <where>
             ms.is_deleted = 0
-            AND md.is_deleted = 0
+            AND db.is_deleted = 0
+            AND s.is_deleted = 0
+            <if test="ip != null ">
+                AND s.ip = #{ip}
+            </if>
             <if test="renterId != null ">
                 AND ms.renter_id = #{renterId}
             </if>
@@ -306,9 +343,26 @@
                 AND find_in_set(#{orgCode}, ms.org_code )
             </if>
             <if test="dbTypeList != null and dbTypeList.size() > 0">
-                AND md.type IN
+                AND db.type IN
                 <foreach close=")" collection="dbTypeList" item="dbType" open="(" separator=",">
                     #{dbType}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="listDirectory" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM mc_schema
+        <where>
+            <if test="renterId != null ">
+                AND renter_id = #{renterId}
+            </if>
+            <if test="pathList != null and pathList.size() > 0">
+                AND `name` IN
+                <foreach close=")" collection="pathList" item="path" open="(" separator=",">
+                    #{path}
                 </foreach>
             </if>
         </where>

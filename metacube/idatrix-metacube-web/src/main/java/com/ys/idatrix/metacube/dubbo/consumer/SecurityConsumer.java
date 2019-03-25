@@ -45,6 +45,24 @@ public class SecurityConsumer {
         return userService.findRenterByRenterId(renterId);
     }
 
+
+    /**
+     * 根据用户ID得到用户组织
+     * @param userId
+     * @return
+     */
+    public List<Organization> findOrganizationsByUserId(Long userId){
+        return userService.findOrganizationsByUserId(userId);
+    }
+
+    /**
+     * 查询跨租户的组织机构
+     * @return
+     */
+    public List<Organization> findOrganizations(){
+        return userService.findOrganizations();
+    }
+
     /**
      * 根据租户id查询顶层组织
      *

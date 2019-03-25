@@ -11,40 +11,23 @@ import com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum;
 import com.ys.idatrix.metacube.common.enums.DBEnum;
 import com.ys.idatrix.metacube.common.enums.DataStatusEnum;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
-import com.ys.idatrix.metacube.metamanage.domain.McSchemaPO;
-import com.ys.idatrix.metacube.metamanage.domain.Metadata;
-import com.ys.idatrix.metacube.metamanage.domain.TableChOracle;
-import com.ys.idatrix.metacube.metamanage.domain.TableColumn;
-import com.ys.idatrix.metacube.metamanage.domain.TableFkOracle;
-import com.ys.idatrix.metacube.metamanage.domain.TableIdxOracle;
-import com.ys.idatrix.metacube.metamanage.domain.TablePkOracle;
-import com.ys.idatrix.metacube.metamanage.domain.TableSetOracle;
-import com.ys.idatrix.metacube.metamanage.domain.TableUnOracle;
-import com.ys.idatrix.metacube.metamanage.domain.ViewDetail;
-import com.ys.idatrix.metacube.metamanage.mapper.TableChOracleMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.TableColumnMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.TableFkOracleMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.TableIdxOracleMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.TablePkOracleMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.TableUnOracleMapper;
-import com.ys.idatrix.metacube.metamanage.service.McSchemaService;
-import com.ys.idatrix.metacube.metamanage.service.MetadataService;
-import com.ys.idatrix.metacube.metamanage.service.OracleDDLService;
-import com.ys.idatrix.metacube.metamanage.service.OracleSnapshotService;
-import com.ys.idatrix.metacube.metamanage.service.OracleValidatedService;
+import com.ys.idatrix.metacube.metamanage.domain.*;
+import com.ys.idatrix.metacube.metamanage.mapper.*;
+import com.ys.idatrix.metacube.metamanage.service.*;
 import com.ys.idatrix.metacube.metamanage.vo.request.DBViewVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.OracleTableVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.TableConstraintVO;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName OracleValidatedServiceImp
@@ -111,7 +94,7 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
             .collect(Collectors.toList());
 
     @Override
-    public void validatedTableBaseInfo(OracleTableVO oracleTable, Boolean hasFilter) {
+    public void validatedTableBaseInfo(OracleTableVO oracleTable) {
         if (!oracleTable.getDatabaseType().equals(DatabaseTypeEnum.ORACLE.getCode())) {
             // 当前数据库不为 oracle
             throw new MetaDataException("500", "错误的数据库类型");
@@ -138,61 +121,74 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
             throw new MetaDataException("500", "当前表英文名已经被占用（表已创建或在草稿箱中）");
         }
 
+        // 同模式下表名和视图名不能重复
+        metadata.setResourceType(2); // 当前为视图
+        if (metadataService.findByMetadata(metadata) > 0) {
+            throw new MetaDataException("500", "当前表英文名已经被视图占用（视图已创建或在草稿箱中）");
+        }
+
         // 判断表中文名是否重复
         if (StringUtils.isNotBlank(oracleTable.getIdentification())) {
+            metadata.setResourceType(1); // 当前为表
             metadata.setName(null);
             metadata.setIdentification(oracleTable.getIdentification());
             if (metadataService.findByMetadata(metadata) > 0) {
-                throw new MetaDataException("500", "当前表英文中文名已经被占用（表已创建或在草稿箱中）");
+                throw new MetaDataException("500", "当前表中文名已经被占用（表已创建或在草稿箱中）");
             }
         }
 
         // 如果为直采或草稿，则不需要去实体数据库校验
-        if (oracleTable.getIsGather() || oracleTable.getStatus() == DataStatusEnum.DELETE
-                .getValue()) {
+        if (oracleTable.getIsGather() || oracleTable.getStatus().equals(DataStatusEnum.DRAFT.getValue())) {
             return;
         }
 
-        if (hasFilter) {
+        if (oracleTable.getVersion() > 1) { // 版本号大于1则表示修改
             // 如果为修改，则查询出前一个版本的表基本信息，如果表名没有修改，则不需要去数据库中查询了。
             Metadata snapshotTable = snapshotService
                     .getSnapshotMetadataInfoByMetadataId(oracleTable.getId(),
                             oracleTable.getVersion() - 1);
-            // 如果 snapshotTable 等于null，则可能是草稿做生效动作
-            if (snapshotTable != null && snapshotTable.getName().equals(oracleTable.getName())) {
+            // 如果表名没有修改，则不需要到数据库验证
+            if (snapshotTable.getName().equals(oracleTable.getName())) {
                 return;
             }
         }
 
-        // 判断数据库中表名是否存在
+        // 连接信息
         RdbLinkDto config = oracleDDLService.getConnectionConfig(metadata);
-        RespResult<Boolean> nameExists = oracleService
+
+        // 判断表名是否已被存在的表占用
+        RespResult<Boolean> tableNameExists = oracleService
                 .tableNameExists(oracleTable.getName(), config);
-        log.info("nameExists result:" + JSON.toJSONString(nameExists, true));
-        if (nameExists.isSuccess() && EXISTS_CODE.equals(nameExists.getMsg())) {
+        log.info("tableNameExists result:" + JSON.toJSONString(tableNameExists, true));
+        if (tableNameExists.isSuccess() && EXISTS_CODE.equals(tableNameExists.getMsg())) {
+            throw new MetaDataException("500", "数据库中已存在此表名：" + oracleTable.getName());
+        }
+
+        // 判断表名是否已被存在的视图占用
+        RespResult<Boolean> viewNameExists = oracleService.viewNameExists(oracleTable.getName(), config);
+        log.info("viewNameExists result:" + JSON.toJSONString(viewNameExists, true));
+        if (viewNameExists.isSuccess() && EXISTS_CODE.equals(viewNameExists.getMsg())) {
             throw new MetaDataException("500", "数据库中已存在此表名：" + oracleTable.getName());
         }
     }
 
     @Override
-    public void validatedTableColumn(List<TableColumn> tableColumnList, Boolean hasFilter) {
+    public void validatedTableColumn(List<TableColumn> tableColumnList, Integer versions) {
         /**
          * 考虑情况：
          * 字段名重复
          * 字段数据类型错误
          */
-        if (!hasFilter) {// 互斥条件，新增时字段不能为空，修改时，字段可以为空
+        if (versions == 1) {// 互斥条件，新增时字段不能为空，修改时，字段可以为空
             if (CollectionUtils.isEmpty(tableColumnList)) {
                 throw new MetaDataException("字段不能为空");
             }
         }
-        // 是否为修改，如果是修改的话把需要删除的列剔除掉
-        if (hasFilter) {
-            tableColumnList = tableColumnList.stream().filter(property -> property.getStatus() != 3)
-                    .collect(Collectors.toList());
-        }
-        List<String> columnNameList = new ArrayList<>(); // 字段 name listByPage
+        // 修改的话把需要删除的列剔除掉，不是修改默认为0
+        tableColumnList = tableColumnList.stream().filter(property -> property.getStatus() != 3)
+                .collect(Collectors.toList());
 
+        List<String> columnNameList = new ArrayList<>(); // 字段 name listByPage
         for (TableColumn column : tableColumnList) {
             // 当前表中，字段名不能重复
             if (columnNameList.contains(column.getColumnName())) {
@@ -212,14 +208,13 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
                     throw new MetaDataException("字段错误，主键不能为空");
                 }
             }
-
             columnNameList.add(column.getColumnName());
         }
     }
 
     @Override
     public void validatedTablePrimaryKey(Metadata table, TablePkOracle primaryKey,
-            List<TableColumn> columnList, Boolean hasFilter) {
+            List<TableColumn> columnList) {
         // 当前字段中是否有主键
         List<Long> columnIdList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(columnList)) {
@@ -296,7 +291,7 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
         RdbLinkDto config = oracleDDLService.getConnectionConfig(table);
 
         // 当修改时，需要将前一个版本的数据取出，比对主键名或系列名是否有所修改，如果没有则不需要判断
-        if (hasFilter) { // 修改
+        if (table.getVersion() > 1) { // 修改
             TablePkOracle snapshotPrimaryKey = snapshotService
                     .getSnapshotPrimaryKeyByTableId(table.getId(), table.getVersion() - 1);
             if (!snapshotPrimaryKey.getName().equals(primaryKey.getName())) {// 主键名被修改
@@ -373,31 +368,35 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
 
     @Override
     public void validatedTableIndex(OracleTableVO table, List<TableIdxOracle> indexList,
-            List<TableColumn> columnList, Boolean hasFilter) {
+            List<TableColumn> columnList, Integer versions) {
         List<String> indexNameList = new ArrayList<>(); // 索引名name listByPage
         List<String> indexColumnIdList = new ArrayList<>(); // 索引关联字段 listByPage（关联字段列表不能重复）
 
-        // TODO 索引需要将主键也加进来
+        // 剔除删除的索引
+        indexList = indexList.stream().filter(property -> property.getStatus() != 3)
+                .collect(Collectors.toList());
 
         // 当前表所有的字段，以name为key，新增时用到
         Map<String, TableColumn> columnMap =
                 columnList.stream()
                         .collect(Collectors.toMap((key -> key.getColumnName()), (value -> value)));
 
+        // TODO 索引需要将主键也加进来
+
         // 当前表的所有字段，以id为key，修改时才会用到
         Map<Long, TableColumn> columnIdMap = null;
         // 快照版本的索引（上一个版本的数据）
         Map<Long, TableIdxOracle> snapshotIndexMap = null;
 
-        if (hasFilter) { // 是否为修改,剔除删除的索引，将columnIdMap赋值
-            indexList = indexList.stream().filter(property -> property.getStatus() != 3)
-                    .collect(Collectors.toList());
+        if (versions > 1) { // 是否为修改,
             columnIdMap = columnList.stream()
                     .collect(Collectors.toMap((key -> key.getId()), (value -> value)));
-            List<TableIdxOracle> snapshotIndexList = snapshotService
-                    .getSnapshotIndexListByTableId(table.getId(), table.getVersion() - 1);
-            snapshotIndexMap = snapshotIndexList.stream()
-                    .collect(Collectors.toMap((key -> key.getId()), (value -> value)));
+            if(table.getVersion() > 1) {
+                List<TableIdxOracle> snapshotIndexList = snapshotService
+                        .getSnapshotIndexListByTableId(table.getId(), table.getVersion() - 1);
+                snapshotIndexMap = snapshotIndexList.stream()
+                        .collect(Collectors.toMap((key -> key.getId()), (value -> value)));
+            }
         }
 
         for (TableIdxOracle index : indexList) {
@@ -428,7 +427,7 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
             }
 
             // 校验索引字段
-            if (hasFilter && index.getStatus() == 0) { // 如果是修改状态，但是当前索引是没有修改的
+            if (versions > 1 && index.getStatus() == 0) { // 如果是修改状态，但是当前索引是没有修改的
                 String[] idArr = index.getColumnIds().split(",");
                 String[] sortArr = index.getColumnSort().split(",");// 字段对应的排序
                 if (idArr.length != sortArr.length) {
@@ -498,18 +497,18 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
             indexNameList.add(index.getIndexName());
 
             // 如果为直采或草稿则不需要去实体数据库校验
-            if (table.getIsGather() || table.getStatus() == DataStatusEnum.DRAFT.getValue()) {
+            if (table.getIsGather() || table.getStatus().equals(DataStatusEnum.DRAFT.getValue())) {
                 continue;
             }
             // 如果为修改，但是当前索引并没被修改，则不需要去实体数据库校验
-            if (hasFilter && index.getStatus() == 0) {
+            if (versions > 1 && index.getStatus() == 0) {
                 continue;
             }
             // 如果是修改（做修改动作，而且当前索引也被标识为修改），这里需要去查询快照版本，如果和快照版本索引名一致，则不需要查询数据库
-            if (hasFilter && index.getStatus() == 2) {
+            if (versions > 1 && index.getStatus() == 2) {
                 TableIdxOracle snapshotIndex = snapshotIndexMap.get(index.getId());
                 if (snapshotIndex != null && snapshotIndex.getIndexName()
-                        .equals(index.getIndexName())) { // 索引名有所修改
+                        .equals(index.getIndexName())) { // 索引名没有修改
                     continue;
                 }
             }
@@ -525,7 +524,7 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
 
     @Override
     public void validatedTableUnique(OracleTableVO table, List<TableUnOracle> uniqueList,
-            TablePkOracle primaryKey, List<TableColumn> columnList, Boolean hasFilter) {
+            TablePkOracle primaryKey, List<TableColumn> columnList, Integer versions) {
         // 约束名：主键约束，唯一约束，检查约束，外键约束在oracle中都是一张表内的，
         List<String> constraintNameList = new ArrayList<>(); // 约束名name listByPage
         List<String> uniqueColumnIdList = new ArrayList<>(); // 约束关联字段 listByPage（关联字段列表不能重复）
@@ -539,14 +538,15 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
         Map<String, TableColumn> columnMap =
                 columnList.stream()
                         .collect(Collectors.toMap((key -> key.getColumnName()), (value -> value)));
+        // 剔除删除的数据
+        uniqueList = uniqueList.stream().filter(property -> property.getStatus() != 3)
+                .collect(Collectors.toList());
 
         Map<Long, TableColumn> columnIdMap = null;
         // 快照版本的唯一约束（上一个版本的数据）
         Map<Long, TableUnOracle> snapshotUniqueMap = null;
 
-        if (hasFilter) { // 是否为修改
-            uniqueList = uniqueList.stream().filter(property -> property.getStatus() != 3)
-                    .collect(Collectors.toList());
+        if (versions > 1) { // 是否为修改
             columnIdMap = columnList.stream()
                     .collect(Collectors.toMap((key -> key.getId()), (value -> value)));
             List<TableUnOracle> snapshotUniqueList = snapshotService
@@ -591,7 +591,7 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
             }
 
             // 校验约束字段并补全字段参数
-            if (hasFilter && unique.getStatus() == 0) { // 如果是修改状态，但是当前唯一约束是没有修改的
+            if (versions > 1 && unique.getStatus() == 0) { // 如果是修改状态，但是当前唯一约束是没有修改的
                 String[] idArr = unique.getColumnIds().split(",");
                 for (String colId : idArr) {
                     Long columnId = Long.parseLong(colId);
@@ -629,11 +629,11 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
                 continue;
             }
             // 如果为修改，但是当前约束并没被修改，则不需要去实体数据库校验
-            if (hasFilter && unique.getStatus() == 0) {
+            if (versions > 1 && unique.getStatus() == 0) {
                 continue;
             }
             // 如果是修改动作，约束也被标识为修改了，需要去查询快照版本，如果和快照版本约束名一致，则不需要查询数据库
-            if (hasFilter && unique.getStatus() == 2) {
+            if (versions > 1 && unique.getStatus() == 2) {
                 TableUnOracle snapshotUnique = snapshotUniqueMap.get(unique.getId());
                 if (snapshotUnique != null && snapshotUnique.getName().equals(unique.getName())) {
                     continue;
@@ -658,7 +658,7 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
 
     @Override
     public void validatedTableCheck(OracleTableVO table, List<TableChOracle> checkList,
-            List<TableUnOracle> uniqueList, TablePkOracle primaryKey, Boolean hasFilter) {
+            List<TableUnOracle> uniqueList, TablePkOracle primaryKey, Integer versions) {
         List<String> constraintNameList = new ArrayList<>(); // 约束名name listByPage
 
         // 将主键约束名新增进去
@@ -673,12 +673,14 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
             }
         }
 
+        // 剔除删除的数据
+        checkList = checkList.stream().filter(property -> property.getStatus() != 3)
+                .collect(Collectors.toList());
+
         // 老版本的检查约束列表
         Map<Long, TableChOracle> snapshotCheckMap = null;
 
-        if (hasFilter) { // 是否为修改
-            checkList = checkList.stream().filter(property -> property.getStatus() != 3)
-                    .collect(Collectors.toList());
+        if (versions > 1) { // 是否为修改
             List<TableChOracle> snapshotCheckList = snapshotService
                     .getSnapshotCheckListByTableId(table.getId(), table.getVersion() - 1);
             snapshotCheckMap = snapshotCheckList.stream()
@@ -727,10 +729,10 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
                 continue;
             }
             // 如果为修改，但是当前约束并没被修改，则不需要去实体数据库校验
-            if (hasFilter && check.getStatus() == 0) {
+            if (versions > 1 && check.getStatus() == 0) {
                 continue;
             }
-            if (hasFilter && check.getStatus() == 2) {
+            if (versions > 1 && check.getStatus() == 2) {
                 // 如果是修改，则先比对上个版本和当前版本的检查约束name有没有改变，没有就不需要校验了
                 TableChOracle snapshotCheck = snapshotCheckMap.get(check.getId());
                 if (snapshotCheck != null && snapshotCheck.getName().equals(check.getName())) {
@@ -757,7 +759,7 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
     @Override
     public void validatedTableForeignKey(OracleTableVO table, List<TableFkOracle> foreignKeyList,
             List<TableColumn> columnList, List<TableUnOracle> uniqueList,
-            List<TableChOracle> checkList, TablePkOracle primaryKey, Boolean hasFilter) {
+            List<TableChOracle> checkList, TablePkOracle primaryKey, Integer versions) {
         List<String> constraintNameList = new ArrayList<>(); // 约束名name listByPage
 
         // 将主键约束名新增进去
@@ -784,15 +786,17 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
                 columnList.stream()
                         .collect(Collectors.toMap((key -> key.getColumnName()), (value -> value)));
 
+        // 剔除删除数据
+        foreignKeyList = foreignKeyList.stream().filter(property -> property.getStatus() != 3)
+                .collect(Collectors.toList());
+
         // 当前表的所有列，以id为key，修改外键时使用
         Map<Long, TableColumn> columnIdMap = null;
         // 老版本的外键约束列表
         Map<Long, TableFkOracle> snapshotForeignKeyMap = null;
 
         // 如果是修改，则将删除的外键剔除
-        if (hasFilter) {
-            foreignKeyList = foreignKeyList.stream().filter(property -> property.getStatus() != 3)
-                    .collect(Collectors.toList());
+        if (versions > 1) {
             columnIdMap = columnList.stream()
                     .collect(Collectors.toMap((key -> key.getId()), (value -> value)));
             List<TableFkOracle> snapshotForeignKeyList = snapshotService
@@ -905,7 +909,7 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
             // 参考字段id数组
             String[] referenceColumnIdArr = foreignKey.getReferenceColumn().split(",");
 
-            if (hasFilter && foreignKey.getStatus() == 0) {// 没有修改的数据
+            if (versions > 1 && foreignKey.getStatus() == 0) {// 没有修改的数据
                 // 外键关联的字段 必须和 参考的字段 数量一致
                 String[] columnIdArr = foreignKey.getColumnIds().split(",");
                 if (columnIdArr.length <= 0 || (columnIdArr.length
@@ -986,11 +990,11 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
                 continue;
             }
             // 如果为修改，但是当前约束并没被修改，则不需要去实体数据库校验
-            if (hasFilter && foreignKey.getStatus() == 0) {
+            if (versions > 1 && foreignKey.getStatus() == 0) {
                 continue;
             }
             // 如果标识为修改，外键状态也是修改，则查询快照信息，如果约束名没有修改则不需要去实体数据库校验
-            if (hasFilter && foreignKey.getStatus() == 2) {
+            if (versions > 1 && foreignKey.getStatus() == 2) {
                 if (foreignKey.getId() == null) {
                     throw new MetaDataException("错误的状态");
                 }
@@ -1036,7 +1040,7 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
     }
 
     @Override
-    public void validatedView(DBViewVO view, Boolean hasFilter) {
+    public void validatedView(DBViewVO view, Integer versions) {
         if (!view.getDatabaseType().equals(DatabaseTypeEnum.ORACLE.getCode())) {
             // 当前数据库不为 oracle
             throw new MetaDataException("500", "错误的数据库类型");
@@ -1080,7 +1084,7 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
             return;
         }
         // 如果为修改，则查询出前一个版本的表基本信息，如果视图名没有修改，则不需要去数据库中查询了。
-        if (hasFilter) {
+        if (versions > 1) {
             Metadata snapshotTable = snapshotService
                     .getSnapshotMetadataInfoByMetadataId(view.getId(), view.getVersion() - 1);
             // 如果 snapshotTable 等于null，则可能是草稿做生效动作
@@ -1090,10 +1094,17 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
         }
 
         RdbLinkDto config = oracleDDLService.getConnectionConfig(metadata);
-        // 判断数据库中视图名是否存在
-        RespResult<Boolean> nameExists = oracleService.viewNameExists(view.getName(), config);
-        log.info("nameExists result:" + JSON.toJSONString(nameExists, true));
-        if (nameExists.isSuccess() && EXISTS_CODE.equals(nameExists.getMsg())) {
+        // 判断视图名是否已被存在的视图占用
+        RespResult<Boolean> viewNameExists = oracleService.viewNameExists(view.getName(), config);
+        log.info("nameExists result:" + JSON.toJSONString(viewNameExists, true));
+        if (viewNameExists.isSuccess() && EXISTS_CODE.equals(viewNameExists.getMsg())) {
+            throw new MetaDataException("500", "数据库中已存在此视图名：" + view.getName());
+        }
+
+        // 判断表名是否已被存在的表占用
+        RespResult<Boolean> tableNameExists = oracleService.tableNameExists(view.getName(), config);
+        log.info("tableNameExists result:" + JSON.toJSONString(tableNameExists, true));
+        if (tableNameExists.isSuccess() && EXISTS_CODE.equals(tableNameExists.getMsg())) {
             throw new MetaDataException("500", "数据库中已存在此视图名：" + view.getName());
         }
     }

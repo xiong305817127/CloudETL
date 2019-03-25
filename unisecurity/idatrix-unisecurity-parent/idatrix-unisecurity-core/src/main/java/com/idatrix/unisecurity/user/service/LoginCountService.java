@@ -2,9 +2,8 @@ package com.idatrix.unisecurity.user.service;
 
 
 import com.idatrix.unisecurity.common.domain.LoginCount;
-import com.idatrix.unisecurity.user.vo.ActiveUserCountVO;
-import com.idatrix.unisecurity.user.vo.DeptLoginInfoVO;
-import com.idatrix.unisecurity.user.vo.UserLoginCountVO;
+import com.idatrix.unisecurity.common.vo.PageResultVo;
+import com.idatrix.unisecurity.user.vo.*;
 
 import java.util.List;
 
@@ -24,4 +23,6 @@ public interface LoginCountService {
 	// 获取部门登录排行详情
 	DeptLoginInfoVO getDeptLoginInfo(Long renterId);
 
+	// 获取登陆详情信息
+    PageResultVo<LoginDetailsInfoVO> searchLoginDetailsInfo(LoginSearchVO search);
 }

@@ -1,5 +1,6 @@
 package com.idatrix.resource.basedata.service;
 
+import com.idatrix.resource.basedata.vo.ServiceQueryVO;
 import com.idatrix.resource.basedata.vo.ServiceVO;
 import com.idatrix.resource.common.utils.ResultPager;
 
@@ -7,14 +8,13 @@ import java.util.List;
 import java.util.Map;
 
 public interface IServiceService {
-	String saveOrUpdateService(String user, ServiceVO serviceVO);
+	String saveOrUpdateService(Long rentId, String user, ServiceVO serviceVO);
 
 	String deleteServiceByIds(List<Long> ids);
 
-	ServiceVO getServiceById(Long id);
+	ServiceVO getServiceById(Long id, String username);
 
-	List<ServiceVO> getAllService();
+	List<ServiceVO> getAllService(Long rentId);
 
-	ResultPager<ServiceVO> getServicesByCondition(Map<String, String> conditionMap,
-														 Integer pageNum, Integer pageSize);
+	ResultPager<ServiceVO> getServicesByCondition(ServiceQueryVO queryVO);
 }

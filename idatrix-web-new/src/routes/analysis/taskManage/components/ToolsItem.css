@@ -1,0 +1,29 @@
+.div{
+  height: 60px;
+  box-sizing: border-box;
+  line-height: 60px;
+}
+
+.div span{
+   height: 20px;
+    line-height: 20px;
+    width: 100%;
+  text-align: center;
+  display: block;
+  padding-top: 35px;
+  font-size: 12px;
+}
+
+
+.spark{
+  background: url(./img/ACI.png) no-repeat center 6px;
+}
+.hadoopJava{
+  background: url(./img/CLG.png) no-repeat center 6px;
+}
+.command{
+  background: url(./img/CLC.png) no-repeat center 6px;
+}
+.hive{
+  background: url(./img/CSM.png) no-repeat center 6px;
+}

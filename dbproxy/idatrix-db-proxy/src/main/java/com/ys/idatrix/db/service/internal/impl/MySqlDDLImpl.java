@@ -37,6 +37,11 @@ public class MySqlDDLImpl extends RdbDDLWrapper {
     private final String CREATE_USER_SQL = "create user {0}{1}{2}@{3}%{4} identified by {5}{6}{7}";
 
     /**
+     * 删除用户
+     */
+    private final String DROP_USER_SQL = "drop user {0}{1}{2}";
+
+    /**
      * 用户赋权
      */
     //private final String GRANT_SQL = "grant select,insert,update,delete,create,alter,index,drop on `{0}`.* to {1}{2}{3}@{4}%{5} with grant option";
@@ -115,9 +120,12 @@ public class MySqlDDLImpl extends RdbDDLWrapper {
 
 
     @Override
-    public List<String> getDropDatabaseCommands(String dbName) {
-        String dropCommand = MessageFormat.format(DROP_DB_SQL, dbName);
-        return ImmutableList.of(dropCommand);
+    public List<String> getDropDatabaseCommands(RdbDropDatabase database) {
+        //删除用户
+        String dropUser = MessageFormat.format(DROP_USER_SQL, QUOTATION, database.getUserName(), QUOTATION);
+        //删除库
+        String dropCommand = MessageFormat.format(DROP_DB_SQL, database.getDatabase());
+        return ImmutableList.of(dropUser,dropCommand);
     }
 
 

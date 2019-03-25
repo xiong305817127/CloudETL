@@ -320,11 +320,14 @@
         inner join mc_schema b on a.schema_id = b.id
         <where>
             b.is_deleted = 0
+            <if test="dbId!=null">
+                and b.db_id = #{dbId}
+            </if>
             <if test="status!=null">
                 and a.status = #{status}
             </if>
-            <if test="regCode != null">
-                and FIND_IN_SET(#{regCode},b.reg_code)
+            <if test="regCode != null and creator != null">
+                and (FIND_IN_SET(#{regCode},b.org_code) or a.creator = #{creator})
             </if>
             <if test="schemaId != null">
                 and a.schema_id = #{schemaId}
@@ -355,8 +358,8 @@
         from mc_metadata_es
         <where>
             status != 2
-            <if test="schemaId!=null">
-                and schema_id = #{schemaId}
+            <if test="id!=null">
+                and id != #{id}
             </if>
             <if test="renterId!=null">
                 and renter_id = #{renterId}
@@ -383,13 +386,15 @@
         where schema_id = #{schemaId,jdbcType=BIGINT}
     </select>
 
-    <select id="findMetadataByThemeId" resultType="java.lang.Integer">
+    <!--根据schemaId查询使用记录数-->
+    <select id="findSchemaUseCnt" resultType="java.lang.Integer">
         SELECT
-          count(*)
+          count(1)
         FROM
           mc_metadata_es
         WHERE
-          theme_id = #{themeId, jdbcType=BIGINT} AND status != 2
+          schema_id = #{schemaId}
+          AND status != 2
     </select>
 
 </mapper>

@@ -4,6 +4,7 @@ import com.idatrix.resource.common.utils.ResultPager;
 import com.idatrix.resource.datareport.po.ResourceFilePO;
 import com.idatrix.resource.datareport.vo.ResourceFileVO;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -11,8 +12,15 @@ import java.util.Map;
  */
 public interface IResourceFileService {
 
-    ResultPager<ResourceFileVO> queryResourceFile(Map<String, String> conditions,  Integer pageNum,
+    ResultPager<ResourceFileVO> queryResourceFile(String user, Map<String, String> conditions,  Integer pageNum,
                                                     Integer pageSize);
+
+    /**
+     * 根据资源ID搜索文件名称
+     * @param con
+     * @return
+     */
+    List<ResourceFileVO> getResourceFileByResourceId(Map<String, String> con);
 
 
     /*根据fileId 下载具体文件*/

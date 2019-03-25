@@ -21,11 +21,14 @@ public interface MetadataMapper {
 
     int updateByPrimaryKey(Metadata record);
 
-    //不定参数查询
+    // 不定参数查询
     List<Metadata> search(MetadataSearchVo metadataVo);
 
     // 根据模式查询表
     List<Metadata> searchList(MetadataSearchVo metadataVo);
+
+    // 查询mysql和oracle表
+    List<Metadata> list(MetadataSearchVo metadataVo);
 
     /**
      * 查询所属组织、指定数据库类型下的生效的元数据
@@ -80,19 +83,20 @@ public interface MetadataMapper {
      */
     List<Metadata> getAllHDFSFolderInfo(@Param("user") String user,
                                         @Param("orgCode") String orgCode,
-                                        @Param("pathPrefix") String pathPrefix);
+                                        @Param("pathPrefix") String pathPrefix,
+                                        @Param("rentId")Long rentId);
 
 
     /**
      * 查询用户所操作的资源
      *
-     * @param orgCode
+     * @param deptCode
      * @param schemaId
      * @param status
      * @param databaseTypes
      * @return
      */
-    List<Metadata> getAllMetadataByUser(@Param("orgCode") String orgCode,
+    List<Metadata> getAllMetadataByUser(@Param("deptCode") String deptCode,
                                         @Param("schemaId") Long schemaId,
                                         @Param("status") Integer status,
                                         @Param("databaseTypes") List<Integer> databaseTypes);
@@ -113,4 +117,12 @@ public interface MetadataMapper {
 
     // 根据 id集合 查询
     List<Metadata> findByIdList(@Param("idList") List<Long> idList);
+
+    /**
+     * 查询schemaId的下挂使用数
+     * @param schemaId
+     * @return
+     */
+    int findSchemaUseCnt(@Param("schemaId")Long schemaId);
+
 }

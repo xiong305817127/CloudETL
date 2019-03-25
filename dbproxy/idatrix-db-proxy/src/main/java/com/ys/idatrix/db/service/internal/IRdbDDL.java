@@ -1,9 +1,6 @@
 package com.ys.idatrix.db.service.internal;
 
-import com.ys.idatrix.db.api.rdb.dto.RdbAlterTable;
-import com.ys.idatrix.db.api.rdb.dto.RdbCreateDatabase;
-import com.ys.idatrix.db.api.rdb.dto.RdbCreateTable;
-import com.ys.idatrix.db.api.rdb.dto.RdbEnum;
+import com.ys.idatrix.db.api.rdb.dto.*;
 
 import java.util.List;
 
@@ -53,10 +50,10 @@ public interface IRdbDDL {
 
     /**
      * 删除数据库sql
-     * @param dbName
+     * @param database
      * @return
      */
-    List<String> getDropDatabaseCommands(String dbName);
+    List<String> getDropDatabaseCommands(RdbDropDatabase database);
 
 
     /**

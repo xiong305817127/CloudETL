@@ -24,7 +24,7 @@ public class ElasticSearchDto extends StepDto implements Serializable{
 
 	private static final long serialVersionUID = -2141760248784099638L;
 	
-	public static final String type = "ElasticSearchBulk" ;
+	public static final String type = "ElasticSearchBulk5" ;
 	
 	private String index = "resource_catalog" ; //索引名称
 	private String indexType = "resource_content" ; //类型

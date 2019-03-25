@@ -1,8 +1,11 @@
 package com.idatrix.resource.catalog.vo;
 
+import lombok.Data;
+
 /**
  * Created by Robin Wing on 2018-6-25.
  */
+@Data
 public class ResourcePubVO {
 
     /*资源代码ID*/
@@ -29,67 +32,4 @@ public class ResourcePubVO {
     /*资源格式分类为： 自描述格式时，该描述信息有效*/
     public String formatInfoExtend;
 
-    public String getFormatInfoExtend() {
-        return formatInfoExtend;
-    }
-
-    public void setFormatInfoExtend(String formatInfoExtend) {
-        this.formatInfoExtend = formatInfoExtend;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getResourceFullCode() {
-        return resourceFullCode;
-    }
-
-    public void setResourceFullCode(String resourceFullCode) {
-        this.resourceFullCode = resourceFullCode;
-    }
-
-    public String getCatalogName() {
-        return catalogName;
-    }
-
-    public void setCatalogName(String catalogName) {
-        this.catalogName = catalogName;
-    }
-
-    public String getResourceCode() {
-        return resourceCode;
-    }
-
-    public void setResourceCode(String resourceCode) {
-        this.resourceCode = resourceCode;
-    }
-
-    public String getResourceName() {
-        return resourceName;
-    }
-
-    public void setResourceName(String resourceName) {
-        this.resourceName = resourceName;
-    }
-
-    public int getFormatType() {
-        return formatType;
-    }
-
-    public void setFormatType(int formatType) {
-        this.formatType = formatType;
-    }
-
-    public String getFormatInfo() {
-        return formatInfo;
-    }
-
-    public void setFormatInfo(String formatInfo) {
-        this.formatInfo = formatInfo;
-    }
 }

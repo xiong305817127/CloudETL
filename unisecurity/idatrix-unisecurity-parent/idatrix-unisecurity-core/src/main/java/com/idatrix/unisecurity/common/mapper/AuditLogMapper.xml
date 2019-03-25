@@ -13,10 +13,11 @@
     <result column="user_id" property="userId" jdbcType="BIGINT" />
     <result column="user_name" property="userName" jdbcType="VARCHAR" />
     <result column="renter_id" property="renterId" jdbcType="BIGINT" />
+    <result column="op_type" property="opType" jdbcType="INTEGER" />
   </resultMap>
 
   <sql id="Base_Column_List" >
-    id, server, resource, method_type, client_ip, visit_time, result, user_id, user_name, 
+    id, server, resource, method_type, client_ip, visit_time, result, op_type, user_id, user_name,
     renter_id
   </sql>
 
@@ -159,7 +160,7 @@
     where id = #{id,jdbcType=BIGINT}
   </update>
 
-  <select id="findPage" parameterType="com.idatrix.unisecurity.common.domain.AuditLog" resultMap="BaseResultMap">
+  <select id="findPage" parameterType="com.idatrix.unisecurity.auditLog.vo.LogSearchVO" resultMap="BaseResultMap">
     SELECT
       <include refid="Base_Column_List" />
     FROM
@@ -168,8 +169,22 @@
       <if test = "renterId != null">
         renter_id = #{renterId,jdbcType=BIGINT}
       </if>
-      <if test = "result != null">
-        and result = #{result,jdbcType=VARCHAR}
+      <if test="opType != null">
+        AND op_type = #{opType}
+      </if>
+      <if test = "userName != null">
+        AND user_name LIKE CONCAT('%',#{userName},'%')
+      </if>
+      <if test="loginDateStart != null and loginDateEnd != null">
+        AND visit_time >= #{loginDateStart} AND visit_time &lt;= #{loginDateEnd}
+      </if>
+      <if test="result != null">
+        <if test="result == 1">
+          AND result = 'success'
+        </if>
+        <if test="result == 2">
+          AND result = 'error'
+        </if>
       </if>
     </where>
     ORDER BY visit_time DESC

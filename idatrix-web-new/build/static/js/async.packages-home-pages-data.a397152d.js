@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[6],{393:function(n,t,a){"use strict";a.r(t);var e=a(1),p=a.n(e);t.default=function(){return p.a.createElement("p",null,"\u65e0\u9700\u9274\u6743\u7684path: data")}}}]);

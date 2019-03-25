@@ -21,7 +21,7 @@ public class CloudBaseService {
 	protected <T> Map<String,List<T>> getUserNameList(String owner , ForeachCallback<String,T> foreachCallback) throws Exception {
 		
 		Map<String,List<T>> result =  Maps.newHashMap() ;
-		if( CloudSession.isRenterPrivilege() ) {
+		if( CloudSession.isPrivilegeEnable() ) {
 			if(Utils.isEmpty(owner)) {
 				for(String user  : CloudRepository.getCurrentRenterUsers(null)){
 					result.put(user , foreachCallback.getOne(user) );

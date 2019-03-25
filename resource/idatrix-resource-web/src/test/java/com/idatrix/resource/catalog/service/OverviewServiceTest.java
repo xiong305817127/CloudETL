@@ -24,7 +24,7 @@ public class OverviewServiceTest {
 	public void getMonthlyTotalAmount() {
 		int months = 6;
 
-		List<MonthStatisticsVO> list = iOverviewService.getMonthlyTotalAmount(months);
+		List<MonthStatisticsVO> list = iOverviewService.getMonthlyTotalAmount(643L, months);
 
 		for (MonthStatisticsVO model : list) {
 			System.out.print(model.getMonthName() + ": ");
@@ -33,6 +33,7 @@ public class OverviewServiceTest {
 			System.out.println(model.getSubCount());
 		}
 	}
+
 
 //	@Test
 //	public void getPublishedResourcesByCondition() {

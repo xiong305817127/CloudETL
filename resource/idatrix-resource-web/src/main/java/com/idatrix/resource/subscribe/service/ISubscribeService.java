@@ -4,6 +4,7 @@ import com.idatrix.resource.common.utils.ResultPager;
 import com.idatrix.resource.subscribe.vo.SubscribeOverviewVO;
 import com.idatrix.resource.subscribe.vo.SubscribeVO;
 import com.idatrix.resource.subscribe.vo.SubscribeWebServiceVO;
+import com.idatrix.resource.subscribe.vo.request.SubscribeApproveRequestVO;
 
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,8 @@ public interface ISubscribeService {
     /*处理注册/发布审批*/
     void processApprove(String user, Long subscribeId, String action, String suggestion) throws Exception;
 
+
+    void processApprove(String user, SubscribeApproveRequestVO subscribeVO)throws Exception;
 
     /*批量处理 注册/发布审批*/
     void batchProcessApprove(String user, List<Long> ids) throws Exception;

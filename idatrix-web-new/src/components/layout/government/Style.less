@@ -1,0 +1,58 @@
+.cardWrap {
+  margin-top: 0!important;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  .noCard{
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: calc( 100vh - 122px );
+
+
+    .cardTitle{ 
+      background: url(../../../assets/images/gov/cart-head-bg.png) repeat-x;
+      border:1px solid rgb(161, 187, 212);
+      border-width: 0 1px;
+      height: 51px;
+      line-height: 51px;
+      padding:0 32px;
+
+      :global{
+        .ant-breadcrumb{
+          font-size: 14px;
+          line-height: 51px;
+            text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+        }
+      };
+    }
+
+
+    .cardContent{
+      display: flex;
+      background: white;
+      min-height: calc(~"100vh - 223px");
+    }
+  }
+}
+.cardWrap :global(>.ant-card>.ant-card-head) {
+  background: url(../../../assets/images/gov/cart-head-bg.png) repeat-x;
+  border:1px solid rgb(161, 187, 212);
+  border-width: 0 1px;
+  height: 51px;
+}
+.cardWrap :global(>.ant-card>.ant-card-body) {
+  padding: 0;
+}
+
+.cardWrap :global(.ant-table-thead > tr > th),
+.cardWrap :global(.ant-table-tbody > tr > td),
+.cardWrap :global(.stripe-table thead>tr>th),
+.cardWrap :global(.stripe-table tbody>tr>td) {
+  padding-top: 9px;
+  padding-bottom: 9px;
+  color: #333;
+}

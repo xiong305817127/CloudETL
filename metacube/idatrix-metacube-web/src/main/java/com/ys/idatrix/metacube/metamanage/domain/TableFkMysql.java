@@ -24,12 +24,12 @@ public class TableFkMysql {
     @ApiModelProperty("当前表字段id，可能有多个,以,隔开，因为可能关联数据库中还不存在的字段，所以传列名，列id后台处理）")
     private String columnIds;
 
-    @ApiModelProperty("参考的模式id，在mysql中这里表示是数据库，当用户没有选择模式时，自动选择当前模式")
     @NotNull(message = "参考模式不能为空")
+    @ApiModelProperty("参考的模式id，在mysql中这里表示是数据库，当用户没有选择模式时，自动选择当前模式")
     private Long referenceSchemaId;
 
-    @ApiModelProperty("参考表id，参考表必须已经存在了")
     @NotNull(message = "参考表不能为空")
+    @ApiModelProperty("参考表id，参考表必须已经存在了")
     private Long referenceTableId;
 
     @ApiModelProperty("参考列id，可能有多个，和当前表字段对应，必传")
@@ -66,8 +66,8 @@ public class TableFkMysql {
     @ApiModelProperty("当前表字段name，可能有多个,以,隔开")
     private String columnNames;
 
-    @ApiModelProperty("参考列names，可能有多个，和当前表字段对应，必传（与上个字段相对应）")
     @NotBlank(message = "参考列不能为空")
+    @ApiModelProperty("参考列names，可能有多个，和当前表字段对应，必传（与上个字段相对应）")
     private String referenceColumnNames;
 
     // 用于查询所用，并不是实体表中字段

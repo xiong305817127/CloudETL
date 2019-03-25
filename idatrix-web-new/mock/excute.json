@@ -1,0 +1,189 @@
+{
+  "cellset": [
+    [
+      {
+        "value": "Gender",
+        "type": "ROW_HEADER_HEADER",
+        "properties": {
+          "hierarchy": "[Gender].[Gender]",
+          "dimension": "Gender",
+          "level": "[Gender].[Gender].[Gender]"
+        }
+      },
+      {
+        "value": "Sales Count",
+        "type": "COLUMN_HEADER",
+        "properties": {
+          "uniquename": "[Measures].[Sales Count]",
+          "hierarchy": "[Measures]",
+          "dimension": "Measures",
+          "level": "[Measures].[MeasuresLevel]"
+        }
+      }
+    ],
+    [
+      {
+        "value": "F",
+        "type": "ROW_HEADER",
+        "properties": {
+          "uniquename": "[Gender].[Gender].[F]",
+          "hierarchy": "[Gender].[Gender]",
+          "dimension": "Gender",
+          "level": "[Gender].[Gender].[Gender]"
+        }
+      },
+      {
+        "value": "42,831",
+        "type": "DATA_CELL",
+        "properties": {
+          "position": "0:0",
+          "raw": "42831.0"
+        }
+      }
+    ],
+    [
+      {
+        "value": "M",
+        "type": "ROW_HEADER",
+        "properties": {
+          "uniquename": "[Gender].[Gender].[M]",
+          "hierarchy": "[Gender].[Gender]",
+          "dimension": "Gender",
+          "level": "[Gender].[Gender].[Gender]"
+        }
+      },
+      {
+        "value": "44,006",
+        "type": "DATA_CELL",
+        "properties": {
+          "position": "0:1",
+          "raw": "44006.0"
+        }
+      }
+    ]
+  ],
+  "rowTotalsLists": null,
+  "colTotalsLists": null,
+  "runtime": 8,
+  "error": null,
+  "height": 3,
+  "width": 2,
+  "query": {
+    "queryModel": {
+      "axes": {
+        "FILTER": {
+          "mdx": null,
+          "filters": [ ],
+          "sortOrder": null,
+          "sortEvaluationLiteral": null,
+          "hierarchizeMode": null,
+          "location": "FILTER",
+          "hierarchies": [ ],
+          "nonEmpty": false,
+          "aggregators": [ ]
+        },
+        "COLUMNS": {
+          "mdx": null,
+          "filters": [ ],
+          "sortOrder": null,
+          "sortEvaluationLiteral": null,
+          "hierarchizeMode": null,
+          "location": "COLUMNS",
+          "hierarchies": [ ],
+          "nonEmpty": true,
+          "aggregators": [ ]
+        },
+        "ROWS": {
+          "mdx": null,
+          "filters": [ ],
+          "sortOrder": null,
+          "sortEvaluationLiteral": null,
+          "hierarchizeMode": null,
+          "location": "ROWS",
+          "hierarchies": [
+            {
+              "mdx": null,
+              "filters": [ ],
+              "sortOrder": null,
+              "sortEvaluationLiteral": null,
+              "hierarchizeMode": null,
+              "name": "[Gender].[Gender]",
+              "caption": "Gender - Gender",
+              "dimension": "Gender",
+              "levels": {
+                "Gender": {
+                  "mdx": null,
+                  "filters": [ ],
+                  "name": "Gender",
+                  "caption": "Gender",
+                  "selection": {
+                    "type": "INCLUSION",
+                    "members": [ ],
+                    "parameterName": null
+                  },
+                  "aggregators": [ ],
+                  "measureAggregators": [ ]
+                }
+              },
+              "cmembers": { }
+            }
+          ],
+          "nonEmpty": true,
+          "aggregators": [ ]
+        }
+      },
+      "visualTotals": false,
+      "visualTotalsPattern": null,
+      "lowestLevelsOnly": false,
+      "details": {
+        "axis": "COLUMNS",
+        "location": "BOTTOM",
+        "measures": [
+          {
+            "name": "Sales Count",
+            "uniqueName": "[Measures].[Sales Count]",
+            "caption": "Sales Count",
+            "type": "EXACT",
+            "aggregators": [ ]
+          }
+        ]
+      },
+      "calculatedMeasures": [ ],
+      "calculatedMembers": [ ]
+    },
+    "cube": {
+      "uniqueName": "[foodmart].[FoodMart].[FoodMart].[Sales 2]",
+      "name": "Sales 2",
+      "connection": "foodmart",
+      "catalog": "FoodMart",
+      "schema": "FoodMart",
+      "caption": null,
+      "visible": false
+    },
+    "mdx": "WITHSET [~ROWS] AS{[Gender].[Gender].[Gender].Members}SELECTNON EMPTY {[Measures].[Sales Count]} ON COLUMNS,NON EMPTY [~ROWS] ON ROWSFROM [Sales 2]",
+    "name": "70C8C760-5634-FCC5-BAC7-04E47123BB06",
+    "parameters": { },
+    "plugins": { },
+    "properties": {
+      "saiku.olap.query.automatic_execution": true,
+      "saiku.olap.query.nonempty": true,
+      "saiku.olap.query.nonempty.rows": true,
+      "saiku.olap.query.nonempty.columns": true,
+      "saiku.ui.render.mode": "chart",
+      "saiku.olap.query.filter": true,
+      "saiku.olap.result.formatter": "flattened",
+      "org.saiku.query.explain": true,
+      "saiku.olap.query.drillthrough": true,
+      "org.saiku.connection.scenario": false,
+      "saiku.ui.render.type": "sunburst",
+      "saiku.ui.map.options": {
+      "mapDefinition": { }
+      }
+  },
+    "metadata": { },
+    "queryType": "OLAP",
+    "type": "QUERYMODEL"
+  },
+  "topOffset": 1,
+  "leftOffset": 0
+}

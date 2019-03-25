@@ -50,9 +50,9 @@ public class SampleRealm extends AuthorizingRealm {
         ShiroToken token = (ShiroToken) authcToken;
         UUser user = userService.getUserByUsername(token.getUsername());
         if (user == null) {
-            throw new UnknownAccountException("当前账号不存在！！！");
+            throw new UnknownAccountException("当前账号不存在");
         } else if (user.getStatus().intValue() == ResultEnum.USER_PROHIBIT_LOGIN.getCode().intValue()) {
-            throw new DisabledAccountException("帐号已被禁止登录！！！");
+            throw new DisabledAccountException("帐号已被禁止登录");
         }
 
         // 判断当前用户是否为租户

@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.Map;
 
 /**
+ * 在方法运行前记录参数，在方法执行后记录日志
  * @ClassName WebLogAspect
  * @Description 拦截controller记录log的一个切面
  * @Author ouyang
@@ -36,12 +37,15 @@ public class WebLogAspect {
 
     private Boolean isImplement;// 当前log是否写入数据库
 
+    private Boolean isLoginUrl; // 当前访问的是否登陆url
+
     public void setServer(String server) {
         this.server = server;
     }
 
     public void init() {
         isImplement = false;
+        isLoginUrl = false;
         MDC.remove("userId");
         MDC.remove("userName");
         MDC.remove("renterId");
@@ -57,7 +61,7 @@ public class WebLogAspect {
     /**
      * Controller层切点 注解拦截
      *
-     * @param []
+     * @param
      * @return void
      * @author oyr
      * @date 2018/8/27 15:56
@@ -69,7 +73,7 @@ public class WebLogAspect {
     /**
      * 方法调用前触发
      *
-     * @param [joinPoint]
+     * @param joinPoint
      * @return void
      * @author oyr
      * @date 2018/8/27 15:56
@@ -82,59 +86,25 @@ public class WebLogAspect {
         //初始化
         init();
 
-        //SSOUser user = UserHolder.getUser();
-
-        // 当前登录的用户
-        UUser user = ShiroTokenManager.getToken();
-        out:
-        if (user != null) {// 只有登录后才会进行记载
-            Long userId = user.getId();
-            String username = user.getUsername();
-            Long renterId = user.getRenterId();
-            if (renterId == null) {
-                renterId = 0l;
-            }
-/*            String userId = user.getId();
-            Object username = user.getProperty("username");
-            Object renterId = user.getProperty("renterId");*/
-
-            //获取客户端请求的信息
-            RequestAttributes ra = RequestContextHolder.getRequestAttributes();
-            ServletRequestAttributes sra = (ServletRequestAttributes) ra;
-            HttpServletRequest request = sra.getRequest();
-            String resource = request.getRequestURI();//请求的uri
-            if (resource.contains("open")) {
-                break out;
-            }
-            String clientIp = getIp(request);//请求的IP
-            String methodType = request.getMethod();//请求类型
-
-            MDC.put("userId", userId + "");
-            MDC.put("userName", username + "");
-            MDC.put("renterId", renterId + "");
-            MDC.put("server", server);
-            MDC.put("resource", resource);
-            MDC.put("methodType", methodType);
-            MDC.put("clientIp", clientIp);
-            MDC.put("result", "success");
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String dateStr = format.format(visitTime);
-            MDC.put("visitTime", dateStr);
-            isImplement = true;
-        }
+        // 参数记录
+        paramRecord();
     }
 
     /**
-     * 方法执行后触发，controller抛出异常不会进入
+     * 方法执行后并且正常则触发
      *
-     * @param [joinPoint, result]
+     * @param joinPoint
+     * @param result
      * @return java.lang.Object
      * @author oyr
      * @date 2018/8/28 16:37
      */
     @AfterReturning(returning = "result", pointcut = "controllerAspect()")
     public Object doAfterReturning(JoinPoint joinPoint, Object result) {
-        // 请求未抛出异常，代表成功
+        if (isLoginUrl) { // 如果是登陆请求
+            // 尝试参数记录
+            paramRecord();
+        }
         if (isImplement) {
             SecurityLog.log("success，log入库中");
         }
@@ -142,9 +112,9 @@ public class WebLogAspect {
     }
 
     /**
-     * 切入点抛出异常后触发
+     * 方法执行中抛出异常后触发
      *
-     * @param [e]
+     * @param e
      * @return void
      * @author oyr
      * @date 2018/8/28 16:55
@@ -162,7 +132,7 @@ public class WebLogAspect {
     /**
      * 获取客户端ip
      *
-     * @param [request]
+     * @param request
      * @return java.lang.String
      * @author oyr
      * @date 2018/8/27 16:07
@@ -188,7 +158,7 @@ public class WebLogAspect {
     /**
      * 打印请求的信息
      *
-     * @param [joinPoint]
+     * @param joinPoint
      * @return void
      * @author oyr
      * @date 2018/8/28 17:26
@@ -201,6 +171,47 @@ public class WebLogAspect {
             HttpServletRequest request = attributes.getRequest();
             Map<String, String[]> parameterMap = request.getParameterMap();
             log.info("aop println()：被访问的类和方法：" + className + "." + methodName + "，参数是：" + parameterMap.toString());
+        }
+    }
+
+    // 尝试参数记录
+    public void paramRecord() {
+        // 获取客户端请求的信息
+        RequestAttributes ra = RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes sra = (ServletRequestAttributes) ra;
+        HttpServletRequest request = sra.getRequest();
+        String resource = request.getRequestURI();// 请求的uri
+        if (resource.contains("open")) {
+            return;
+        } else if (resource.equals("/security/u/submitLogin.shtml")) {
+            isLoginUrl = true;
+        }
+
+        // 当前登录的用户
+        UUser user = ShiroTokenManager.getToken();
+        if (user != null) {// 只有登录后才会进行记载
+            Long userId = user.getId();
+            String username = user.getUsername();
+            Long renterId = user.getRenterId();
+            if (renterId == null) {
+                renterId = 0l;
+            }
+
+            String clientIp = getIp(request);// 请求的IP
+            String methodType = request.getMethod();// 请求类型
+
+            MDC.put("userId", userId + "");
+            MDC.put("userName", username + "");
+            MDC.put("renterId", renterId + "");
+            MDC.put("server", server);
+            MDC.put("resource", resource);
+            MDC.put("methodType", methodType);
+            MDC.put("clientIp", clientIp);
+            MDC.put("result", "success");
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String dateStr = format.format(visitTime);
+            MDC.put("visitTime", dateStr);
+            isImplement = true;
         }
     }
 }

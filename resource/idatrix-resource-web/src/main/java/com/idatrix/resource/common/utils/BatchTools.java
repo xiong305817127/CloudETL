@@ -9,15 +9,14 @@ import com.idatrix.resource.catalog.po.ResourceConfigPO;
 import com.idatrix.resource.catalog.vo.CatalogNodeVO;
 import com.idatrix.resource.catalog.vo.ResourceColumnVO;
 import com.idatrix.resource.catalog.vo.ResourceConfigVO;
-import com.idatrix.unisecurity.api.domain.User;
+import com.idatrix.resource.common.vo.ClassifyCodeInfoVO;
+import com.idatrix.resource.common.vo.ExcelUtilsInfo;
 import com.idatrix.unisecurity.api.service.UserService;
-import com.idatrix.unisecurity.sso.client.UserHolder;
-import com.idatrix.unisecurity.sso.client.model.SSOUser;
 import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +24,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.Map.Entry;
 
 import static com.idatrix.resource.common.utils.ExcelEntityEnum.NOT_SURE;
 import static com.idatrix.resource.common.utils.ExcelEntityEnum.RESOURCE_COLUMN_COL_TYPE;
@@ -44,10 +43,16 @@ public class BatchTools {
 
     private Boolean specialProcessFlag = false;
 
+    private LinkedHashMap<String, ClassifyCodeInfoVO> nodeCodeMap = new LinkedHashMap<String, ClassifyCodeInfoVO>();
+
+    private Map<Integer, List<CatalogNodeVO>> nodeDepthListMap = new HashMap<>();
+
     private Map<String, Long> nodeCodeDepthMap = new HashMap<String, Long>();
 
-    private Map<String, String> codeOverallMap = new HashMap<String, String>();
-    private Map<String, String> nameOverallMap = new HashMap<String, String>();
+    private Map<String, String> codeOverallMap = new LinkedHashMap<String, String>();
+    private Map<String, String> nameOverallMap = new LinkedHashMap<String, String>();
+
+    private int maxDepth = 0;
 
     @Autowired
     private CatalogNodeDAO catalogNodeDAO;
@@ -81,86 +86,174 @@ public class BatchTools {
      */
     public List<CatalogNodeVO> readExcelCatalogValue(File mfile) throws Exception{
 
-
-        Workbook wb = getExcelInfoFile(mfile);
-        // 得到第一个shell
-        Sheet sheet = wb.getSheetAt(0);
-        // 得到Excel的行数
-        int totalRows = sheet.getPhysicalNumberOfRows();
-        // 得到Excel的列数(前提是有行数)
-        int totalCells = 0;
-        if (totalRows > 1 && sheet.getRow(0) != null) {
-            totalCells = sheet.getRow(0).getPhysicalNumberOfCells();
-        }
-
         boolean contentFlag = false;
         List<CatalogNodeVO> cnVOList = new ArrayList<CatalogNodeVO>();
-        // 循环Excel行数
-        for (int r = 0; r < totalRows; r++) {
-            Row row = sheet.getRow(r);
-            if (row == null){
-                continue;
-            }
-            // 循环Excel的列
-            for (int c = 0; c < totalCells; c++) {
-                Cell cell = row.getCell(c);
-                if (null != cell) {
-                    int code = cell.getCellTypeEnum().getCode();
-                    String codeStr = null;
-                    String value = null;
-                    if(code==0){
-                        codeStr = "NUMERIC";
-                        value =String.valueOf(cell.getNumericCellValue());
-                    }else if(code==1){
-                        codeStr = "STRING";
-                        value =String.valueOf(cell.getStringCellValue());
-                        if(matchCatalogFormat(value)) {
-                            CatalogNodeVO cnVO = processCatalogExcel(value, 0L);
-                            if (cnVO != null) {
-                                contentFlag = true;
-                                cnVOList.add(cnVO);
-                            }
-                        }
-                    }else if(code==2){
-                        codeStr = "FORMULA";
-                        value =String.valueOf(cell.getCellFormula());
-                    }else if(code==3){
-                        codeStr = "BLANK";
-                        value ="空";
-                        continue;
-                    }else if(code==4){
-                        codeStr = "BOOLEAN";
-                        value = String.valueOf(cell.getBooleanCellValue());
-                    }else if(code==5){
-                        codeStr = "ERROR";
-                        value = String.valueOf(cell.getErrorCellValue());
+        InitMapConfig();
+//        Workbook wb = ExcelUtils.getExcelInfoFile(mfile);
+//        // 得到第一个shell
+//        Sheet sheet = wb.getSheetAt(0);
+//        // 得到Excel的行数
+//        int totalRows = sheet.getPhysicalNumberOfRows();
+//        // 得到Excel的列数(前提是有行数)
+//        int totalCells = 0;
+//        if (totalRows > 1 && sheet.getRow(0) != null) {
+//            totalCells = sheet.getRow(0).getPhysicalNumberOfCells();
+//        }
+//
+//
+//        // 循环Excel行数
+//        for (int r = 0; r < totalRows; r++) {
+//            Row row = sheet.getRow(r);
+//            if (row == null){
+//                continue;
+//            }
+//            // 循环Excel的列
+//            for (int c = 0; c < totalCells; c++) {
+//                Cell cell = row.getCell(c);
+//                if (null != cell) {
+//                    int code = cell.getCellTypeEnum().getCode();
+//                    String codeStr = null;
+//                    String value = null;
+//                    if(code==0){
+//                        codeStr = "NUMERIC";
+//                        value =String.valueOf(cell.getNumericCellValue());
+//                    }else if(code==1){
+//                        codeStr = "STRING";
+//                        value =String.valueOf(cell.getStringCellValue());
+//                        if(matchCatalogFormat(value)) {
+//                            CatalogNodeVO cnVO = processCatalogExcel(value, 0L);
+//                            if (cnVO != null) {
+//                                contentFlag = true;
+//                                cnVOList.add(cnVO);
+//                            }
+//                        }
+//                    }else if(code==2){
+//                        codeStr = "FORMULA";
+//                        value =String.valueOf(cell.getCellFormula());
+//                    }else if(code==3){
+//                        codeStr = "BLANK";
+//                        value ="空";
+//                        continue;
+//                    }else if(code==4){
+//                        codeStr = "BOOLEAN";
+//                        value = String.valueOf(cell.getBooleanCellValue());
+//                    }else if(code==5){
+//                        codeStr = "ERROR";
+//                        value = String.valueOf(cell.getErrorCellValue());
+//                    }
+////                    if(value!=null) {
+////                        LOG.info("Line {}-Cell {}-type {}-value {}", r, c, codeStr, value);
+////                    }
+//                }
+//            }
+//        }
+
+        List<String[]> dataList = new ArrayList<>();
+        LOG.info("读取Excel开始时间 {}", DateTools.formatDate(new Date()));
+        if(ExcelUtils.verifyExcel2003(mfile.getName())){
+            dataList = ExcelUtils.getExcelFormData(mfile.getPath());
+        }else if(ExcelUtils.verifyExcel2007(mfile.getName())){
+            ExcelUtilsInfo info = XLSXCovertCSVReader.getXlsxFormData(mfile.getPath());
+            dataList = info.getData();
+        }else{
+            throw new Exception("上传文件并非Excel表格数据，请重新上传Excel表格数据");
+        }
+        for(int index=0; index<dataList.size(); index++){
+            String[] lineData = dataList.get(index);
+            for(String data:lineData){
+                if(StringUtils.isNotEmpty(data) && matchCatalogFormat(data)) {
+                    CatalogNodeVO cnVO = processCatalogExcel(data, 0L);
+                    if (cnVO != null) {
+                        contentFlag = true;
+                        cnVOList.add(cnVO);
+                        putNodeDepthListMap(cnVO);
                     }
-                    LOG.info("Line {}-Cell {}-type {}-value {}", r, c, codeStr, value);
                 }
             }
         }
-
+        LOG.info("读取Excel结束时间 {}", DateTools.formatDate(new Date()));
         if(!contentFlag){
             throw new Exception("批量导入文件不存在有效数据，请参考导入模板重新填写");
         }
-        return cnVOList;
+
+        List<CatalogNodeVO> orderCNList = getNodeDepthListMap();
+        return orderCNList; //cnVOList;
+    }
+
+
+    private void putNodeDepthListMap(CatalogNodeVO no){
+        CatalogNodeVO nodeVO = no.clone();
+        List<CatalogNodeVO> nodeVOList = nodeDepthListMap.get(no.getDept());
+        if(CollectionUtils.isNotEmpty(nodeVOList)){
+            nodeVOList.add(nodeVO);
+            nodeDepthListMap.put(no.getDept(), nodeVOList);
+        }else{
+            nodeVOList = new ArrayList<>();
+            nodeVOList.add(nodeVO);
+        }
+        nodeDepthListMap.put(no.getDept(), nodeVOList);
+    }
+
+    private List<CatalogNodeVO> getNodeDepthListMap(){
+        List<CatalogNodeVO> nodeList = new ArrayList<>();
+
+        int maxValue = 0;
+        for(Entry<Integer, List<CatalogNodeVO>> nodedepth: nodeDepthListMap.entrySet()){
+            if(nodedepth.getKey()>maxValue){
+                maxValue = nodedepth.getKey();
+            }
+        }
+        for(int index=0;index<=maxValue;index++){
+            List<CatalogNodeVO> cnList = nodeDepthListMap.get(index);
+            if(CollectionUtils.isNotEmpty(cnList)){
+                nodeList.addAll(cnList);
+            }
+        }
+        maxDepth = maxValue;
+        return nodeList;
     }
 
 
     /*存储资源分类信息*/
     @Transactional(rollbackFor = Exception.class)
-    public void saveExcelCatalogNode(String user, List<CatalogNodeVO> cnVOList)throws Exception{
+    public void saveExcelCatalogNode(Long rentId, String user, List<CatalogNodeVO> cnVOList)throws Exception{
 
         //Code 和 Id 的映射关系
         Map<String, Long> codeIdMap = new HashMap<String, Long>();
         codeIdMap.put("0", 0L); //三大库父节点Id为0
+        LOG.info("Excel批量导入资源分类开始入库 {}", DateTools.formatDate(new Date()));
+        List<CatalogNodePO> cnPOList = new ArrayList<CatalogNodePO>();
+        int insertCount = 0;
+        int totalSize = cnVOList.size();
 
         for(CatalogNodeVO cnVO :cnVOList){
             CatalogNodePO cnPO = new CatalogNodePO();
             String parentFullCode = cnVO.getParentFullCode(); //cnVO.getParentCode();
             Long parentId = codeIdMap.get(parentFullCode);
             if(parentId==null){
-                List<CatalogNodePO> nodeList = catalogNodeDAO.getByParentFullCode(parentFullCode);
+                //批量将缓存列表里面数据入库
+                if(cnPOList.size()>0){
+                    //LOG.info("batch insert {}",cnPOList.toString());
+                    insertCount = insertCount+cnPOList.size();
+                    LOG.info(" {}:{}-{}%",  totalSize,insertCount,insertCount*100/totalSize);
+                    catalogNodeDAO.insertList(cnPOList);
+                    for(CatalogNodePO po: cnPOList){
+                        if(po.getDept()<maxDepth){
+                            String fullCode = null;
+                            if(po.getParentFullCode().equals("0")){
+                                fullCode = po.getResourceEncode();
+                            }else {
+                                fullCode = po.getParentFullCode()+po.getResourceEncode();
+                            }
+                            if(codeIdMap.get(fullCode)==null) {
+                                codeIdMap.put(fullCode, po.getId());
+                            }
+                        }
+                    }
+                    cnPOList.clear();
+                }
+
+                List<CatalogNodePO> nodeList = catalogNodeDAO.getByParentFullCodeByRentId(rentId, parentFullCode);
                 if(nodeList!=null && nodeList.size()>0){
                     parentId = nodeList.get(0).getParentId();
                     codeIdMap.put(parentFullCode, parentId);
@@ -171,19 +264,45 @@ public class BatchTools {
                     if(parentFullCode.length()==1){
                         grandpaCode = "0";
                     }else{
-                        grandpaCode = getParentCatalog(parentFullCode);
+                        grandpaCode = getParentCatalogFast(parentFullCode).getParentCode();
                     }
-                    List<CatalogNodePO> parentPOList = catalogNodeDAO.getByParentFullCode(grandpaCode);
+                    List<CatalogNodePO> parentPOList = catalogNodeDAO.getByParentFullCodeByRentId(rentId, grandpaCode);
                     if (parentPOList != null && parentPOList.size() > 0) {
                         for (CatalogNodePO parentPO : parentPOList) {
                             if (StringUtils.equals(parentPO.getResourceEncode(), cnVO.getParentCode())) {
                                 parentId = parentPO.getId();
+                                if(parentPO.getParentFullCode().equals("0")){
+                                    codeIdMap.put(parentPO.getResourceEncode(), parentPO.getId());
+                                }else {
+                                    codeIdMap.put(parentPO.getParentFullCode()+parentPO.getResourceEncode(), parentPO.getId());
+                                }
                                 break;
                             }
                         }
                     } else {
                         throw new Exception("不存在该目录分类父节点");
                     }
+                }
+            }else{
+                if(cnPOList.size()>5000){
+                    //LOG.info("batch insert {}",cnPOList.toString());
+                    insertCount = insertCount+cnPOList.size();
+                    LOG.info(" {}:{}-{}%",  totalSize,insertCount,insertCount*100/totalSize);
+                    catalogNodeDAO.insertList(cnPOList);
+                    for(CatalogNodePO po: cnPOList){
+                        if(po.getDept()<maxDepth){
+                            String fullCode = null;
+                            if(po.getParentFullCode().equals("0")){
+                                fullCode = po.getResourceEncode();
+                            }else {
+                                fullCode = po.getParentFullCode()+po.getResourceEncode();
+                            }
+                            if(codeIdMap.get(fullCode)==null) {
+                                codeIdMap.put(fullCode, po.getId());
+                            }
+                        }
+                    }
+                    cnPOList.clear();
                 }
             }
             if(parentId==null){
@@ -196,10 +315,11 @@ public class BatchTools {
             cnPO.setParentFullCode(cnVO.getParentFullCode());
             cnPO.setModifier(user);
             cnPO.setModifyTime(new Date());
+            cnPO.setRentId(rentId);
 
             //去重
             String catalogCode = cnVO.getResourceEncode();
-            List<CatalogNodePO> libNodeList = catalogNodeDAO.getCatalogByParentId(parentId);
+            List<CatalogNodePO> libNodeList = catalogNodeDAO.getCatalogByParentId(rentId, parentId);
             CatalogNodePO sameNode = null;
             for(CatalogNodePO libNode: libNodeList){
                 if(StringUtils.equals(libNode.getResourceEncode(), catalogCode)){
@@ -210,16 +330,27 @@ public class BatchTools {
                 cnPO.setId(sameNode.getId());
                 cnPO.setCreator(sameNode.getCreator());
                 cnPO.setCreateTime(sameNode.getCreateTime());
-                LOG.info("updateById： {}",cnPO);
+//                LOG.info("updateById： {}",cnPO);
+                ++insertCount;
+                LOG.info(" {}:{}-{}%",  totalSize,insertCount,insertCount*100/totalSize);
                 catalogNodeDAO.updateById(cnPO);
             }else{  //插入
                 cnPO.setCreator(user);
                 cnPO.setCreateTime(new Date());
-                LOG.info("insert： {}",cnPO);
-                catalogNodeDAO.insert(cnPO);
+//                LOG.info("insert： {}",cnPO);
+//                catalogNodeDAO.insert(cnPO);
+                cnPOList.add(cnPO); //先缓存起来
             }
         }
+        if(cnPOList.size()>0){
+            insertCount = insertCount+cnPOList.size();
+            LOG.info(" {}:{}-{}%",  totalSize,insertCount,insertCount*100/totalSize);
+//            LOG.info("batch insert {}",cnPOList.toString());
+            catalogNodeDAO.insertList(cnPOList);
+        }
     }
+
+
 
 
 
@@ -230,7 +361,7 @@ public class BatchTools {
      */
     public Map<String, List<Object>> readResourceExcelValue(File mfile) throws Exception{
 
-        Workbook wb = getExcelInfoFile(mfile);
+        Workbook wb = ExcelUtils.getExcelInfoFile(mfile);
         Sheet sheet = wb.getSheetAt(0);
         int totalRows = sheet.getPhysicalNumberOfRows(); // 得到Excel的行数
         // 得到Excel的列数(前提是有行数)
@@ -261,7 +392,9 @@ public class BatchTools {
                 }
                 String value = getCellValue(cell);
                 tmpCellList.add(c, value);
-//                LOG.info("Line {}-Cell {}-type {}-value {}", r, c, cellType[cell.getCellTypeEnum().getCode()], value);
+                if(StringUtils.isNotEmpty(value)) {
+                    LOG.info("Line {}-Cell {}-type {}-value {}", r, c, cellType[cell.getCellTypeEnum().getCode()], value);
+                }
             }
             //判断是title还是实际内容
             if(!cellTitleFlag){
@@ -282,7 +415,7 @@ public class BatchTools {
         Map<String, List<Object>> resourceExcelResult = new HashMap<String, List<Object>>();
         resourceExcelResult.put("describe", resourceDescribelist);
         resourceExcelResult.put("value", resourceExcelList);
-//        LOG.info("===describe info:{}", resourceDescribelist);
+        LOG.info("===describe info:{}", resourceDescribelist);
         return resourceExcelResult;
     }
 
@@ -378,7 +511,18 @@ public class BatchTools {
         return rcList;
     }
 
-    public List<ResourceConfigVO> preProcesBeforeSave(List<ResourceConfigVO> rcList) throws Exception{
+    /*每次使用时候初始化一下*/
+    private void InitMapConfig(){
+        nodeCodeDepthMap.clear();
+        codeOverallMap.clear();
+        nameOverallMap.clear();
+        nodeCodeMap.clear();
+        nodeDepthListMap.clear();
+    }
+
+    public List<ResourceConfigVO> preProcesBeforeSave(Long rentId, List<ResourceConfigVO> rcList) throws Exception{
+
+        InitMapConfig();
 
         LOG.info("^^^^^^^^^^^1^^^^^^^^^^^CurrentTime"+ DateTools.formatDate(new Date()));
 
@@ -403,9 +547,10 @@ public class BatchTools {
         }
         LOG.info("^^^^^^^^^^^2^^^^^^^^^^^CurrentTime"+ DateTools.formatDate(new Date()));
         //将资源信息数据库里面读取到 缓存 nodeCodeDepthMap
-        if(nodeCodeDepthMap.size()==0){
+//        if(nodeCodeDepthMap.size()==0){   //降低租户隔离时候处理难度，每次上传时候根据租户分类重新加载一次 2018/12/07 Robin
+        {
             List<CatalogNodePO> cnPOList = new ArrayList<CatalogNodePO>();
-            cnPOList = catalogNodeDAO.getAllCatalogNodes();
+            cnPOList = catalogNodeDAO.getAllCatalogNodesByRentId(rentId);
             if(cnPOList==null || cnPOList.size()==0){
                 throw new Exception("系统中信息资源分类为空，请先导入或者配置信息资源再操作");
             }
@@ -428,8 +573,6 @@ public class BatchTools {
         Map<String, List<Integer>> unifiedCreditCodeMap = new HashMap<String, List<Integer>>();
 
         //处理资源的部门列表ID问题
-        Long rentId = userUtils.getCurrentUserRentId();
-
 
         //处理 rc_rcatalog_resource 对应信息，利用信息资源Code生成 信息资源数据库里面 id
         for(ResourceConfigVO rcVO :rcNewList){
@@ -452,11 +595,11 @@ public class BatchTools {
             if(nameMap.get(catalogCode)!=null){
                 name = nameMap.get(catalogCode);
             }else{
-                name = getCatalogFullNameByCode(catalogCode);
+                name = getCatalogFullNameByCode(rentId, catalogCode);
                 nameMap.put(catalogCode, name);
             }
             rcVO.setCatalogName(name);
-            List<ResourceConfigPO> rcLibList = resourceConfigDAO.getByNameOrCode(
+            List<ResourceConfigPO> rcLibList = resourceConfigDAO.getByNameOrCodeAndRentId(rentId,
                     rcVO.getName(), rcVO.getCatalogCode(), rcVO.getSeqNum());
             if(rcLibList!=null&&rcLibList.size()>0){
                 throw new Exception("表格中信息资源目录和系统中已存在数据冲突，信息资源代码为-"+
@@ -467,7 +610,7 @@ public class BatchTools {
             if(codeMap.get(catalogCode)!=null){
                 fullCode = codeMap.get(catalogCode);
             }else{
-                fullCode = getCatalogNodeIDsByCode(catalogCode);
+                fullCode = getCatalogNodeIDsByCode(rentId, catalogCode);
                 codeMap.put(catalogCode, fullCode);
             }
 //            String fullCode = getCatalogNodeIDsByCode(rcVO.getCatalogCode());
@@ -476,7 +619,7 @@ public class BatchTools {
 //                if(codes.length!=4){
 //                    throw new Exception("表格中信息资源代码格式不符合规范，请重新核对");
 //                }
-                Long[] catalogArray = (Long[]) ConvertUtils.convert(codes,Long.class);
+                Long[] catalogArray = (Long[]) ConvertUtils.convert(codes, Long.class);
                 rcVO.setCatalogIdArray(catalogArray);
             }
 
@@ -504,31 +647,31 @@ public class BatchTools {
         return rcNewList;
     }
 
-    /**
-     * 读EXCEL文件，获取信息集合
-     * @param mfile
-     * @return
-     */
-    private Workbook getExcelInfoFile(File mfile) throws Exception{
-
-        String fileName = mfile.getAbsolutePath();
-        if (!validateExcel(fileName)) {// 验证文件名是否合格
-            throw new Exception("文件格式不符合要求");
-        }
-        List<ResourceConfigVO> rcVOList = null;
-        Workbook wb = null;
-        try {
-            if (isExcel2003(fileName)) {// 当excel是2003时,创建excel2003
-                wb = new HSSFWorkbook(new FileInputStream(mfile));
-            } else {// 当excel是2007时,创建excel2007
-                wb = new XSSFWorkbook(new FileInputStream(mfile));
-            }
-        } catch (Exception e) {
-            throw e;
-//            e.printStackTrace();
-        }
-        return wb;
-    }
+//    /**
+//     * 读EXCEL文件，获取信息集合
+//     * @param mfile
+//     * @return
+//     */
+//    private Workbook getExcelInfoFile(File mfile) throws Exception{
+//
+//        String fileName = mfile.getAbsolutePath();
+//        if (!validateExcel(fileName)) {// 验证文件名是否合格
+//            throw new Exception("文件格式不符合要求");
+//        }
+//        List<ResourceConfigVO> rcVOList = null;
+//        Workbook wb = null;
+//        try {
+//            if (isExcel2003(fileName)) {// 当excel是2003时,创建excel2003
+//                wb = new HSSFWorkbook(new FileInputStream(mfile));
+//            } else {// 当excel是2007时,创建excel2007
+//                wb = new XSSFWorkbook(new FileInputStream(mfile));
+//            }
+//        } catch (Exception e) {
+//            throw e;
+////            e.printStackTrace();
+//        }
+//        return wb;
+//    }
 
     /*
     * 判断是否是 标题内容还是 资源信息实际内容
@@ -606,7 +749,7 @@ public class BatchTools {
     *   @param: code 资源分类编码
     *   @return: 资源分类名称全称
     */
-    private String  getCatalogFullNameByCode(String code) throws Exception {
+    private String  getCatalogFullNameByCode(Long rentId, String code) throws Exception {
 
         String fullName = null;
         if (StringUtils.isEmpty(code)) {
@@ -622,7 +765,7 @@ public class BatchTools {
         if(code.length()==1){
             parentCode = "0";
             ownCode = code;
-            CatalogNodePO catalogPO = catalogNodeDAO.getByCondition(parentCode, ownCode, null);
+            CatalogNodePO catalogPO = catalogNodeDAO.getByCondition(rentId, parentCode, ownCode, null);
             if (catalogPO== null) {
                 throw new Exception("还未配置该资源分类-"+parentCode);
             }
@@ -635,12 +778,12 @@ public class BatchTools {
                 throw new Exception("表格中资源目录编码校验解析异常，异常编码为 "+code);
             }
             ownCode = code.substring(parentCode.length(), code.length());
-            CatalogNodePO catalogPO = catalogNodeDAO.getByCondition(parentCode, ownCode, null);
+            CatalogNodePO catalogPO = catalogNodeDAO.getByCondition(rentId, parentCode, ownCode, null);
             if(catalogPO==null){
                 throw new Exception("还未配置该资源分类-"+parentCode);
             }
             fullName = catalogPO.getResourceName();
-            fullName = getCatalogFullNameByCode(parentCode) + "/" + fullName;
+            fullName = getCatalogFullNameByCode(rentId, parentCode) + "/" + fullName;
             nameOverallMap.put(code, fullName);
             return fullName;
         }
@@ -652,7 +795,7 @@ public class BatchTools {
    *   @param: code 资源分类编码
    *   @return: 资源分类ID
    */
-    private String getCatalogNodeIDsByCode(String code) throws Exception {
+    private String getCatalogNodeIDsByCode(Long rentId, String code) throws Exception {
 
         Long fullCodeValue = 0L;
         String codeValue = null;
@@ -668,7 +811,7 @@ public class BatchTools {
         if(code.length()==1){
             parentCode = "0";
             ownCode = code;
-            CatalogNodePO catalogPO = catalogNodeDAO.getByCondition(parentCode, ownCode, null);
+            CatalogNodePO catalogPO = catalogNodeDAO.getByCondition(rentId, parentCode, ownCode, null);
             if (catalogPO== null) {
                 throw new Exception("还未配置该资源分类-"+parentCode);
             }
@@ -679,12 +822,12 @@ public class BatchTools {
         }else{
             parentCode = getParentCatalog(code);
             ownCode = code.substring(parentCode.length(), code.length());
-            CatalogNodePO catalogPO = catalogNodeDAO.getByCondition(parentCode, ownCode, null);
+            CatalogNodePO catalogPO = catalogNodeDAO.getByCondition(rentId, parentCode, ownCode, null);
             if(catalogPO==null){
                 throw new Exception("还未配置该资源分类-"+parentCode);
             }
             fullCodeValue = catalogPO.getId();
-            codeValue = getCatalogNodeIDsByCode(parentCode) + "/" + String.valueOf(fullCodeValue);
+            codeValue = getCatalogNodeIDsByCode(rentId, parentCode) + "/" + String.valueOf(fullCodeValue);
             codeOverallMap.put(code, codeValue);
             return codeValue;
         }
@@ -767,11 +910,69 @@ public class BatchTools {
         setMethod.invoke(object, new Object[]{objValue});
     }
 
+    @SuppressWarnings("unchecked")
+    private <K, V> Entry<K, V> getTailByReflection(LinkedHashMap<K, V> map)
+            throws NoSuchFieldException, IllegalAccessException {
+        Field tail = map.getClass().getDeclaredField("tail");
+        tail.setAccessible(true);
+        return (Entry<K, V>) tail.get(map);
+    }
+
+
+    private ClassifyCodeInfoVO getParentCatalogFast(String fullCode){
+
+        String parentFullCode = null;
+        String key = null;
+
+        ClassifyCodeInfoVO codeInfo = new ClassifyCodeInfoVO();
+        if(MapUtils.isEmpty(nodeCodeMap)){
+            return null;
+        }
+        codeInfo = nodeCodeMap.get(fullCode);
+        if(codeInfo!=null) {
+            return codeInfo;
+        }
+
+        try {
+            key = getTailByReflection(nodeCodeMap).getKey();
+            codeInfo = getTailByReflection(nodeCodeMap).getValue();
+
+        }catch (Exception e){
+            LOG.error(e.getMessage());
+            e.printStackTrace();
+        }
+        if(StringUtils.isEmpty(key)){
+            return null;
+        }
+
+        ClassifyCodeInfoVO newCodeInfo = null;
+        if(fullCode.length()==key.length()){
+            newCodeInfo = codeInfo.clone();
+            newCodeInfo.setCode(fullCode);
+        }else if(fullCode.length()>key.length()){
+            newCodeInfo = new ClassifyCodeInfoVO(fullCode, codeInfo.getDepth()+1, key);
+        }else{
+
+            codeInfo.setCode(key);
+            while(fullCode.length()<codeInfo.getCode().length()){
+                codeInfo = getParentCatalogFast(codeInfo.getParentCode());
+            }
+            if(fullCode.length()==codeInfo.getCode().length()){
+                newCodeInfo = codeInfo.clone();
+                newCodeInfo.setCode(fullCode);
+            }else if(fullCode.length()>codeInfo.getCode().length()){
+                newCodeInfo = new ClassifyCodeInfoVO(fullCode, codeInfo.getDepth()+1, codeInfo.getCode());
+            }
+        }
+        nodeCodeMap.put(fullCode, newCodeInfo);
+        return newCodeInfo;
+    }
+
     private String getParentCatalog(String fullCode){
 
         String parentFullCode = null;
         Long parentDepth = 0L;
-        for(Map.Entry<String, Long> entry: nodeCodeDepthMap.entrySet()){
+        for(Entry<String, Long> entry: nodeCodeDepthMap.entrySet()){
             String key = entry.getKey();
             if(fullCode.startsWith(key) && !StringUtils.equals(fullCode, key)){
                 if(entry.getValue()>parentDepth){
@@ -780,11 +981,25 @@ public class BatchTools {
                 }
             }
         }
-        if(StringUtils.isNotEmpty(parentFullCode) && fullCode!=null) {
+         if(StringUtils.isNotEmpty(parentFullCode) && fullCode!=null) {
             nodeCodeDepthMap.put(fullCode, parentDepth + 1);
         }
         return parentFullCode;
     }
+
+    private Long getCatalogDepthFast(String code){
+        return nodeCodeMap.get(code).getDepth();
+    }
+
+    private ClassifyCodeInfoVO getCatalogDepthFastByCode(String code){
+        return nodeCodeMap.get(code);
+    }
+
+    private void setCatalogDepthFast(String code, Long depth, String parentFullCode){
+        nodeCodeMap.put(code, new ClassifyCodeInfoVO(code, depth, parentFullCode));
+
+    }
+
 
     private Long getCatalogDepth(String code){
         return nodeCodeDepthMap.get(code);
@@ -807,6 +1022,12 @@ public class BatchTools {
         String fullCode = null;
         int depth = 0;
 
+        //Excel表格数据去重
+        if(getCatalogDepthFastByCode(catalogFullCode)!=null){
+            return null;
+        }
+
+
         //表示为类分类
         if(catalogFullCode.length()==1){
             parentFullCode = "0";
@@ -814,13 +1035,13 @@ public class BatchTools {
             depth = 1;
             ownCode = catalogFullCode;
             fullCode = catalogFullCode;
-            setCatalogDepth(catalogFullCode, new Long(depth));
+            setCatalogDepthFast(catalogFullCode, new Long(depth), parentFullCode);
         }else{
-            parentFullCode = getParentCatalog(catalogFullCode);
+            parentFullCode = getParentCatalogFast(catalogFullCode).getParentCode();
             if(StringUtils.isEmpty(parentFullCode)){
                 throw new Exception("找不到该资源分类的父节点");
             }
-            depth = getCatalogDepth(catalogFullCode).intValue();
+            depth = getCatalogDepthFast(catalogFullCode).intValue();
             ownCode = catalogFullCode.substring(parentFullCode.length(), catalogFullCode.length());
 //            ownCode = StringUtils.remove(catalogFullCode, parentFullCode);
         }
@@ -829,7 +1050,7 @@ public class BatchTools {
         if(parentFullCode.length()==1){
             parentCode = parentFullCode;
         }else{
-            grandpaCode = getParentCatalog(parentFullCode);
+            grandpaCode = getParentCatalogFast(parentFullCode).getParentCode();
             if(StringUtils.isEmpty(grandpaCode)){
                 throw new Exception("找不到该资源分类的父节点");
             }
@@ -848,36 +1069,5 @@ public class BatchTools {
     }
 
 
-    /**
-     * 验证EXCEL文件
-     *
-     * @param filePath
-     * @return
-     */
-    private boolean validateExcel(String filePath) {
-        if (filePath == null || !(isExcel2003(filePath) || isExcel2007(filePath))) {
-            LOG.error("文件名不是excel格式");
-            return false;
-        }
-        return true;
-    }
 
-    /*根据后缀名称校验文件*/
-    public boolean verifyExcel(String fileName){
-        boolean flag = false;
-        if(isExcel2003(fileName)||isExcel2007(fileName)){
-            flag = true;
-        }
-        return flag;
-    }
-
-    // @描述：是否是2003的excel，返回true是2003
-    private boolean isExcel2003(String filePath)  {
-        return filePath.matches("^.+\\.(?i)(xls)$");
-    }
-
-    //@描述：是否是2007的excel，返回true是2007
-    private boolean isExcel2007(String filePath)  {
-        return filePath.matches("^.+\\.(?i)(xlsx)$");
-    }
 }

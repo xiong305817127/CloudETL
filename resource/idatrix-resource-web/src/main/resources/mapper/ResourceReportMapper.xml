@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.report.dao.ResourceReportDAO">
+
+    <resultMap id="BaseResultMap"
+            type="com.idatrix.resource.report.vo.response.ResourceVO">
+        <id column="resource_id" property="resourceId"/>
+        <result column="resource_name" property="resourceName"/>
+        <result column="resource_code" property="resourceCode"/>
+        <result column="dept_code" property="deptCode"/>
+        <result column="approve_time" property="approveTime"/>
+    </resultMap>
+
+    <select id="countRegister" parameterType="com.idatrix.resource.report.vo.request.BaseSearchVO"
+            resultType="java.lang.Long">
+        SELECT
+        COUNT(*) AS count
+        FROM
+        rc_resource_approve a
+        LEFT JOIN rc_resource r ON a.resource_id = r.id
+        <where>
+            current_status = 'wait_reg_approve'
+            AND a.approve_action = 'agree'
+            <if test="renterId != null ">
+                AND r.rent_id = #{renterId}
+            </if>
+            <if test="startTime != null ">
+                AND a.approve_time <![CDATA[ >= ]]> #{startTime}
+            </if>
+            <if test="endTime != null ">
+                AND a.approve_time <![CDATA[ < ]]> #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="countSubscription" resultType="java.lang.Long">
+        SELECT
+        COUNT(*) AS count
+        FROM
+        rc_subscribe s
+        LEFT JOIN rc_resource r ON s.resource_id = r.id
+        <where>
+            s.`status` = 'success'
+            <if test="renterId != null ">
+                AND r.rent_id = #{renterId}
+            </if>
+            <if test="startTime != null ">
+                AND s.approve_time <![CDATA[ >= ]]> #{startTime}
+            </if>
+            <if test="endTime != null ">
+                AND s.approve_time <![CDATA[ < ]]> #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="countPublication" resultType="java.lang.Long">
+        SELECT
+        COUNT(*) AS count
+        FROM
+        rc_resource_approve a
+        LEFT JOIN rc_resource r ON a.resource_id = r.id
+        <where>
+            current_status = 'wait_pub_approve'
+            AND a.approve_action = 'agree'
+            <if test="renterId != null ">
+                AND r.rent_id = #{renterId}
+            </if>
+            <if test="startTime != null ">
+                AND a.approve_time <![CDATA[ >= ]]> #{startTime}
+            </if>
+            <if test="endTime != null ">
+                AND a.approve_time <![CDATA[ < ]]> #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="countFrequency" resultType="java.lang.Long">
+        SELECT
+        IFNULL(SUM(visit_count), 0) AS count
+        FROM
+        rc_statistics_resource_visit
+        <where>
+            <if test="renterId != null ">
+                AND rent_id = #{renterId}
+            </if>
+            <if test="startTime != null ">
+                AND create_time <![CDATA[ >= ]]> #{startTime}
+            </if>
+            <if test="endTime != null ">
+                AND create_time <![CDATA[ < ]]> #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="listRegister"
+            parameterType="com.idatrix.resource.report.vo.request.BaseSearchVO"
+            resultMap="BaseResultMap">
+        SELECT
+        r.id resource_id,
+        r.`name` resource_name,
+        r.catalog_code resource_code,
+        r.dept_code,
+        a.approve_time
+        FROM
+        rc_resource_approve a
+        LEFT JOIN rc_resource r ON a.resource_id = r.id
+        <where>
+            current_status = 'wait_reg_approve'
+            AND a.approve_action = 'agree'
+            <if test="renterId != null ">
+                AND r.rent_id = #{renterId}
+            </if>
+            <if test="startTime != null ">
+                AND a.approve_time <![CDATA[ >= ]]> #{startTime}
+            </if>
+            <if test="endTime != null ">
+                AND a.approve_time <![CDATA[ < ]]> #{endTime}
+            </if>
+        </where>
+        ORDER BY
+        a.approve_time DESC
+    </select>
+
+    <select id="listSubscription"
+            parameterType="com.idatrix.resource.report.vo.request.BaseSearchVO"
+            resultMap="BaseResultMap">
+        SELECT
+        r.id resource_id,
+        r.`name` resource_name,
+        r.catalog_code resource_code,
+        r.dept_code,
+        s.approve_time
+        FROM
+        rc_subscribe s
+        LEFT JOIN rc_resource r ON s.resource_id = r.id
+        <where>
+            s.`status` = 'success'
+            <if test="renterId != null ">
+                AND r.rent_id = #{renterId}
+            </if>
+            <if test="startTime != null ">
+                AND s.approve_time <![CDATA[ >= ]]> #{startTime}
+            </if>
+            <if test="endTime != null ">
+                AND s.approve_time <![CDATA[ < ]]> #{endTime}
+            </if>
+        </where>
+        ORDER BY
+        s.approve_time DESC
+    </select>
+
+    <select id="listPublication"
+            parameterType="com.idatrix.resource.report.vo.request.BaseSearchVO"
+            resultMap="BaseResultMap">
+        SELECT
+        r.id resource_id,
+        r.`name` resource_name,
+        r.catalog_code resource_code,
+        r.dept_code,
+        a.approve_time
+        FROM
+        rc_resource_approve a
+        LEFT JOIN rc_resource r ON a.resource_id = r.id
+        <where>
+            current_status = 'wait_pub_approve'
+            AND a.approve_action = 'agree'
+            <if test="renterId != null ">
+                AND r.rent_id = #{renterId}
+            </if>
+            <if test="startTime != null ">
+                AND a.approve_time <![CDATA[ >= ]]> #{startTime}
+            </if>
+            <if test="endTime != null ">
+                AND a.approve_time <![CDATA[ < ]]> #{endTime}
+            </if>
+        </where>
+        ORDER BY
+        a.approve_time DESC
+    </select>
+
+    <select id="listFrequency"
+            parameterType="com.idatrix.resource.report.vo.request.BaseSearchVO"
+            resultMap="BaseResultMap">
+        SELECT
+        r.id resource_id,
+        r.`name` resource_name,
+        r.catalog_code resource_code,
+        r.dept_code,
+        v.visit_count AS count
+        FROM
+        rc_resource r
+        INNER JOIN rc_statistics_resource_visit v ON r.id = v.resource_id
+        <where>
+            <if test="renterId != null ">
+                AND v.rent_id = #{renterId}
+            </if>
+            <if test="startTime != null ">
+                AND v.create_time <![CDATA[ >= ]]> #{startTime}
+            </if>
+            <if test="endTime != null ">
+                AND v.create_time <![CDATA[ < ]]> #{endTime}
+            </if>
+        </where>
+        ORDER BY
+        v.visit_count DESC
+    </select>
+</mapper>

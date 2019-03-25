@@ -1,8 +1,10 @@
 package com.idatrix.resource.servicelog.po;
 
-import java.util.Arrays;
+import lombok.Data;
+
 import java.util.Date;
 
+@Data
 public class ServiceLogDetailPO {
     /*主键*/
     private Long id;
@@ -30,99 +32,4 @@ public class ServiceLogDetailPO {
 
     private Date modifyTime;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
-    }
-
-    public byte[] getInput() {
-        return input;
-    }
-
-    public void setInput(byte[] input) {
-        this.input = input;
-    }
-
-    public byte[] getOutput() {
-        return output;
-    }
-
-    public void setOutput(byte[] output) {
-        this.output = output;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
-    public byte[] getErrorStack() {
-        return errorStack;
-    }
-
-    public void setErrorStack(byte[] errorStack) {
-        this.errorStack = errorStack;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier;
-    }
-
-    public Date getModifyTime() {
-        return modifyTime;
-    }
-
-    public void setModifyTime(Date modifyTime) {
-        this.modifyTime = modifyTime;
-    }
-
-    @Override
-    public String toString() {
-        return "ServiceLogDetailPO{" +
-                "id=" + id +
-                ", parentId=" + parentId +
-                ", input=" + Arrays.toString(input) +
-                ", output=" + Arrays.toString(output) +
-                ", errorMessage='" + errorMessage + '\'' +
-                ", errorStack=" + Arrays.toString(errorStack) +
-                ", creator='" + creator + '\'' +
-                ", createTime=" + createTime +
-                ", modifier='" + modifier + '\'' +
-                ", modifyTime=" + modifyTime +
-                '}';
-    }
 }

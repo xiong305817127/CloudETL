@@ -1,0 +1,284 @@
+/*Big data integration platform.*/
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+/* 模态窗样式 */
+:global(.ant-modal-wrap) {
+  text-align: center;
+}
+:global(.ant-modal-wrap:before) {
+  content: '';
+  display: inline-block;
+  vertical-align: middle;
+  width: 0;
+  height: 100%;
+}
+:global(.ant-modal-wrap .ant-modal) {
+  display: inline-block;
+  vertical-align: middle;
+  top: 0;
+  text-align: left;
+}
+/* 标签页样式修正 */
+:global(.ant-tabs-nav-wrap) {
+  line-height: 21px;
+}
+:global(#root) {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  overflow-y: auto;
+}
+:global(#root .ant-layout-header) {
+  background-color: transparent;
+}
+:global(#root>div[data-reactroot]) {
+  width: 100%;
+}
+:global(#common-page) {
+  display: inline-block;
+  /*width: auto!important;*/
+  height: 100%;
+  min-height: 100%;
+  min-width: 100%;
+  background-color: #fff;
+}
+:global(#common-page .ant-layout) {
+  background-color: transparent;
+}
+:global(#common-page>.ant-layout-header) {
+  background-color: transparent;
+}
+:global(#common-page #common-main-wrapper) {
+  background-color: #c0defa;
+  padding: 10px 10px 0;
+}
+:global(#common-main-wrapper>.breadcrubm) {
+  font-size: 14px;
+}
+:global(#common-main-content) {
+  margin-top: 10px;
+  background: white;
+}
+:global(#common-main-footer) {
+  text-align: center;
+  height: 40px;
+  line-height: 40px;
+  padding: 0;
+  background: #eff5f9;
+}
+/* Tree组件样式 */
+:global(ul.ant-tree li) {
+  padding: 1px 0;
+}
+/* SelectTree组件样式 */
+:global(ul.ant-select-tree) {
+  padding: 4px;
+}
+:global(ul.ant-select-tree li) {
+  margin: 0;
+}
+/* 操作列icon样式 */
+:global(.op-icon) {
+  font-size: 20px;
+  color: #199ed8;
+}
+
+:global(.flex_c){
+  display: flex;
+  flex-direction: column;
+}
+:global(.flex_1){
+  flex: 1 !important;
+}
+:global(.flex_2){
+  flex: 2 !important;
+}
+:global(.flex_r){
+  display: flex;
+  flex-direction: row;
+}
+/**
+ * 带斑马线的表格
+ * 在table上设置 className="stripe-table" 即可使用
+ */
+:global(.stripe-table thead>tr>th) {
+  background-color: #e3ebed;
+  font-weight: bold;
+  padding: 12px 8px;
+  max-width: 200px;
+  min-width: 50px;
+  white-space: normal;
+}
+:global(.stripe-table tbody > tr:nth-of-type(even)) {
+  background-color: #f5f5f5;
+}
+:global(.stripe-table tbody>tr>td) {
+  padding: 12px 8px;
+  border-bottom: none;
+  min-width: 50px;
+}
+:global(.stripe-table tbody>tr>td) div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  /**-webkit-line-clamp: 3; */
+  -webkit-box-orient: vertical;
+}
+:global(.stripe-table tbody>tr:hover>td) {
+  color: #000;
+}
+/**
+ * antd表格对齐方向
+ * 因antd的Column的className会分别加到th和td上，故，以下会加th-、td-来区分是标题还是单元格
+ * 使用时，可多个配合使用
+ * 另，使用 td- 时，默认标题对齐方向也将同步。可用 th- 强制修改
+ * 例如：className="td-right th-center"  表示标题将居中，而单元格将居右
+ */
+/* .th-center */
+:global(th.th-center),
+:global(.th-center th) {
+  text-align: center!important;
+}
+/* .th-right */
+:global(th.th-right),
+:global(.th-right th) {
+  text-align: right!important;
+}
+/* .td-center */
+:global(td.td-center),
+:global(.ant-table-thead>tr>th.td-center),
+:global(.td-center td),
+:global(.td-center .ant-table-thead>tr>th) {
+  text-align: center;
+}
+/* .td-right */
+:global(td.td-right),
+:global(.ant-table-thead>tr>th.td-right),
+:global(.td-right td),
+:global(.td-right .ant-table-thead>tr>th) {
+  text-align: right;
+}
+/* .th-nowrap  禁止换行 */
+:global(th.th-nowrap),
+:global(.th-nowrap th) {
+  word-break: normal;
+  white-space: nowrap;
+}
+/* .td-nowrap  禁止换行 */
+:global(td.td-nowrap),
+:global(.ant-table-tbody>tr>td.td-nowrap) {
+  word-break: normal;
+  white-space: nowrap;
+}
+/* 最多显示25个字符，最多换两行，溢出隐藏 */
+:global(.word25) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: content-box;
+}
+
+/* 最多显示25个字符，最多换两行，溢出隐藏 */
+:global(.wordAll) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  box-sizing: content-box;
+}
+
+/**
+ * 只有顶部线条的fieldset
+ * usage.
+ *     <fieldset className="ui-fieldset">
+ *        <legend>标题</legend>
+ *        <p>段落</p>
+ *     </fieldset>
+ */
+:global(.ui-fieldset) {
+  padding: 0;
+  border: none;
+  border-top: 1px solid #f0f0f0;
+}
+:global(.ui-fieldset>legend) {
+  width: auto;
+  border: none;
+  padding-right: 5px;
+}
+/**
+ * 表单验证提示允许换行
+ * usage.
+ *     <Form className="break-error">
+ */
+:global(.break-error .ant-form-explain) {
+  white-space: normal;
+}
+/**
+ * 编辑类table样式
+ */
+:global(.editor-table table) {
+  background-color: #eaeff3;
+  padding: 5px;
+}
+:global(.editor-table thead>tr>th),
+:global(.editor-table tbody>tr>td) {
+  border: none;
+}
+:global(.editor-table thead>tr>th) {
+  background-color: #e3ebed;
+  padding: 5px;
+}
+:global(.editor-table tbody>tr>td) {
+  padding: 0;
+  vertical-align: top;
+}
+:global(.editor-table tr>td .ant-form-item) {
+  margin-bottom: 0;
+}
+/*
+*   滚动条全局样式
+*/
+:global(::-webkit-scrollbar) {
+  width: 8px;
+  height: 8px;
+}
+:global(::-webkit-scrollbar-thumb) {
+  background-color: #e6e6e6 ;
+}
+/*
+* 定义平台自定义icon
+*/
+:global(.anticon-cangzhou-systemlogo:before) {
+  background: url("assets/cangzhou/logo-colour.png") no-repeat center;
+  width: 45px;
+  height: 45px;
+  content: "";
+}
+:global(.anticon-lengin-systemlogo:before) {
+  background: url("assets/lengin/logo-colour.png") no-repeat center;
+  width: 45px;
+  height: 45px;
+  content: "";
+}
+:global(.anticon-chongqing-systemlogo:before) {
+  background: url("assets/chongqing/logo-colour.png") no-repeat center;
+  width: 45px;
+  height: 45px;
+  content: "";
+}
+
+:global(.editable-row-test) {
+  color:red;
+  background: #87d48a;
+}
+
+
+:global(.ant-tooltip-inner){
+  width: 520px;
+}

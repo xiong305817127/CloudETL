@@ -45,10 +45,11 @@ public class SSOFilter implements Filter {
         serverBaseUrl = filterConfig.getInitParameter("serverBaseUrl");
         projectName = filterConfig.getInitParameter("projectName");
         serverInnerAddress = filterConfig.getInitParameter("serverInnerAddress");
-        // notLoginOnFail = Boolean.parseBoolean(filterConfig.getInitParameter("notLoginOnFail"));
-        if (serverBaseUrl == null || serverInnerAddress == null) {
-            throw new ServletException("SSOFilter配置错误，必须设置serverBaseUrl和serverInnerAddress参数!");
+        if (StringUtils.isBlank(serverBaseUrl) && StringUtils.isBlank(serverInnerAddress)) {
+            throw new ServletException("SSOFilter配置错误，必须设置serverBaseUrl和serverInnerAddress其中的一个");
         }
+        serverBaseUrl = StringUtils.isBlank(serverBaseUrl) == false ? serverBaseUrl : serverInnerAddress;
+        serverInnerAddress = StringUtils.isBlank(serverInnerAddress) == false ? serverInnerAddress : serverBaseUrl;
         TokenManager.serverIndderAddress = serverInnerAddress;
         TokenManager.projectName = projectName;
     }
@@ -69,13 +70,12 @@ public class SSOFilter implements Filter {
          * 1.获取到Token，校验有效性，先本地校验有效性，如果校验失败远程校验有效性。
          * 2.根据校验的结果来决定是否需要拦截当前请求
          */
-
-        // 获取Token
-        String vt = CookieUtil.getVT(request);
-        logger.debug("客户端中的token：{}", vt);
+        String vt = CookieUtil.getVT(request); // 获取Token
+        String lt = CookieUtil.getLT(request); // 记住我标识
+        logger.debug("客户端中的VT：{}, LT：{}", vt, lt);
         logger.debug("当请求的路径url：{}", request.getContextPath() + "/" + request.getRequestURI());
 
-        if (StringUtils.isNotEmpty(vt)) {// 令牌不为空时
+        if (StringUtils.isNotEmpty(vt)) { // 令牌不为空时
             SSOUser user = null;
             ResultVo result = null;
             try {
@@ -104,6 +104,7 @@ public class SSOFilter implements Filter {
                 return;
             }
         } else {
+            // = TokenManager.validateLT(lt);
             // 当前令牌是不存在的，那么等于没有通过认证
             out(response , ResultVoUtils.error(ResultEnum.USER_NOT_LOGIN.getCode(), ResultEnum.USER_NOT_LOGIN.getMessage()));
         }

@@ -8,6 +8,8 @@
         <result column="sub_no" property="subNo" jdbcType="VARCHAR" />
         <result column="subscribe_id" property="subscribeId" jdbcType="BIGINT" />
         <result column="resource_code" property="resourceCode" jdbcType="VARCHAR" />
+        <result column="src_meta_id" property="srcMetaId" jdbcType="BIGINT" />
+        <result column="dest_meta_id" property="destMetaId" jdbcType="BIGINT" />
         <result column="subscribe_dept_id" property="subscribeDeptId" jdbcType="BIGINT" />
         <result column="subscribe_dept_name" property="subscribeDeptName" jdbcType="VARCHAR" />
         <result column="end_time" property="endDate" javaType="java.util.Date" jdbcType="TIMESTAMP" />
@@ -21,10 +23,17 @@
 
 
     <sql id="Base_Column_List">
-        id, seq, sub_no, subscribe_id, resource_code,
-         subscribe_dept_id, subscribe_dept_name,
+        id, seq, sub_no, subscribe_id, resource_code,src_meta_id, dest_meta_id,
+        subscribe_dept_id, subscribe_dept_name,
         end_time, creator, create_time, modifier, modify_time
     </sql>
+
+    <select id="getMaxDestMetaId" resultType="java.lang.Long">
+        select
+          MAX(dest_meta_id)
+        from rc_exchange_task
+          where src_meta_id=#{srcMetaId} and subscribe_dept_id=#{deptId}
+    </select>
 
     <select id="getMaxSubscribeSeq" resultType="java.lang.Long">
         select ifnull(MAX(seq), 0) as seq
@@ -32,13 +41,12 @@
     </select>
 
 
-    <insert id="insert" parameterType="com.idatrix.resource.exchange.po.ExchangeSubscribeTaskPO"
-            useGeneratedKeys="true" keyProperty="id">
-        insert into rc_exchange_task (
-        seq, sub_no, subscribe_id, resource_code,
+    <insert id="insert" parameterType="com.idatrix.resource.exchange.po.ExchangeSubscribeTaskPO">
+        insert into rc_exchange_task ( id,
+        seq, sub_no, subscribe_id, resource_code,src_meta_id, dest_meta_id,
          subscribe_dept_id, subscribe_dept_name,
         end_time, creator, create_time, modifier, modify_time)
-        values (#{seq}, #{subNo}, #{subscribeId}, #{resourceCode},
+        values (#{id}, #{seq}, #{subNo}, #{subscribeId}, #{resourceCode},#{srcMetaId},#{destMetaId},
          #{subscribeDeptId}, #{subscribeDeptName},
          #{endTime}, #{creator}, #{createTime}, #{modifier}, #{modifyTime})
     </insert>
@@ -75,6 +83,8 @@
         sub_no = #{subNo},
         subscribe_id = #{subscribeId},
         resource_code = #{resourceCode},
+        src_meta_id = #{srcMetaId},
+        dest_meta_id = #{destMetaId},
         subscribe_dept_id = #{subscribeDeptId},
         subscribe_dept_name = #{subscribeDeptName},
         end_time = #{endTime},

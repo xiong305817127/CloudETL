@@ -58,7 +58,8 @@
           )
     </insert>
 
-    <insert id="insertSelective" keyProperty="id" useGeneratedKeys="true" parameterType="com.ys.idatrix.metacube.metamanage.domain.Metadata" >
+    <insert id="insertSelective" keyProperty="id" useGeneratedKeys="true"
+            parameterType="com.ys.idatrix.metacube.metamanage.domain.Metadata">
         insert into mc_metadata
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="id != null">
@@ -287,7 +288,8 @@
         ORDER BY me.modify_time DESC, me.create_time DESC
     </select>
 
-    <select id="searchList" parameterType="com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo" resultMap="BaseResultMap">
+    <select id="searchList" parameterType="com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo"
+            resultMap="BaseResultMap">
         SELECT
         <include refid="Base_Column_List"/>
         FROM
@@ -299,7 +301,7 @@
         <if test="databaseType!=null">
             AND me.database_type = #{databaseType}
         </if>
-        <if test="resourceType!=null">
+        <if test="resourceType!=null and (databaseType == 1 or databaseType == 2)">
             AND me.resource_type = #{resourceType}
         </if>
         <if test="regCode!=null">
@@ -308,19 +310,34 @@
         ORDER BY me.modify_time DESC, me.create_time DESC
     </select>
 
+    <select id="list" parameterType="com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo"
+            resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM
+          mc_metadata me LEFT JOIN mc_schema sc ON me.schema_id = sc.id
+        WHERE me.status = 1 AND me.database_type IN(1, 2)
+        <if test="resourceType!=null">
+            AND me.resource_type = #{resourceType}
+        </if>
+        <if test="regCode!=null">
+            and FIND_IN_SET(#{regCode}, sc.org_code)
+        </if>
+    </select>
+
     <!--查询所属组织、指定数据库类型下的生效的元数据-->
     <select id="searchByDeptAndDbTypes" resultMap="BaseResultMap">
         SELECT
         <include refid="Base_Column_List"/>
         FROM
-        mc_metadata me LEFT JOIN mc_schema sc ON me.schema_id = sc.id
+        mc_metadata me INNER JOIN mc_schema sc ON me.schema_id = sc.id
         <where>
-            me.status = 1
+            me.status = 1 and sc.is_deleted = 0
             <if test="deptCode!=null">
                 and FIND_IN_SET(#{deptCode}, sc.org_code)
             </if>
             <if test="databaseTypes != null">
-                AND me.resource_type in
+                AND me.database_type in
                 <foreach collection="databaseTypes" item="type" open="(" separator="," close=")">
                     #{type}
                 </foreach>
@@ -416,37 +433,42 @@
 
     <select id="getAllHDFSFolderInfo" resultMap="BaseResultMap">
         SELECT
-          sc.id AS id,
-          sc.NAME AS NAME,
-          CONCAT( sc.NAME, me.identification ) AS identification,
-          me.theme_id AS theme_id,
-          me.tags AS tags,
-          me.remark AS remark,
-          me.dept_codes AS dept_codes,
-          me.version AS version,
-          me.renter_id AS renter_id,
-          me.is_gather AS is_gather,
-          me.status AS status,
-          me.database_type AS database_type,
-          me.resource_type AS resource_type,
-          me.schema_id AS schema_id,
-          me.creator AS creator,
-          me.create_time AS create_time,
-          me.modifier AS modifier,
-          me.modify_time AS modify_time
+        me.id AS id,
+        sc.NAME AS NAME,
+        CONCAT( sc.NAME, me.name ) AS identification,
+        me.theme_id AS theme_id,
+        me.tags AS tags,
+        me.remark AS remark,
+        sc.org_code AS deptCodes,
+        me.version AS version,
+        me.renter_id AS renter_id,
+        me.is_gather AS is_gather,
+        me.status AS status,
+        me.database_type AS database_type,
+        me.resource_type AS resource_type,
+        me.schema_id AS schema_id,
+        me.creator AS creator,
+        me.create_time AS create_time,
+        me.modifier AS modifier,
+        me.modify_time AS modify_time
         FROM
-          mc_metadata me
+        mc_metadata me
         LEFT JOIN mc_schema sc ON me.schema_id = sc.id
-        WHERE me.database_type =7
+        WHERE me.database_type =7 and me.status=1 and sc.name is not NULL
         <if test="user != null">
             AND me.creator = #{user,jdbcType=VARCHAR}
         </if>
         <if test="orgCode != null">
-            AND (find_in_set( #{orgCode}, sc.org_code )
+            AND find_in_set( #{orgCode}, sc.org_code )
         </if>
         <if test="pathPrefix != null">
             AND sc.name like '${pathPrefix}%'
         </if>
+        <if test="rentId != null">
+            AND me.renter_id = #{rentId,jdbcType=BIGINT}
+        </if>
+        ORDER by sc.modify_time desc
+
     </select>
 
     <!--根据schemaId查询用户能操作的表-->
@@ -458,13 +480,13 @@
         LEFT JOIN mc_schema sc ON me.schema_id = sc.id
         <where>
             <if test="status != null">
-                me.status = #{status,jdbcType=INTEGER}
+                and me.status = #{status,jdbcType=INTEGER}
             </if>
             <if test="schemaId != null">
-                me.schema_id = #{schemaId,jdbcType=BIGINT}
+                and me.schema_id = #{schemaId,jdbcType=BIGINT}
             </if>
-            <if test="regCode != null">
-                and FIND_IN_SET(#{regCode}, sc.reg_code)
+            <if test="deptCode != null">
+                and FIND_IN_SET(#{deptCode}, sc.org_code)
             </if>
             <if test="databaseTypes != null">
                 and me.database_type in
@@ -487,28 +509,28 @@
         a.id = #{id}
     </select>
 
-    <select id="findByIdList" resultMap="BaseResultMap" >
-      SELECT
+    <select id="findByIdList" resultMap="BaseResultMap">
+        SELECT
         me.*
-      FROM
+        FROM
         mc_metadata me
-      <where>
-          <if test="idList != null and idList.size() > 0">
-              id IN
-              <foreach collection="idList" item="id" open="(" close=")" separator="," >
-                  #{id}
-              </foreach>
-          </if>
-      </where>
+        <where>
+            <if test="idList != null and idList.size() > 0">
+                id IN
+                <foreach collection="idList" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
     </select>
-    
+
     <resultMap id="MetadataDTOMap" type="com.ys.idatrix.metacube.api.beans.MetadataDTO">
-        <result column="meta_id" property="metaId" />
-        <result column="meta_name" property="metaName" />
-        <result column="schema_id" property="schemaId" />
-        <result column="schema_name" property="schemaName" />
-        <result column="database_id" property="databaseId" />
-        <result column="server_id" property="serverId" />
+        <result column="meta_id" property="metaId"/>
+        <result column="meta_name" property="metaName"/>
+        <result column="schema_id" property="schemaId"/>
+        <result column="schema_name" property="schemaName"/>
+        <result column="database_id" property="databaseId"/>
+        <result column="server_id" property="serverId"/>
     </resultMap>
 
     <select id="findByDatabaseInfo" resultMap="MetadataDTOMap">
@@ -556,6 +578,17 @@
         me.status = 1
         AND me.schema_id = #{schemaId}
         AND me.resource_type = #{resourceType}
+    </select>
+
+    <!--根据schemaId查询使用记录数-->
+    <select id="findSchemaUseCnt" resultType="java.lang.Integer">
+        SELECT
+          count(1)
+        FROM
+          mc_metadata
+        WHERE
+          schema_id = #{schemaId}
+          AND status != 2
     </select>
 
 </mapper>

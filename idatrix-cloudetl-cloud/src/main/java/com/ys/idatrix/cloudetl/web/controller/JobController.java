@@ -80,7 +80,7 @@ public class JobController extends BaseAction {
 		
 		if(isMap ) {
 			Map<String,List<String> > result = Maps.newHashMap() ;
-			if( CloudSession.isRenterPrivilege()) {
+			if( CloudSession.isPrivilegeEnable()) {
 				if(Utils.isEmpty(owner)) {
 					//获取所有的用户
 					for(String ownerUser : cloudJobService.getCloudJobUserList()) {
@@ -158,6 +158,8 @@ public class JobController extends BaseAction {
 	public @ResponseBody Object newJob(@RequestBody JobInfoDto jobInfo) throws Exception {
 		//只能新建 登录用户 自己的调度
 		CloudSession.setThreadResourceUser(CloudSession.getLoginUser());
+		checkPrivilege();
+		
 		return cloudJobService.newJob(jobInfo);
 	}
 

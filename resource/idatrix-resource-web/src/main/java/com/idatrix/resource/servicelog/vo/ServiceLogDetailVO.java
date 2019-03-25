@@ -1,7 +1,8 @@
 package com.idatrix.resource.servicelog.vo;
 
-import java.util.Date;
+import lombok.Data;
 
+@Data
 public class ServiceLogDetailVO {
     /*服务日志关联ID*/
     private Long parentId;
@@ -24,72 +25,5 @@ public class ServiceLogDetailVO {
     /*调用时间*/
     private String callTime;
 
-    public Long getParentId() {
-        return parentId;
-    }
 
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
-    }
-
-    public String getInput() {
-        return input;
-    }
-
-    public void setInput(String input) {
-        this.input = input;
-    }
-
-    public String getOutput() {
-        return output;
-    }
-
-    public void setOutput(String output) {
-        this.output = output;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
-    public String getErrorStack() {
-        return errorStack;
-    }
-
-    public void setErrorStack(String errorStack) {
-        this.errorStack = errorStack;
-    }
-
-    public Integer getExecTime() {
-        return execTime;
-    }
-
-    public void setExecTime(Integer execTime) {
-        this.execTime = execTime;
-    }
-
-    public String getCallTime() {
-        return callTime;
-    }
-
-    public void setCallTime(String callTime) {
-        this.callTime = callTime;
-    }
-
-    @Override
-    public String toString() {
-        return "ServiceLogDetailVO{" +
-                "parentId=" + parentId +
-                ", input='" + input + '\'' +
-                ", output='" + output + '\'' +
-                ", errorMessage='" + errorMessage + '\'' +
-                ", errorStack='" + errorStack + '\'' +
-                ", execTime=" + execTime +
-                ", callTime='" + callTime + '\'' +
-                '}';
-    }
 }

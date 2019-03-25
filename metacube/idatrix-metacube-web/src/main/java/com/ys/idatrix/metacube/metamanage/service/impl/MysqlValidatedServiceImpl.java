@@ -100,13 +100,17 @@ public class MysqlValidatedServiceImpl implements MysqlValidatedService {
         Metadata metadata = new Metadata();
         metadata.setId(mysqlTable.getId());// 如果是修改，那么排除当前表数据
         metadata.setSchemaId(mysqlTable.getSchemaId()); // schemaId
-        metadata.setName(mysqlTable.getName());
+        metadata.setName(mysqlTable.getName()); // 表名
         metadata.setDatabaseType(DatabaseTypeEnum.MYSQL.getCode()); // mysql
+        metadata.setResourceType(1); // 当前为表
 
         // 同模式下表名和视图名不能重复
-        // 判断实体表名是否重复
         if (metadataService.findByMetadata(metadata) > 0) {
             throw new MetaDataException("500", "当前表英文名已经被占用（表已创建或在草稿箱中）");
+        }
+        metadata.setResourceType(2); // 当前为视图
+        if (metadataService.findByMetadata(metadata) > 0) {
+            throw new MetaDataException("500", "当前表英文名已经被视图占用（视图已创建或在草稿箱中）");
         }
 
         // 判断表中文名是否重复
@@ -114,7 +118,7 @@ public class MysqlValidatedServiceImpl implements MysqlValidatedService {
         metadata.setName(null);
         metadata.setIdentification(mysqlTable.getIdentification());
         if (metadataService.findByMetadata(metadata) > 0) {
-            throw new MetaDataException("500", "当前表英文中文名已经被占用（表已创建或在草稿箱中）");
+            throw new MetaDataException("500", "当前表中文名已经被占用（表已创建或在草稿箱中）");
         }
     }
 
@@ -137,7 +141,8 @@ public class MysqlValidatedServiceImpl implements MysqlValidatedService {
             tableColumnList = tableColumnList.stream().filter(property -> property.getStatus() != 3).collect(Collectors.toList());
         }
 
-        List<String> columnNameList = new ArrayList<>(); // 字段 name listByPage
+        List<String> columnNameList = new ArrayList<>(); // 字段 name list
+        int autoIncrementColumn = 0; // 自增的字段
         for (TableColumn column : tableColumnList) {
             // 当前表中，字段名不能重复
             if (columnNameList.contains(column.getColumnName())) {
@@ -178,8 +183,12 @@ public class MysqlValidatedServiceImpl implements MysqlValidatedService {
                         DBEnum.MysqlTableDataType.MEDIUMINT.name().equals(columnTypeUpperCase))) {
                     throw new MetaDataException("自增长不支持的数据类型，数据类型：" + column.getColumnType());
                 }
+                autoIncrementColumn++;
             }
 
+            if(autoIncrementColumn > 1) {
+                throw new MetaDataException("当前自增长只支持一个字段");
+            }
             /**
              * TODO 当前字段自增，那么当前字段必须对应着索引，组合索引也可以，但是对索引类型有要求，必须不是全文索引,主键自动创建了唯一索引，并且不为null。
              * 注意：自增需要先有索引后才能设置为自增
@@ -457,7 +466,7 @@ public class MysqlValidatedServiceImpl implements MysqlValidatedService {
                         throw new MetaDataException("创建外键：" + foreignKey.getName() + "时，尝试创建外键必要索引失败，请手动创建所需索引");
                     }
                     TableIdxMysql index = new TableIdxMysql();
-                    index.setIndexName(indexName);
+                    index.setIndexName(indexName); // 索引名
                     index.setColumnIds(columnIdStr); // 参考字段id，可能多个
                     index.setTableId(tableId); // 表id
                     index.setCreator(creator);

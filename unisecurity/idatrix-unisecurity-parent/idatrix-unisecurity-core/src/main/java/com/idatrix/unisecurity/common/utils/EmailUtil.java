@@ -4,8 +4,6 @@ import com.idatrix.unisecurity.common.dao.MailLogMapper;
 import com.idatrix.unisecurity.common.domain.MailLog;
 import com.idatrix.unisecurity.properties.EmailProperties;
 import org.apache.log4j.Logger;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import javax.mail.*;
@@ -78,8 +76,7 @@ public class EmailUtil {
 				logger.info("EmailThread send email：" + email);
 
 				// 只有当可以访问外网的时候才回去发送邮件
-				ResponseEntity<String> response = restTemplate.getForEntity("https://www.baidu.com/", String.class);
-				HttpStatus code = response.getStatusCode();
+				// ResponseEntity<String> response = restTemplate.getForEntity("https://www.baidu.com/", String.class);
 
 				Properties props = new Properties();
 				props.put("mail.transport.protocol", "smtp");//邮件发送协议

@@ -33,4 +33,6 @@ public interface RenterService {
 
     // 修改租户状态，1：正常，2：禁用
     void updateStatus(String renterIds, Long status);
+
+    void registerOrUpdatePlatformDatabaseInfo(Long id);
 }

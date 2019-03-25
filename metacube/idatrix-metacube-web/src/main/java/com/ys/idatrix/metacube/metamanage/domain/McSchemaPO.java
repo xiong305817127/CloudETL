@@ -42,6 +42,9 @@ public class McSchemaPO extends BasePO {
     @ApiModelProperty("组织编码 多个以英文逗号分隔")
     private String orgCode;
 
+    @ApiModelProperty("组织名称 多个以英文逗号分隔")
+    private String orgName;
+
     @ApiModelProperty("备注")
     private String remark;
 

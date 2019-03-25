@@ -1,15 +1,16 @@
 package com.idatrix.resource.common.task;
 
 import com.idatrix.resource.catalog.dao.MonthStatisticsDAO;
+import com.idatrix.resource.catalog.dao.ResourceConfigDAO;
 import com.idatrix.resource.catalog.po.MonthStatisticsPO;
 import com.idatrix.resource.catalog.po.StatisticsPO;
 import com.idatrix.resource.common.utils.DateTools;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -29,6 +30,9 @@ public class StatisticsTask{
     @Autowired
     private MonthStatisticsDAO monthStatisticsDAO;
 
+    @Autowired
+    private ResourceConfigDAO resourceConfigDAO;
+
 
     public void startTask(){
 
@@ -46,38 +50,48 @@ public class StatisticsTask{
 
     }
 
+
+
     //阅读信息统计
     private void MonthStatics(){
         //1.根据月份从 rc_month_statistics 里面获取当前月份是否有统计数据
         String thisMonth = DateTools.formatDate(new Date(), "yyyyMM");
 
-        List<StatisticsPO> statPoList = monthStatisticsDAO.getRecentMonth(COUNT);
-        if(statPoList!=null && statPoList.size()>0){
-            for(StatisticsPO stat:statPoList){
-                String month = stat.getMonth();
-                MonthStatisticsPO monthStatPO = monthStatisticsDAO.getByMonth(month);
-                if(monthStatPO!=null) {
-                    if (monthStatPO.getRegCount() != stat.getRegCount() ||
-                            monthStatPO.getPubCount() != stat.getPubCount() ||
-                            monthStatPO.getSubCount() != stat.getSubCount()) {
+        List<Long> rentList = resourceConfigDAO.getResourceRentList();
+        if(CollectionUtils.isEmpty(rentList)){
+            return;
+        }
+        for(Long rentId : rentList) {
+            List<StatisticsPO> statPoList = monthStatisticsDAO.getRecentMonthByRentId(rentId, COUNT);
+            if (statPoList != null && statPoList.size() > 0) {
+                for (StatisticsPO stat : statPoList) {
+                    String month = stat.getMonth();
+                    MonthStatisticsPO monthStatPO = monthStatisticsDAO.getByMonthByRentId(rentId, month);
+                    if (monthStatPO != null) {
+                        if (monthStatPO.getRegCount() != stat.getRegCount() ||
+                                monthStatPO.getPubCount() != stat.getPubCount() ||
+                                monthStatPO.getSubCount() != stat.getSubCount()) {
+                            monthStatPO.setRegCount(stat.getRegCount().intValue());
+                            monthStatPO.setRentId(rentId);
+                            monthStatPO.setPubCount(stat.getPubCount().intValue());
+                            monthStatPO.setSubCount(stat.getSubCount().intValue());
+                            monthStatPO.setModifyTime(new Date());
+                            monthStatisticsDAO.updateById(monthStatPO);
+
+                        }
+                    } else {
+                        monthStatPO = new MonthStatisticsPO();
+                        monthStatPO.setMonth(stat.getMonth());
+                        monthStatPO.setRentId(rentId);
                         monthStatPO.setRegCount(stat.getRegCount().intValue());
                         monthStatPO.setPubCount(stat.getPubCount().intValue());
                         monthStatPO.setSubCount(stat.getSubCount().intValue());
                         monthStatPO.setModifyTime(new Date());
-                        monthStatisticsDAO.updateById(monthStatPO);
-
+                        monthStatPO.setCreateTime(new Date());
+                        monthStatPO.setCreator(USER);
+                        monthStatPO.setModifier(USER);
+                        monthStatisticsDAO.insert(monthStatPO);
                     }
-                }else{
-                    monthStatPO = new MonthStatisticsPO();
-                    monthStatPO.setMonth(stat.getMonth());
-                    monthStatPO.setRegCount(stat.getRegCount().intValue());
-                    monthStatPO.setPubCount(stat.getPubCount().intValue());
-                    monthStatPO.setSubCount(stat.getSubCount().intValue());
-                    monthStatPO.setModifyTime(new Date());
-                    monthStatPO.setCreateTime(new Date());
-                    monthStatPO.setCreator(USER);
-                    monthStatPO.setModifier(USER);
-                    monthStatisticsDAO.insert(monthStatPO);
                 }
             }
         }

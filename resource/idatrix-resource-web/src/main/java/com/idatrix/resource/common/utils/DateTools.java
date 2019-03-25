@@ -4,9 +4,12 @@ package com.idatrix.resource.common.utils;
  * Created by Robin Wing on 2018-6-1.
  */
 
-import org.apache.commons.lang.time.DateFormatUtils;
+
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 import java.text.ParseException;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -15,7 +18,7 @@ import java.util.Date;
  * @Author: Robin
  * @Date: 2017/7/24
  */
-public class DateTools extends org.apache.commons.lang.time.DateUtils {
+public class DateTools extends DateUtils {
 
     private static String[] parsePatterns = { "yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm",
             "yyyy/MM/dd", "yyyy/MM/dd HH:mm:ss", "yyyy/MM/dd HH:mm", "yyyyMM", "yyyyMMdd-HHmmss",
@@ -122,6 +125,33 @@ public class DateTools extends org.apache.commons.lang.time.DateUtils {
     public static long pastDays(Date date) {
         long t = new Date().getTime()-date.getTime();
         return t/(24*60*60*1000);
+    }
+
+    /**
+      * 得到几天前的时间
+      *
+      * @param d
+      * @param day
+      * @return
+    */
+    public static Date getDateBefore(Date d, int day) {
+        Calendar now = Calendar.getInstance();
+        now.setTime(d);
+        now.set(Calendar.DATE, now.get(Calendar.DATE) - day);
+        return now.getTime();
+    }
+    /**
+     * 得到几天后的时间
+     *
+     * @param d
+     * @param day
+     * @return
+     */
+    public static Date getDateAfter(Date d, int day) {
+        Calendar now = Calendar.getInstance();
+        now.setTime(d);
+        now.set(Calendar.DATE, now.get(Calendar.DATE) + day);
+        return now.getTime();
     }
 
 }

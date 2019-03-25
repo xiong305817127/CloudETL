@@ -11,8 +11,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileType;
 import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.util.IdatrixPropertyUtil;
 import org.pentaho.di.core.util.Utils;
 import org.pentaho.di.core.vfs.KettleVFS;
+import org.pentaho.pms.util.Const;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ys.idatrix.cloudetl.dto.hadoop.HadoopDetailsDto;
 import com.ys.idatrix.cloudetl.ext.CloudSession;
+import com.ys.idatrix.cloudetl.ext.utils.StringEscapeHelper;
+import com.ys.idatrix.cloudetl.reference.metacube.MetaCubeHadoop;
 import com.ys.idatrix.cloudetl.service.hadoop.CloudHadoopService;
 
 /**
@@ -36,6 +40,8 @@ public class HadoopFileInputDetailService implements StepDetailService {
 	private CloudHadoopService cloudHadoopService;
 	@Autowired
 	private TextInputDetailService textInputDetailService;
+	@Autowired
+	private MetaCubeHadoop metaCubeHadoop ;
 
 	@Override
 	public String getStepDetailType() {
@@ -129,6 +135,22 @@ public class HadoopFileInputDetailService implements StepDetailService {
 	}
 
 	public String getConnectPath(String owner ,String sourceConfigurationName, String rootpath) throws Exception {
+		
+		if( IdatrixPropertyUtil.getBooleanProperty("idatrix.hadoop.root.from.metacube",true) &&  rootpath != null && !rootpath.startsWith("${") ) {
+			List<String> userRootList = metaCubeHadoop.getHadoopUserRoots(Const.NVL(owner, CloudSession.getResourceUser()), null);
+			if( userRootList!= null && userRootList.size() >0 ) {
+				String path = StringEscapeHelper.getUrlPath(rootpath);
+				String curRoot = null ;
+				if( !Utils.isEmpty(path) ) {
+					curRoot = userRootList.stream().filter(r -> path.startsWith(r)).findAny().orElse(null) ;
+				}
+				if( Utils.isEmpty(curRoot) ) {
+					throw new KettleException("path " + rootpath + " root is not match!");
+				}
+			}else {
+				throw new KettleException("path " + rootpath + " root is not found!");
+			}
+		}
 
 		HadoopDetailsDto hadoopNamedCluster = cloudHadoopService.editHadoop(owner ,sourceConfigurationName);
 		if (hadoopNamedCluster == null || Utils.isEmpty(hadoopNamedCluster.getName())) {

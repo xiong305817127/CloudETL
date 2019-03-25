@@ -36,12 +36,18 @@ public class BaseAction {
 	}
 	
 	/**
-	 * 检查权限 , 管理员只有有权限,非管理员对自己的资源有权限
+	 * 检查权限 , 管理员有全部权限, 非管理员对自己的资源有权限
 	 * @throws Exception
 	 */
 	public void checkPrivilege() throws Exception {
 		if( !CloudSession.isSuperPrivilege() ) {
-			throw new Exception("您没有管理员权限,无法操作!");
+			//throw new Exception("您没有权限,无法操作!");
+			//没有权限时 只能操作自己的资源
+			if( Utils.isEmpty(CloudSession.getCurrentResourceUser())) {
+				CloudSession.setThreadResourceUser(CloudSession.getLoginUser());
+			}else {
+				throw new Exception("您没有权限,无法操作!");
+			}
 		}
 	}
 	

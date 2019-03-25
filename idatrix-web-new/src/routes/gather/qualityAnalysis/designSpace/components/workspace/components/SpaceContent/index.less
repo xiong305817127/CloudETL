@@ -1,0 +1,210 @@
+.mainContent{
+    height:100%;
+    overflow: scroll;
+    position: relative;
+
+    &.netStyle{
+        background: url("../../../../../../image/design/grid_bg.png");
+    }
+
+    //拖拽的属性
+    .drop{
+        width: 50px;
+        height: 60px;
+        position: absolute;
+        left: 100px;
+      
+        box-shadow: 2px 2px 19px #e0e0e0;
+        -o-box-shadow: 2px 2px 19px #e0e0e0;
+        -webkit-box-shadow: 2px 2px 19px #e0e0e0;
+        -moz-box-shadow: 2px 2px 19px #e0e0e0;
+        -moz-border-radius: 8px;
+        border-radius: 8px;
+        opacity: 0.8;
+        cursor: move;
+        font-size: 11px;
+        -webkit-transition: background-color 0.25s ease-in;
+        -moz-transition: background-color 0.25s ease-in;
+        transition: background-color 0.25s ease-in;
+
+        /*连线位置*/
+        .canDrag{
+            width: 13px;
+            height: 13px;
+            position: absolute;
+            bottom: 3px;
+            left: 3px;
+            background: url("../../../../../../image/design/line_icon.png ") no-repeat center ;
+        }
+        .canDrag:hover{
+            cursor: pointer;
+            box-shadow: -1px 0 3px #666,1px 0 3px #666, 0 -1px 3px #666,0 1px 3px #666;
+        }
+
+        //图片位置
+        .img{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-top: -16px;
+            margin-left: -16px;
+            width: 32px;
+            height: 32px;
+        }
+
+        //分析配置
+        .domSet{
+            width: 13px;
+            height: 13px;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            background: url("../../../../../../image/design/dom_set.png") no-repeat center ;
+            cursor: pointer;
+        }
+
+        //文字位置
+        .span{
+            width: 100px;
+            position: relative;
+            left: -50%;
+            top:67px;
+            text-align: center;
+        }
+
+        //删除按钮样式
+        :global{
+            .anticon-close:before{
+                position: absolute;
+                top: 5px;
+                right: 3px;
+                font-size: 12px;
+            }
+            .anticon-close:before:hover{
+                cursor: pointer;
+            }
+        }  
+        .close:hover{
+            cursor: pointer;
+        }
+    }
+
+    //节点状态切换
+    :global{
+
+    /*初始化状态*/
+    .dragNormal{
+        border: 1px solid #5D96c6;
+        .checkCircle{
+            display: none;
+        }
+    }
+           
+    /*告警状态*/  
+    .stopStyle{
+        border: 1px solid darkorange;
+        .checkCircle{
+            display: none;
+        }
+    }
+    // 错误状态
+    .errorStyle{
+        border: 1px solid #ff508b;
+        .checkCircle{
+            display: none;
+        }
+    }
+    // 成功状态
+    .success{
+        border: 1px solid #00AA00;
+
+        .checkCircle:before{
+            content: "\E630";
+        }
+        .checkCircle{
+            font-size: 16px;
+            color: #00AA00;
+            position: absolute;
+            top: -8px;
+            left:-8px;
+            z-index: 10;
+        }
+    } 
+}
+    .drop:hover{
+        border: 1px solid #1e8151;
+        /*box-shadow: -1px 0 3px #2e6f9a,1px 0 3px #2e6f9a, 0 -1px 3px #2e6f9a,0 1px 3px #2e6f9a;*/
+    }
+
+    /*线条中间样式*/
+    :global{
+        .aLabel{
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            background:url("../../../../../../image/design/copy.png") no-repeat center;
+            color: transparent;
+        }
+
+        .aLabel:hover{
+            background:url("../../../../../../image/design/copy.png") no-repeat center;
+            color: transparent;
+        }
+  
+        .aLabelError{
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            background: url("../../../../../../image/design/error.png") no-repeat center;
+            color: transparent;
+        }
+
+        .aLabelError:hover{
+            background: url("../../../../../../image/design/error.png") no-repeat center;
+            color: transparent;
+        }
+
+        //分发步骤样式
+        .aLabelDistribute{
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            background:url("../../../../../../image/design/distribute.png") no-repeat center;
+            color: transparent;
+        }
+
+        .aLabelDistribute:hover{
+            background:url("../../../../../../image/design/distribute.png") no-repeat center;
+            color: transparent;
+        }
+        
+        //错误处理步骤样式
+        .errTransClass path{
+            stroke: red;
+            stroke-dasharray: 10,5;
+        }
+    }
+
+    .fucBtn{
+        position: absolute;
+        height: 32px;
+        top:20px;
+        right:50px;
+        line-height: 32px;
+        width: 350px;
+        box-sizing: border-box;
+        text-align: right;
+
+        .fucBtn1{
+            display: inline-block;
+            box-sizing: border-box;
+            width: 120px;
+        }
+
+        .fucBtn2{
+            display: inline-block;box-sizing: border-box;
+            width: 160px;
+        }
+    }
+
+}

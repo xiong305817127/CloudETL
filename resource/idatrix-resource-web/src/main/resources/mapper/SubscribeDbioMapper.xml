@@ -10,11 +10,14 @@
         <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
         <result column="modifier" property="modifier" jdbcType="VARCHAR" />
         <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+        <result column="data_masking_type" property="dataMaskingType" jdbcType="VARCHAR" />
+        <result column="data_start_index" property="dataStartIndex" jdbcType="INTEGER" />
+        <result column="data_length" property="dataLength" jdbcType="INTEGER" />
     </resultMap>
 
     <sql id="Base_Column_List">
         id, subscribe_id, param_type, column_id, creator, create_time,
-        modifier, modify_time
+        modifier, modify_time,data_masking_type, data_start_index, data_length
     </sql>
 
     <select id="getById" resultMap="BaseResultMap">
@@ -46,10 +49,11 @@
     <insert id="insert" parameterType="com.idatrix.resource.subscribe.po.SubscribeDbioPO" useGeneratedKeys="true" keyProperty="id">
         insert into rc_subscribe_dbio (
          id, subscribe_id, param_type, column_id, creator, create_time,
-        modifier, modify_time)
+        modifier, modify_time, data_masking_type, data_start_index, data_length)
         values ( #{id}, #{subscribeId},
         #{paramType},#{columnId},
-        #{creator}, #{createTime}, #{modifier}, #{modifyTime})
+        #{creator}, #{createTime}, #{modifier}, #{modifyTime},
+        #{dataMaskingType}, #{dataStartIndex}, #{dataLength})
     </insert>
 
 
@@ -62,7 +66,10 @@
         creator = #{creator},
         create_time = #{createTime},
         modifier = #{modifier},
-        modify_time = #{modifyTime}
+        modify_time = #{modifyTime},
+        data_masking_type =#{dataMaskingType},
+        data_start_index = #{dataStartIndex},
+        data_length = #{dataLength}
         where id = #{id}
     </update>
 </mapper>

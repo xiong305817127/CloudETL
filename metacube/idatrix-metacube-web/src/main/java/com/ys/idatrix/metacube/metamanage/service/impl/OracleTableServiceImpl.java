@@ -2,10 +2,13 @@ package com.ys.idatrix.metacube.metamanage.service.impl;
 
 import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
+import com.google.common.collect.Lists;
 import com.ys.idatrix.db.api.common.RespResult;
 import com.ys.idatrix.db.api.rdb.dto.RdbLinkDto;
 import com.ys.idatrix.db.api.rdb.service.OracleService;
 import com.ys.idatrix.db.api.sql.dto.SqlQueryRespDto;
+import com.ys.idatrix.graph.service.api.dto.edge.FkRelationshipDto;
+import com.ys.idatrix.graph.service.api.dto.node.TableNodeDto;
 import com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum;
 import com.ys.idatrix.metacube.common.enums.DBEnum;
 import com.ys.idatrix.metacube.common.enums.DataStatusEnum;
@@ -15,6 +18,7 @@ import com.ys.idatrix.metacube.metamanage.domain.*;
 import com.ys.idatrix.metacube.metamanage.mapper.*;
 import com.ys.idatrix.metacube.metamanage.service.*;
 import com.ys.idatrix.metacube.metamanage.vo.request.*;
+import com.ys.idatrix.metacube.sysmanage.service.ThemeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +89,9 @@ public class OracleTableServiceImpl implements OracleTableService {
     @Autowired
     private TableSetOracleMapper settingMapper;
 
+    @Autowired
+    private GraphSyncService graphSyncService;
+
     @Override
     public MetadataMapper getMetadataMapper() {
         return metadataMapper;
@@ -111,18 +118,19 @@ public class OracleTableServiceImpl implements OracleTableService {
 
     @Override
     public List<String> findTablespaceListBySchemaId(Long schemaId) {
+        List<String> nameList = new ArrayList<>();
+
         // 获取连接信息
         Metadata metadata = new Metadata();
         metadata.setSchemaId(schemaId);
         RdbLinkDto config = oracleDDLService.getConnectionConfig(metadata);
-
-        List<String> nameList = new ArrayList<>();
         // 调用db proxy查询表空间
         RespResult<SqlQueryRespDto> result = oracleService.selectTableSpace(config);
         if (result.isSuccess() && result.getData() != null && CollectionUtils
                 .isNotEmpty(result.getData().getColumns())) {
-            List<Map<String, Object>> list = (List<Map<String, Object>>) result.getData(); // 数据
-            String tablespaceName = result.getData().getColumns().get(0);// 列
+            SqlQueryRespDto dto = result.getData();
+            List<Map<String, Object>> list = dto.getData(); // 数据
+            String tablespaceName = dto.getColumns().get(0); // 列
             for (Map<String, Object> stringObjectMap : list) {
                 String name = (String) stringObjectMap.get(tablespaceName);
                 nameList.add(name);
@@ -133,17 +141,18 @@ public class OracleTableServiceImpl implements OracleTableService {
 
     @Override
     public List<String> findSequenceListBySchemaId(Long schemaId) {
+        List<String> sequenceList = new ArrayList<>();
+
         Metadata metadata = new Metadata();
         metadata.setSchemaId(schemaId);
         // 连接参数
         RdbLinkDto config = oracleDDLService.getConnectionConfig(metadata);
-
         RespResult<SqlQueryRespDto> result = oracleService.selectSequenceList(config);
         if (!result.isSuccess()) {
             throw new MetaDataException(result.getMsg());
         }
-        List<String> sequenceList = new ArrayList<>();
-        List<Map<String, Object>> list = (List<Map<String, Object>>) result.getData(); // 数据
+        SqlQueryRespDto dto = result.getData();
+        List<Map<String, Object>> list = dto.getData();// 数据
         if (CollectionUtils.isEmpty(list)) {
             return sequenceList;
         }
@@ -153,7 +162,6 @@ public class OracleTableServiceImpl implements OracleTableService {
             sequenceList.add(name);
         }
         return sequenceList;
-
     }
 
     @Override
@@ -221,6 +229,34 @@ public class OracleTableServiceImpl implements OracleTableService {
         addTable(oracleTable);
         // 生效
         generateOrUpdateEntityTable(oracleTable.getId());
+        // 表同步到数据地图
+        graphSyncService.graphSaveTableNode(oracleTable.getId());
+        // 表外键同步到数据地图
+        graphSaveOrUpdateFkRlat(oracleTable.getId());
+    }
+
+    @Override
+    public  void addMiningTable(OracleTableVO oracleTable ) {
+    	// 修改当前表为生效状态
+        oracleTable.setStatus(DataStatusEnum.VALID.getValue());
+        // 新增
+        addTable(oracleTable);
+        // 生成快照版本
+        Long tableId = oracleTable.getId();
+        Metadata metadata = metadataMapper.selectByPrimaryKey(tableId); // 表基本信息
+        List<TableColumn> columnList = tableColumnMapper
+                .findTableColumnListByTableId(tableId); // 表字段信息
+        TablePkOracle primaryKey = primaryKeyMapper.findByTableId(tableId);// 主键信息
+        List<TableIdxOracle> indexList = indexMapper.findByTableId(tableId);// 索引信息
+        List<TableUnOracle> uniqueList = uniqueMapper.findByTableId(tableId); // 唯一约束信息
+        List<TableChOracle> checkList = checkMapper.findByTableId(tableId); // 检查约束信息
+        List<TableFkOracle> foreignKeyList = foreignKeyMapper.findByTableId(tableId);// 外键信息
+        TableSetOracle setting = settingMapper.findByTableId(tableId);// 表设置信息
+        snapshotService.generateSnapshot(metadata, columnList, primaryKey, indexList, uniqueList, checkList, foreignKeyList, setting, "直采");
+    	// 表同步到数据地图
+		graphSyncService.graphSaveTableNode(oracleTable.getId());
+        // 表外键同步到数据地图
+        graphSaveOrUpdateFkRlat(oracleTable.getId());
     }
 
     @Override
@@ -231,6 +267,8 @@ public class OracleTableServiceImpl implements OracleTableService {
         updateTable(oracleTable);
         // 生效
         generateOrUpdateEntityTable(oracleTable.getId());
+        // 表外键同步到数据地图
+        graphSaveOrUpdateFkRlat(oracleTable.getId());
     }
 
     @Override
@@ -276,12 +314,14 @@ public class OracleTableServiceImpl implements OracleTableService {
             foreignKeyMapper.deleteByTableId(id);
             // 使用主题递减
             themeService.decreaseProgressively(table.getThemeId());
-            // 如果为直采
-            if (table.getIsGather()) {
-                continue;
-            }
             // 如果当前为草稿，删除就此结束
             if (table.getStatus() == DataStatusEnum.DRAFT.getValue()) {
+                continue;
+            }
+            // 删除同步到数据地图
+            graphSyncService.graphDeleteTableNode(id);
+            // 如果为直采
+            if (table.getIsGather()) {
                 continue;
             }
             // 如果为表，需要删除实体表
@@ -290,12 +330,14 @@ public class OracleTableServiceImpl implements OracleTableService {
             }
             tableNames.add(table.getName()); // 保存下表名
         }
-        // 获取删除语句
-        List<String> list = oracleDDLService.getDeleteTableSql(tableNames);
-        ArrayList arrayList = new ArrayList();
-        arrayList.addAll(list);
-        // 删除生效到数据库中
-        oracleDDLService.goToDatabase(tableCopy, arrayList);
+        if(CollectionUtils.isNotEmpty(tableNames)) {
+            // 获取删除语句
+            List<String> list = oracleDDLService.getDeleteTableSql(tableNames);
+            ArrayList arrayList = new ArrayList();
+            arrayList.addAll(list);
+            // 删除生效到数据库中
+            oracleDDLService.goToDatabase(tableCopy, arrayList);
+        }
     }
 
     @Override
@@ -406,7 +448,7 @@ public class OracleTableServiceImpl implements OracleTableService {
         }
 
         // 校验基本信息
-        validatedService.validatedTableBaseInfo(oracleTable, false);
+        validatedService.validatedTableBaseInfo(oracleTable);
 
         Metadata table = new Metadata();
         BeanUtils.copyProperties(oracleTable, table);
@@ -463,7 +505,7 @@ public class OracleTableServiceImpl implements OracleTableService {
             return;
         }
         // 校验
-        validatedService.validatedTableCheck(oracleTable, checkList, oracleTable.getUniqueList(), oracleTable.getPrimaryKey(), false);
+        validatedService.validatedTableCheck(oracleTable, checkList, oracleTable.getUniqueList(), oracleTable.getPrimaryKey(), oracleTable.getVersion());
         // 新增
         insertCheckList(oracleTable.getId(), checkList, creator, createTime);
     }
@@ -486,7 +528,7 @@ public class OracleTableServiceImpl implements OracleTableService {
             return;
         }
         // 校验
-        validatedService.validatedTableUnique(oracleTable, uniqueList, oracleTable.getPrimaryKey(), oracleTable.getColumnList(), false);
+        validatedService.validatedTableUnique(oracleTable, uniqueList, oracleTable.getPrimaryKey(), oracleTable.getColumnList(), oracleTable.getVersion());
         // 新增
         insertUniqueList(oracleTable.getId(), uniqueList, creator, createTime);
     }
@@ -506,7 +548,7 @@ public class OracleTableServiceImpl implements OracleTableService {
 
     private void insertPrimaryKey(Metadata table, TablePkOracle primaryKey, List<TableColumn> columnList, String creator, Date createTime) {
         // 校验
-        validatedService.validatedTablePrimaryKey(table, primaryKey, columnList, false);
+        validatedService.validatedTablePrimaryKey(table, primaryKey, columnList);
         // 新增主键
         insertPrimaryKey(table.getId(), primaryKey, creator, createTime);
     }
@@ -525,7 +567,8 @@ public class OracleTableServiceImpl implements OracleTableService {
             return;
         }
         // 校验
-        validatedService.validatedTableForeignKey(table, foreignKeyList, table.getColumnList(), table.getUniqueList(), table.getCheckList(), table.getPrimaryKey(), false);
+        validatedService.validatedTableForeignKey(table, foreignKeyList, table.getColumnList(), table.getUniqueList(),
+                table.getCheckList(), table.getPrimaryKey(), table.getVersion());
         // 新建
         insertForeignKeyList(table.getId(), foreignKeyList, creator, createTime);
     }
@@ -549,7 +592,7 @@ public class OracleTableServiceImpl implements OracleTableService {
             return;
         }
         // 校验
-        validatedService.validatedTableIndex(table, indexList, tableColumnList, false);
+        validatedService.validatedTableIndex(table, indexList, tableColumnList, table.getVersion());
         // 新增
         insertIndexList(table.getId(), indexList, creator, createTime);
     }
@@ -571,7 +614,7 @@ public class OracleTableServiceImpl implements OracleTableService {
 
     private void insertTableColumn(Metadata table, List<TableColumn> tableColumnList, String creator, Date createTime) {
         // 校验表字段
-        validatedService.validatedTableColumn(tableColumnList, false);
+        validatedService.validatedTableColumn(tableColumnList, table.getVersion());
         // 遍历去新增
         columnService.insertColumnList(tableColumnList, table.getId(), creator, createTime);
     }
@@ -590,7 +633,7 @@ public class OracleTableServiceImpl implements OracleTableService {
         table.setModifyTime(modifyTime);
 
         // 校验表的基本信息
-        validatedService.validatedTableBaseInfo(oracleTable, true);
+        validatedService.validatedTableBaseInfo(oracleTable);
         // 修改表基本信息
         metadataMapper.updateByPrimaryKeySelective(table);
 
@@ -660,7 +703,7 @@ public class OracleTableServiceImpl implements OracleTableService {
         List<TableChOracle> checkList = checkMapper.findByTableId(table.getId());
 
         // 校验
-        validatedService.validatedTableForeignKey(table, foreignKeyList, columnList, uniqueList, checkList, primaryKey, true);
+        validatedService.validatedTableForeignKey(table, foreignKeyList, columnList, uniqueList, checkList, primaryKey, table.getVersion());
 
         // 修改
         if (foreignKeyList != null) {
@@ -701,7 +744,7 @@ public class OracleTableServiceImpl implements OracleTableService {
         List<TableUnOracle> uniqueList = uniqueMapper.findByTableId(table.getId());
 
         // 校验
-        validatedService.validatedTableCheck(table, allCheckList, uniqueList, primaryKey, true);
+        validatedService.validatedTableCheck(table, allCheckList, uniqueList, primaryKey, table.getVersion());
 
         // 修改
         if (checkList != null) {
@@ -742,7 +785,7 @@ public class OracleTableServiceImpl implements OracleTableService {
         // 最新的字段列表
         List<TableColumn> columnList = tableColumnMapper.findTableColumnListByTableId(table.getId());
         // 校验唯一约束
-        validatedService.validatedTableUnique(table, allUniqueList, primaryKey, columnList, true);
+        validatedService.validatedTableUnique(table, allUniqueList, primaryKey, columnList, table.getVersion());
 
         // 修改
         if (uniqueList != null) {
@@ -769,6 +812,7 @@ public class OracleTableServiceImpl implements OracleTableService {
         if (allIndexList == null) {
             allIndexList = new ArrayList<>();
         }
+
         if (indexList != null) { // 不等于空，那么表示有修改
             // 先删再增，获取当前表最新的索引
             allIndexList.removeIf(property -> indexList.stream().map(prop -> prop.getId()).collect(Collectors.toList()).contains(property.getId()));
@@ -780,7 +824,7 @@ public class OracleTableServiceImpl implements OracleTableService {
         // 当前表最新的所有的字段
         List<TableColumn> columnList = tableColumnMapper.findTableColumnListByTableId(table.getId());
         // 校验索引
-        validatedService.validatedTableIndex(table, indexList, columnList, true);
+        validatedService.validatedTableIndex(table, indexList, columnList, table.getVersion());
 
         // 修改
         if (indexList != null) {
@@ -805,7 +849,7 @@ public class OracleTableServiceImpl implements OracleTableService {
         // 当前表最新的所有的字段
         List<TableColumn> columnList = tableColumnMapper.findTableColumnListByTableId(table.getId());
         // 校验主键
-        validatedService.validatedTablePrimaryKey(table, primaryKey, columnList, true);
+        validatedService.validatedTablePrimaryKey(table, primaryKey, columnList);
         // 修改
         primaryKey.setModifier(modifier);
         primaryKey.setModifyTime(modifyTime);
@@ -823,7 +867,7 @@ public class OracleTableServiceImpl implements OracleTableService {
         allTableColumn.addAll(columnList);
 
         // 校验表字段
-        validatedService.validatedTableColumn(allTableColumn, true);
+        validatedService.validatedTableColumn(allTableColumn, table.getVersion());
 
         // 要新增的字段
         List<TableColumn> addList = new ArrayList<>();
@@ -917,5 +961,84 @@ public class OracleTableServiceImpl implements OracleTableService {
                 value.setColumnNames(StringUtils.join(columnNames, ","));
             });
         }
+    }
+
+
+    private void graphSaveOrUpdateFkRlat(Long tableId) {
+        Metadata metadata = metadataMapper.selectByPrimaryKey(tableId);
+        // 当前表外键信息
+        List<TableFkOracle> foreignKeyList =
+                foreignKeyMapper.findByTableId(tableId);// 表外键信息
+        if(metadata.getVersion() <= 1) { // 新增
+            if(CollectionUtils.isNotEmpty(foreignKeyList)) {
+                graphSaveFkRlat(tableId, foreignKeyList);
+            }
+        } else { // 修改
+            Integer versions = metadata.getVersion() - 1;
+            List<TableFkOracle> snapshotForeignKeyList =
+                    snapshotService.getSnapshotForeignKeyListByTableId(tableId, versions); // 旧版本外键约束信息
+            if(CollectionUtils.isEmpty(foreignKeyList) && CollectionUtils.isEmpty(snapshotForeignKeyList)) {
+                return;
+            }
+            // 如果新或旧的外键集合其中一个为null,则主动一个空ArrayList,便于后续处理
+            if (CollectionUtils.isEmpty(foreignKeyList)) {
+                foreignKeyList = new ArrayList<>();
+            }
+            if (CollectionUtils.isEmpty(snapshotForeignKeyList)) {
+                snapshotForeignKeyList = new ArrayList<>();
+            }
+
+            // copy一份不要修改到之前参数
+            ArrayList<TableFkOracle> oldForeignKeyList = Lists.newArrayList(snapshotForeignKeyList);
+            ArrayList<TableFkOracle> newForeignKeyList = Lists.newArrayList(foreignKeyList);
+
+            // 在copy一份做参照
+            ArrayList<TableFkOracle> oldCopy = Lists.newArrayList(snapshotForeignKeyList);
+            ArrayList<TableFkOracle> newCopy = Lists.newArrayList(foreignKeyList);
+
+            // 不变的索引bean集合 //求交集。自定义对象重写 hashcode 和 equals
+            oldCopy.retainAll(newCopy);
+
+            // 待删除的外键集合，解释：被修改或以被删除的外键
+            oldForeignKeyList.removeAll(oldCopy);
+
+            // 待新增的外键集合，解释：被修改或新增的外键
+            newForeignKeyList.removeAll(oldCopy);
+
+            // 删除
+            for (TableFkOracle fk : oldForeignKeyList) {
+                graphSyncService.deleteFkRlat(fk.getTableId(), fk.getName());
+            }
+            // 新增
+            graphSaveFkRlat(tableId, newForeignKeyList);
+        }
+    }
+
+    private void graphSaveFkRlat(Long tableId, List<TableFkOracle> foreignKeyList) {
+        // 当前表
+        TableNodeDto startNode = graphSyncService.getTableNodeDto(tableId);
+        List<FkRelationshipDto> result = new ArrayList<>();
+        // 遍历外键
+        for (TableFkOracle foreignKey : foreignKeyList) {
+            TableNodeDto endTableDto =
+                    graphSyncService.getTableNodeDto(foreignKey.getReferenceTableId());// 外键表
+            String fkName = foreignKey.getName(); // 外键名
+            String[] columnIdArr = foreignKey.getColumnIds().split(",");// 当前表字段
+            String[] referenceColumnIdArr = foreignKey.getReferenceColumn().split(","); // 参考表字段
+            // 遍历字段
+            for (int i = 0; i < columnIdArr.length; i++) {
+                FkRelationshipDto dto = new FkRelationshipDto();
+                dto.setStartNode(startNode);
+                dto.setEndNode(endTableDto);
+                dto.setFkName(fkName);
+                // 字段信息
+                TableColumn column = tableColumnMapper.selectByPrimaryKey(Long.parseLong(columnIdArr[i]));
+                TableColumn referenceColumn = tableColumnMapper.selectByPrimaryKey(Long.parseLong(referenceColumnIdArr[i]));
+                dto.setStartFieldName(column.getColumnName());
+                dto.setEndFieldName(referenceColumn.getColumnName());
+                result.add(dto);
+            }
+        }
+        graphSyncService.saveFkRlat(result);
     }
 }

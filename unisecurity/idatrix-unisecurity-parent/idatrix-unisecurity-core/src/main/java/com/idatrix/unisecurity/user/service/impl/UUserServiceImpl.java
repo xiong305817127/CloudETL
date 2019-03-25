@@ -7,9 +7,7 @@ import com.idatrix.unisecurity.common.dao.UUserRoleMapper;
 import com.idatrix.unisecurity.common.domain.*;
 import com.idatrix.unisecurity.common.exception.SecurityException;
 import com.idatrix.unisecurity.common.utils.Constants;
-import com.idatrix.unisecurity.common.utils.HttpCodeUtils;
 import com.idatrix.unisecurity.common.utils.LoggerUtils;
-import com.idatrix.unisecurity.core.jedis.JedisClient;
 import com.idatrix.unisecurity.core.mybatis.BaseMybatisDao;
 import com.idatrix.unisecurity.core.mybatis.page.Pagination;
 import com.idatrix.unisecurity.core.shiro.session.CustomSessionManager;
@@ -20,13 +18,13 @@ import com.idatrix.unisecurity.freeipa.proxy.factory.LdapHttpDataBuilder;
 import com.idatrix.unisecurity.freeipa.proxy.impl.FreeIPAProxyImpl;
 import com.idatrix.unisecurity.permission.bo.URoleBo;
 import com.idatrix.unisecurity.permission.bo.UserRoleAllocationBo;
-import com.idatrix.unisecurity.properties.LoginProperties;
 import com.idatrix.unisecurity.ranger.usersync.process.LdapMgrUserGroupBuilder;
 import com.idatrix.unisecurity.renter.service.RenterService;
 import com.idatrix.unisecurity.user.Config;
 import com.idatrix.unisecurity.user.manager.UserManager;
-import com.idatrix.unisecurity.user.service.SynchUserToBbs;
-import com.idatrix.unisecurity.user.service.SynchUserToSsz;
+import com.idatrix.unisecurity.user.service.SyncUserToBbs;
+import com.idatrix.unisecurity.user.service.SyncUserToBeijing;
+import com.idatrix.unisecurity.user.service.SyncUserToSsz;
 import com.idatrix.unisecurity.user.service.UUserService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -71,23 +69,20 @@ public class UUserServiceImpl extends BaseMybatisDao<UUserMapper> implements UUs
     @Autowired(required = false)
     private UserInfoSyncService userInfoSyncService;*/
 
-    @Autowired(required = false)
-    ImportMsgMapper importMsgMapper;
-
-    @Autowired(required = false)
-    Config config;
+    @Autowired
+    private ImportMsgMapper importMsgMapper;
 
     @Autowired
-    private JedisClient jedisClient;
+    private Config config;
 
     @Autowired
-    private LoginProperties loginProperties;
+    private SyncUserToBbs syncUserToBbs;
 
     @Autowired
-    private SynchUserToBbs synchUserToBbs;
+    private SyncUserToSsz syncUserToSsz;
 
     @Autowired
-    private SynchUserToSsz synchUserToSsz;
+    private SyncUserToBeijing syncUserToBeijing;
 
     @Override
     public int deleteByPrimaryKey(Long id) {
@@ -107,6 +102,7 @@ public class UUserServiceImpl extends BaseMybatisDao<UUserMapper> implements UUs
 
     @Override
     public UUser insertSelective(UUser user) {
+        String password = user.getPswd();
         // 参数补齐
         Date date = new Date();
         user.setCreateTime(date);
@@ -114,10 +110,12 @@ public class UUserServiceImpl extends BaseMybatisDao<UUserMapper> implements UUs
         UserManager.md5Pswd(user);
         // insert
         userMapper.insertSelective(user);
-        // 同步到 bbs 中
-        synchUserToBbs.addUser(user.getUsername(), user.getPswd(), user.getEmail(), user.getPhone());
+        // 同步到bbs中
+        syncUserToBbs.addUser(user.getUsername(), user.getPswd(), user.getEmail(), user.getPhone());
         // 同步到神算子中
-        synchUserToSsz.addUser(user.getUsername());
+        syncUserToSsz.addUser(user.getUsername());
+        // 同步到北京中
+        syncUserToBeijing.addUser(user.getUsername(), password, user.getRealName(), user.getEmail());
         return user;
     }
 
@@ -133,6 +131,10 @@ public class UUserServiceImpl extends BaseMybatisDao<UUserMapper> implements UUs
 
     @Override
     public int updateByPrimaryKeySelective(UUser entity) {
+        String password = entity.getPswd();
+        if(StringUtils.isNotBlank(password)) {
+            UserManager.md5Pswd(entity);
+        }
         // 修改用户信息
         entity.setLastUpdatedDate(new Date());
         userMapper.updateByPrimaryKeySelective(entity);
@@ -147,7 +149,9 @@ public class UUserServiceImpl extends BaseMybatisDao<UUserMapper> implements UUs
             renterService.updateRenterInfo(uRenter);
         }
         // 修改用户同步到bbs中
-        synchUserToBbs.updateUser(user.getUsername(), user.getPswd(), user.getPhone(), user.getEmail(), true);
+        syncUserToBbs.updateUser(user.getUsername(), user.getPswd(), user.getPhone(), user.getEmail(), true);
+        // 修改用户同步到北京中
+        syncUserToBeijing.updateUser(user.getUsername(), password, user.getRealName(), user.getEmail());
         return 0;
     }
 
@@ -246,32 +250,15 @@ public class UUserServiceImpl extends BaseMybatisDao<UUserMapper> implements UUs
         String strUserNames = StringUtils.join(userNames.toArray(), ",");
 
         // delete同步到bbs中
-        synchUserToBbs.deleteUser(strUserNames);
+        syncUserToBbs.deleteUser(strUserNames);
 
         // delete同步到神算子中
-        synchUserToSsz.deleteUser(strUserNames);
+        syncUserToSsz.deleteUser(strUserNames);
+
+        // 删除同步到北京
+        syncUserToBeijing.delete(strUserNames);
 
         return count;
-    }
-
-    @Override
-    public Map<String, Object> updateForbidUserById(Long id, Long status) {
-        Map<String, Object> resultMap = new HashMap<String, Object>();
-        try {
-            UUser user = selectByPrimaryKey(id);
-            user.setStatus(status);
-            updateByPrimaryKeySelective(user);
-
-            //如果当前用户在线，需要标记并且踢出
-            customSessionManager.forbidUserById(id, status);
-
-            resultMap.put("status", HttpCodeUtils.NORMAL_STATUS);
-        } catch (Exception e) {
-            resultMap.put("status", HttpCodeUtils.SERVER_INNER_ERROR_STATUS);
-            resultMap.put("message", "操作失败，请刷新再试！");
-            LoggerUtils.fmtError(getClass(), "禁止或者激活用户登录失败，id[%s],status[%s]", id, status);
-        }
-        return resultMap;
     }
 
     @SuppressWarnings("unchecked")

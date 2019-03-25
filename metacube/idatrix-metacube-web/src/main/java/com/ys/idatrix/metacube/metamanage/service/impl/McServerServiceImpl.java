@@ -3,6 +3,7 @@ package com.ys.idatrix.metacube.metamanage.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.idatrix.unisecurity.api.domain.Organization;
+import com.idatrix.unisecurity.api.service.OrganizationService;
 import com.ys.idatrix.graph.service.api.dto.node.ServerNodeDto;
 import com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum;
 import com.ys.idatrix.metacube.api.beans.PageResultBean;
@@ -10,7 +11,6 @@ import com.ys.idatrix.metacube.common.enums.ChangeTypeEnum;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
 import com.ys.idatrix.metacube.common.utils.UserUtils;
 import com.ys.idatrix.metacube.dubbo.consumer.GraphConsumer;
-import com.ys.idatrix.metacube.dubbo.consumer.SecurityConsumer;
 import com.ys.idatrix.metacube.metamanage.domain.McDatabasePO;
 import com.ys.idatrix.metacube.metamanage.domain.McSchemaPO;
 import com.ys.idatrix.metacube.metamanage.domain.McServerDatabaseChangePO;
@@ -20,11 +20,12 @@ import com.ys.idatrix.metacube.metamanage.service.McDatabaseService;
 import com.ys.idatrix.metacube.metamanage.service.McSchemaService;
 import com.ys.idatrix.metacube.metamanage.service.McServerDatabaseChangeService;
 import com.ys.idatrix.metacube.metamanage.service.McServerService;
-import com.ys.idatrix.metacube.metamanage.service.SystemSettingsService;
 import com.ys.idatrix.metacube.metamanage.vo.request.ChangeSearchVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.ServerSearchVO;
 import com.ys.idatrix.metacube.metamanage.vo.response.DatabaseVO;
+import com.ys.idatrix.metacube.metamanage.vo.response.SchemaListVO;
 import com.ys.idatrix.metacube.metamanage.vo.response.ServerVO;
+import com.ys.idatrix.metacube.sysmanage.service.SystemSettingsService;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,7 +59,7 @@ public class McServerServiceImpl implements McServerService {
     private SystemSettingsService systemSettingsService;
 
     @Autowired
-    private SecurityConsumer securityConsumer;
+    private OrganizationService organizationService;
 
     @Autowired
     private GraphConsumer graphConsumer;
@@ -68,7 +68,7 @@ public class McServerServiceImpl implements McServerService {
      * 校验权限 只有数据中心管理员和数据库管理员有权限维护服务器
      */
     private void authentication() {
-        if (!systemSettingsService.isDatabaseAdmin()
+        if (!systemSettingsService.isDataCentreAdmin()
                 && !systemSettingsService.isDatabaseAdmin()) {
             throw new MetaDataException("权限不足");
         }
@@ -88,11 +88,10 @@ public class McServerServiceImpl implements McServerService {
     @Transactional(rollbackFor = {RuntimeException.class, SQLException.class})
     @Override
     public McServerPO insert(McServerPO serverPO) {
-        try {
-            serverMapper.insert(serverPO);
-        } catch (DuplicateKeyException e) {
+        if (exists(serverPO.getIp(), serverPO.getRenterId())) {
             throw new MetaDataException(duplicateKeyMessage(serverPO.getIp()));
         }
+        serverMapper.insert(serverPO);
         changeService.insert(generateChangePO(serverPO.getId(),
                 serverPO.getCreator()).setContent(generateContentForRegisterServer()));
 
@@ -117,11 +116,11 @@ public class McServerServiceImpl implements McServerService {
         serverPO.setRenterId(UserUtils.getRenterId());
         serverPO.fillModifyInfo(serverPO, UserUtils.getUserName());
 
-        try {
-            serverMapper.update(serverPO);
-        } catch (DuplicateKeyException e) {
+        McServerPO server = getServerByIpAndRenterId(serverPO.getIp(), serverPO.getRenterId());
+        if (server != null && !serverPO.getId().equals(server.getId())) {
             throw new MetaDataException(duplicateKeyMessage(serverPO.getIp()));
         }
+        serverMapper.update(serverPO);
 
         // TODO 需回写安全的所属组织使用计数器
 
@@ -130,7 +129,7 @@ public class McServerServiceImpl implements McServerService {
             return getServerById(serverPO.getId());
         }
 
-        changeService.insert(generateChangePO(serverPO.getId(), serverPO.getCreator())
+        changeService.insert(generateChangePO(serverPO.getId(), serverPO.getModifier())
                 .setContent(generateContentForChangeIp(oldServerPO.getIp(),
                         serverPO.getIp())));
 
@@ -171,6 +170,17 @@ public class McServerServiceImpl implements McServerService {
         return serverPO;
     }
 
+    @Override
+    public ServerVO getServerVOById(Long id) {
+        McServerPO serverPO = getServerById(id);
+        ServerVO serverVO = new ServerVO();
+        BeanUtils.copyProperties(serverPO, serverVO);
+        // 填充组织名称
+        Organization org = organizationService.findByCode(serverVO.getOrgCode());
+        serverVO.setOrgName(org.getDeptName());
+        return serverVO;
+    }
+
     /**
      * 根据ip获取服务器
      */
@@ -180,19 +190,12 @@ public class McServerServiceImpl implements McServerService {
     }
 
     @Override
-    public PageResultBean<List<ServerVO>> list(ServerSearchVO searchVO) {
+    public PageResultBean<ServerVO> list(ServerSearchVO searchVO) {
+
         // 普通用户返回空
         if (!systemSettingsService.isDataCentreAdmin() && !systemSettingsService
                 .isDatabaseAdmin()) {
             return PageResultBean.empty();
-        }
-        // 数据库管理员只能查看本部门的数据
-        if (systemSettingsService.isDatabaseAdmin()) {
-            Organization org =
-                    securityConsumer.getAscriptionDeptByUserName(UserUtils.getUserName());
-            List<String> orgList = new ArrayList<>();
-            orgList.add(org.getDeptCode());
-            searchVO.setOrgList(orgList);
         }
 
         PageHelper.startPage(searchVO.getPageNum(), searchVO.getPageSize());
@@ -200,10 +203,18 @@ public class McServerServiceImpl implements McServerService {
         PageInfo<McServerPO> info = new PageInfo<>(serverPOList);
 
         List<ServerVO> serverVOList = transferServerPOToServerVO(serverPOList);
+
+        // 填充组织名称
+        List<String> orgCodeList =
+                serverVOList.stream().map(e -> e.getOrgCode()).collect(Collectors.toList());
+        String orgCodes = String.join(",", orgCodeList);
+        List<Organization> orgList = organizationService.findByCodes(orgCodes);
+
         // 查询已删除列表
         if (searchVO.getDeleted()) {
             fillEmptyList(serverVOList);
-            return PageResultBean.of(searchVO.getPageNum(), info.getTotal(), serverVOList);
+            return PageResultBean.of(searchVO.getPageNum(), info.getTotal(),
+                    fillOrgNameIntoServerVO(serverVOList, orgList));
         }
 
         // 填充服务器下的数据库
@@ -212,7 +223,8 @@ public class McServerServiceImpl implements McServerService {
         List<McDatabasePO> databasePOList = databaseService.getDatabaseByServerIds(serverIds);
         List<DatabaseVO> databaseVOList = transferDatabasePOToDatabaseVO(databasePOList, true);
         fillDatabaseList(serverVOList, databaseVOList);
-        return PageResultBean.of(searchVO.getPageNum(), info.getTotal(), serverVOList);
+        return PageResultBean.of(searchVO.getPageNum(), info.getTotal(),
+                fillOrgNameIntoServerVO(serverVOList, orgList));
     }
 
     private List<ServerVO> transferServerPOToServerVO(List<McServerPO> serverPOList) {
@@ -231,15 +243,23 @@ public class McServerServiceImpl implements McServerService {
      */
     private List<DatabaseVO> transferDatabasePOToDatabaseVO(List<McDatabasePO> databasePOList,
             boolean fillSchema) {
-        List<McSchemaPO> schemaPOList = null;
+        List<SchemaListVO> schemaVOList = null;
         if (fillSchema) {
             // 填充模式
             List<Long> dbIds = databasePOList.stream().map(e -> e.getId())
                     .collect(Collectors.toList());
-            schemaPOList = schemaService.listSchemaByDatabaseIds(dbIds);
+            List<McSchemaPO> schemaPOList = schemaService.listSchemaByDatabaseIds(dbIds);
+            schemaVOList = schemaService.convertSchemaListVO(schemaPOList);
+
+            List<String> orgCodeList =
+                    schemaVOList.stream().map(e -> e.getOrgCode()).collect(Collectors.toList());
+            String orgCodes = String.join(",", orgCodeList);
+            List<Organization> orgList = organizationService.findByCodes(orgCodes);
+            schemaVOList = schemaService.fillOrgNameIntoSchemaVO(schemaVOList,
+                    orgList);
         }
 
-        final List<McSchemaPO> tempSchemaPOList = schemaPOList;
+        final List<SchemaListVO> result = schemaVOList;
 
         List<DatabaseVO> databaseVOList =
                 databasePOList.stream().map(e -> {
@@ -247,7 +267,7 @@ public class McServerServiceImpl implements McServerService {
                     BeanUtils.copyProperties(e, databaseVO);
                     databaseVO.setName(DatabaseTypeEnum.getName(e.getType()));
                     if (fillSchema) {
-                        databaseVO.setSchemaList(filterSchemaByDbId(tempSchemaPOList, e.getId()));
+                        databaseVO.setSchemaList(filterSchemaByDbId(result, e.getId()));
                     }
 
                     return databaseVO;
@@ -256,8 +276,8 @@ public class McServerServiceImpl implements McServerService {
         return databaseVOList;
     }
 
-    private List<McSchemaPO> filterSchemaByDbId(List<McSchemaPO> schemaPOList, Long dbId) {
-        return schemaPOList.stream().filter(e -> e.getDbId().equals(dbId))
+    private List<SchemaListVO> filterSchemaByDbId(List<SchemaListVO> schemaVOList, Long dbId) {
+        return schemaVOList.stream().filter(e -> e.getDbId().equals(dbId))
                 .collect(Collectors.toList());
     }
 
@@ -299,7 +319,7 @@ public class McServerServiceImpl implements McServerService {
     }
 
     @Override
-    public PageResultBean<List<McServerDatabaseChangePO>> listChangeLog(ChangeSearchVO searchVO) {
+    public PageResultBean<McServerDatabaseChangePO> listChangeLog(ChangeSearchVO searchVO) {
         authentication();
         return changeService.list(searchVO);
     }
@@ -341,4 +361,19 @@ public class McServerServiceImpl implements McServerService {
         builder.append("）");
         return builder.toString();
     }
+
+    /**
+     * 填充组织名称
+     */
+    private List<ServerVO> fillOrgNameIntoServerVO(List<ServerVO> serverVOList,
+            List<Organization> orgList) {
+        return serverVOList.stream().map(serverVO -> {
+            serverVO.setOrgName(orgList.stream()
+                    .filter(org -> serverVO.getOrgCode().equals(org.getDeptCode()))
+                    .map(Organization::getDeptName).findAny().orElse("")
+            );
+            return serverVO;
+        }).collect(Collectors.toList());
+    }
+
 }

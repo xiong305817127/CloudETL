@@ -51,6 +51,20 @@ public class FileUtils {
         return createUpdateTempDir(fileName);
     }
 
+    public static File createUpdateDirByInfo(String filePrefixName){
+        String dateStr = DateTools.formatDate(new Date(),"yyyyMMdd-HHmmss");
+        String uuid = CommonUtils.generateUUID();
+        String fileName = filePrefixName+"-"+dateStr+"-"+uuid;
+        return createUpdateTempDir(fileName);
+    }
+
+    public static String getFileDirName(){
+        String dateStr = DateTools.formatDate(new Date(),"yyyyMMdd-HHmmss");
+        String uuid = CommonUtils.generateUUID();
+        return dateStr+"-"+uuid;
+    }
+
+
     public static File createTempDir(final File parent) {
         final File temp =
                 new File(parent, "idatrix-resource");
@@ -101,6 +115,32 @@ public class FileUtils {
      * @return  返回文件路径和名称
      */
     public static String createFile(String fileType, CommonsMultipartFile multiPartFile) {
+//        final File tempDir = createTempDir(fileType); //Utils.createTempDir();
+//        final FileItem item = multiPartFile.getFileItem();
+//        String dateStr = DateTools.formatDate(new Date(),"yyyyMMdd-HHmmss");
+//        String uuid = CommonUtils.generateUUID();
+//        String fileName = dateStr+"-"+uuid+"-"+item.getName();
+//        OutputStream out = null;
+//        File archiveFile = null;
+//        try {
+//            archiveFile = new File(tempDir, fileName);
+//            out = new BufferedOutputStream(new FileOutputStream(archiveFile));
+//            IOUtils.copy(item.getInputStream(), out);
+//            out.close();
+//        } catch (Exception e) {
+//            //e.printStackTrace();
+//            throw new RuntimeException(e.getMessage());
+//        }
+//        return archiveFile.getName();
+//        return archiveFile.getPath();
+
+        File createFile = createFileByType(fileType, multiPartFile);
+        return createFile.getName();
+    }
+
+
+
+    public static File createFileByType(String fileType, CommonsMultipartFile multiPartFile) {
         final File tempDir = createTempDir(fileType); //Utils.createTempDir();
         final FileItem item = multiPartFile.getFileItem();
         String dateStr = DateTools.formatDate(new Date(),"yyyyMMdd-HHmmss");
@@ -117,7 +157,7 @@ public class FileUtils {
             //e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
-        return archiveFile.getName();
+        return archiveFile;
 //        return archiveFile.getPath();
     }
 }

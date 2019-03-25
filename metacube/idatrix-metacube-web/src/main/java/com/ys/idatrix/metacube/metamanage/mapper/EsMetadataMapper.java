@@ -119,12 +119,13 @@ public interface EsMetadataMapper {
      * 不定参数查询中文名称记录数
      *
      * @param identification
-     * @param schemaId
+     * @param id
      * @param renterId
      * @return
      */
     Integer queryCntBySelectiveParam(@Param("identification") String identification,
-                                     @Param("schemaId") Long schemaId, @Param("renterId") Long renterId);
+                                     @Param("id") Long id,
+                                     @Param("renterId") Long renterId);
 
 
     /**
@@ -144,6 +145,12 @@ public interface EsMetadataMapper {
      */
     Integer findMaxVersion(Long schemaId);
 
-    // 根据主题id查询元数据
-    int findMetadataByThemeId(@Param("themeId") Long themeId);
+
+    /**
+     * 查询schemaId的下挂使用数
+     * @param schemaId
+     * @return
+     */
+    int findSchemaUseCnt(@Param("schemaId")Long schemaId);
+
 }

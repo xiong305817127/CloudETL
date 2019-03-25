@@ -5,11 +5,11 @@ package com.idatrix.resource.exchange.exception;
  */
 public class DbLinkException extends Exception {
 
-    private Integer errorCode;
+    private String errorCode = "6002000";
 
     private String message;
 
-    public DbLinkException(Integer errorCode, String message) {
+    public DbLinkException(String errorCode, String message) {
         super(message);
         this.errorCode = errorCode;
         this.message = message;
@@ -20,11 +20,11 @@ public class DbLinkException extends Exception {
         this.message = message;
     }
 
-    public Integer getErrorCode() {
+    public String getErrorCode() {
         return errorCode;
     }
 
-    public void setErrorCode(Integer errorCode) {
+    public void setErrorCode(String errorCode) {
         this.errorCode = errorCode;
     }
 

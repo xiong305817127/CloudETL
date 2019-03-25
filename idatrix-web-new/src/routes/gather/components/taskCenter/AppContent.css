@@ -1,0 +1,322 @@
+:global(#AppContent){
+    overflow: hidden;
+}
+
+:global(#AppContent) .searchBtn{
+    width: 12%;
+    height:35px;
+}
+:global(#AppContent) .searchBtn{
+    background:#E8F0F3 url("../../image/App/search.png") no-repeat center;
+}
+:global(#AppContent) .searchBtn:hover{
+    cursor: pointer;
+    background:#E8F0F3 url("../../image/App/search.png") no-repeat center;
+}
+:global(#AppContent) .Input{
+    width: 75%;
+    height:35px;
+}
+:global(#AppContent) :global(.changeBtn){
+    width:33%;
+    height:35px;
+}
+/*按钮1*/
+:global(#AppContent) .btn1{
+    cursor: pointer;
+    background:url("../../image/App/layer_gray.png") no-repeat center;
+}
+:global(#AppContent) .btn1:hover{
+
+    background:url("../../image/App/layer_gray.png") no-repeat center;
+}
+:global(#AppContent) .btn1Click {
+    cursor: pointer;
+    background:#12b9d2 url("../../image/App/layer.png") no-repeat center;
+}
+:global(#AppContent) .btn1Click:hover {
+    background:#12b9d2 url("../../image/App/layer.png") no-repeat center;
+}
+
+/*按钮2*/
+:global(#AppContent) .btn2{
+    background:url("../../image/App/list_gray.png") no-repeat center;
+}
+:global(#AppContent) .btn2:hover{
+
+    background:url("../../image/App/list_gray.png") no-repeat center;
+}
+
+:global(#AppContent) .btn2Click{
+    background:#12b9d2 url("../../image/App/list.png") no-repeat center;
+}
+:global(#AppContent) .btn2Click:hover{
+
+    background:#12b9d2 url("../../image/App/list.png") no-repeat center;
+}
+
+:global(#AppContent) .statusSelect{
+    width: 95%;
+}
+/*select修改*/
+:global(#AppContentSelect .ant-select-selection--single){
+    height: 35px;
+    line-height: 35px;
+}
+:global(#AppContentSelect .ant-select-selection__rendered){
+    height: 35px;
+    line-height: 35px;
+    font-size: 15px;
+}
+
+/*添加和刷新按钮*/
+:global(#AppContent) .addBtn{
+    background:url("../../image/App/add.png") no-repeat center;
+}
+:global(#AppContent) .addBtn:hover{
+    cursor: pointer;
+    background:url("../../image/App/add.png") no-repeat center;
+}
+
+:global(#AppContent) .refresh{
+    background:url("../../image/App/refresh.png") no-repeat center;
+}
+:global(#AppContent) .refresh:hover{
+    cursor: pointer;
+    background:url("../../image/App/refresh.png") no-repeat center;
+}
+:global(#AppContent) .rightBtn{
+     width: 95%;
+    height: 35px;
+}
+:global(#AppContent)  .divContent{
+    min-height: 675px;
+    margin-top: 25px;
+}
+:global(#AppContent) .cardSpan{
+
+    border-radius: 5px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    background: white;
+}
+:global(#AppContent)  .cardRow .cardHeader{
+
+    height: 35px;
+    line-height: 35px;
+    background:#E8F0F3;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    padding: 0 8px;
+}
+
+.circle{
+    width: 10px;
+    height: 10px;
+    line-height: 10px;
+    border-radius: 100%;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+:global(#AppContent)  .cardRow  .cardFooter{
+    padding: 0 10px;
+    height: 35px;
+    line-height:35px;
+    font-size: 12px;
+    background: rgba(232,240,243,0.6);;
+    border-bottom-right-radius:5px;
+    border-bottom-left-radius:5px ;
+    color: #666;
+}
+.HeaderStatus{
+    height: 33px;
+    display: inline-block;
+    float: left;
+    line-height: 38px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-left: 10px;
+    width: 100px;
+    text-align: center;
+}
+
+.statusCommon{
+    font-size: 13px;
+    color: #fff;
+    font-weight:bold;
+    border:1px solid white;
+    border-radius:10px;
+    padding: 2px 5px;
+}
+:global(#AppContent)  .textRowChild1{
+    height: 33px;
+}
+:global(#AppContent)  .textRowChild2{
+    height: 33px;
+    line-height: 33px;
+    font-size: 14px;
+    width: 80%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+:global(#AppContent)  .span{
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 4px;
+}
+
+:global(#AppContent) .cardSpan{
+    border-radius: 5px;
+    margin-bottom: 30px;
+    margin-left: 20px;
+    cursor: pointer;
+}
+
+:global(#AppContent)  .cardRow .cardHeader{
+
+    height: 35px;
+    line-height: 35px;
+    background:#E8F0F3;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    padding: 0 8px;
+}
+/*文字样式*/
+:global(#AppContent)  .textRow{
+    height: 66px;
+    line-height: 66px;
+    background: #fcfcfc;
+    padding: 0 30px;
+    font-size: 16px;
+    border-top: none;
+    box-sizing: border-box;
+}
+:global(#AppContent)  .textRow:first-child{
+    border-top:none;
+    /* border-top:1px solid #d8dce0; */
+}
+
+:global(#AppContent)  .textRow:hover{
+    background: #eff4f5;
+    cursor: pointer;
+}
+:global(#AppContent) .colText{
+    height: 66px;
+    line-height: 66px;
+    font-size: 14px;
+}
+/*
+分页样式*/
+:global(#root .cloudetl .ant-pagination-prev a:after){
+    content: "\E60D";
+    font-size: 24px;
+}
+:global(#root .cloudetl .ant-pagination-disabled a:after){
+    color:rgba(0,0,0,.25);
+}
+
+
+:global(#root .cloudetl .ant-pagination-next a:after){
+    content: "\E60C";
+    font-size: 24px;
+}
+
+@media (min-width: 1440px) and  (min-height: 900px){
+
+    /*select修改*/
+    :global(#AppContentSelect .ant-select-selection--single){
+        height: 40px;
+        line-height: 40px;
+    }
+    :global(#AppContentSelect .ant-select-selection__rendered){
+        height: 35px;
+        line-height: 35px;
+        font-size: 15px;
+    }
+
+    :global(#AppContent) .searchBtn{
+        width: 12%;
+        height:40px;
+    }
+    :global(#AppContent) .Input{
+        width: 75%;
+        height:40px;
+    }
+    :global(#AppContent) :global(.changeBtn){
+        width:33%;
+        height:40px;
+    }
+
+    :global(#AppContent)  .divContent{
+        margin-top: 20px;
+        min-height: 554px;
+    }
+
+    :global(#AppContent)  .cardRow  .cardFooter{
+        padding: 0 5px;
+        height: 35px;
+        background: rgba(232,240,243,0.6);;
+        border-bottom-right-radius:5px;
+        border-bottom-left-radius:5px ;
+        color: #666;
+    }
+
+    :global(#AppContent)  .run{
+        background: url("../../image/App/run.png") no-repeat center;
+        background-size: 100% 100%;
+    }
+    :global(#AppContent)  .wait{
+        background: url("../../image/App/wait.png") no-repeat center;
+        background-size: 100% 100%;
+    }
+
+    :global(#AppContent)  .error{
+        background: url("../../image/App/error.png") no-repeat center;
+        background-size: 100% 100%;
+    }
+
+    .circle{
+        width: 10px;
+        height: 10px;
+        line-height: 10px;
+        border-radius: 100%;
+        display: inline-block;
+        margin-right: 10px;
+    }
+    .colText{
+        font-size: 14px;
+    }
+}
+@media (min-width: 1700px){
+    :global(#AppContent)  .span{
+        font-size: 18px;
+        font-weight: bold;
+        margin-left: 8px;
+    }
+}
+
+
+
+:global(.skin-government) :global(#AppContent){
+    margin-top: 15px;
+    padding: 14px;
+}
+
+:global(#common-main-content ) .divContent :global(.ant-table-thead)  > :global(tr) > :global(th),:global(#common-main-content) .divContent :global(.ant-table-tbody)  > :global(tr) > :global(td){
+  padding: 16px 8px;
+}
+
+:global(#AppContent .cloudetl .ant-pagination-prev .ant-pagination-item-link),:global(#AppContent .cloudetl .ant-pagination-next .ant-pagination-item-link){
+   border: none;
+}
+
+
+/*政府风格*/
+:global(.skin-government #AppContent)  .divContent{
+  min-height: 540px;
+  margin-top: 25px;
+  margin-bottom: 20px;
+}
+

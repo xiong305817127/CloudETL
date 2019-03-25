@@ -31,7 +31,7 @@
     <result column="bind_service_id" property="bindServiceId" jdbcType="BIGINT"/>
     <result column="lib_table_id" property="libTableId" jdbcType="VARCHAR"/>
     <result column="status" property="status" jdbcType="VARCHAR"/>
-
+    <result column="rent_id" property="rentId" jdbcType="BIGINT" />
     <result column="creator" property="creator" jdbcType="VARCHAR"/>
     <result column="create_time" property="createTime" javaType="java.util.Date"
       jdbcType="TIMESTAMP"/>
@@ -40,20 +40,49 @@
       jdbcType="TIMESTAMP"/>
   </resultMap>
 
+
+    <resultMap id="QueryResult" type="com.idatrix.resource.portal.po.ResourceQueryPO">
+        <id column="resource_id" property="resourceId" jdbcType="BIGINT"/>
+        <result column="resource_name" property="resourceName" jdbcType="VARCHAR"/>
+        <result column="format_type" property="formatType" jdbcType="TINYINT"/>
+        <result column="provide_dept_name" property="provideDeptName" jdbcType="VARCHAR"/>
+        <result column="resource_remark" property="resourceRemark" jdbcType="VARCHAR"/>
+        <result column="catalog_full_name" property="catalogFullName" jdbcType="VARCHAR"/>
+        <result column="update_time" property="updateTime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+        <result column="share_type" property="shareType" jdbcType="TINYINT"/>
+        <result column="open_type" property="openType" jdbcType="TINYINT"/>
+        <result column="visit_count" property="visitCount" jdbcType="BIGINT"/>
+        <result column="sub_count" property="subCount" jdbcType="BIGINT"/>
+    </resultMap>
+
   <sql id="Base_Column_List">
     id,catalog_code,catalog_full_name,seq_num,code,name,remark,dept_name,dept_code,dept_name_ids,resource_abstract,keyword,format_type,
     format_info,format_info_extend,share_type,share_condition,share_method,open_type,open_condition,refresh_cycle,
-    pub_date,relation_code,bind_table_id,bind_service_id,lib_table_id,status,create_time,creator,update_time,updater
+    pub_date,relation_code,bind_table_id,bind_service_id,lib_table_id,status,rent_id,create_time,creator,update_time,updater
   </sql>
 
 
+    <select id="getResourceIdList" resultMap="BaseResultMap">
+        select
+          <include refid="Base_Column_List"/>
+        FROM rc_resource
+        WHERE 1=1
+        <if test="status!=null">
+             and status=#{status}
+        </if>
+    </select>
 
+    <select id="getResourceRentList" resultType="java.lang.Long">
+        select
+          distinct rent_id
+        FROM rc_resource
+    </select>
 
-  <select id="getByNameOrCode" resultMap="BaseResultMap">
+  <select id="getByNameOrCodeAndRentId" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List"/>
     FROM rc_resource
-    where catalog_code=#{catalogCode} and (name=#{name} OR seq_num=#{seqNum} )
+    where catalog_code=#{catalogCode} and rent_id=#{rentId} and (name=#{name} OR seq_num=#{seqNum} )
   </select>
 
   <select id="getConfigById" resultMap="BaseResultMap"
@@ -64,19 +93,19 @@
     where id = #{id}
   </select>
 
-    <select id="getConfigByResourceCode" resultMap="BaseResultMap"
+    <select id="getConfigByResourceCodeAndRentId" resultMap="BaseResultMap"
             parameterType="java.lang.String">
         select
         <include refid="Base_Column_List"/>
         FROM rc_resource
-        where code = #{resourceCode}
+        where code = #{resourceCode} and rent_id=#{rentId}
     </select>
 
 
-  <select id="getAllResourceConfig" resultMap="BaseResultMap">
+  <select id="getAllResourceConfigByRentId" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List"/>
-    FROM rc_resource
+    FROM rc_resource and rent_id=#{rentId}
   </select>
 
   <select id="getConfigByUser" resultMap="BaseResultMap"
@@ -86,6 +115,52 @@
     FROM rc_resource
     where creator = #{creator}
   </select>
+
+
+    <select id="queryPortalResourceByCondition" resultMap="QueryResult"
+            parameterType="com.idatrix.resource.portal.vo.ResourceQueryRequestVO">
+        select
+            rr.id as resource_id,
+            rr.name as resource_name,
+            rr.format_type as format_type,
+            rr.dept_name as provide_dept_name,
+            rr.update_time as update_time,
+            rr.share_type as share_type,
+            rr.open_type as open_type,
+            rrs.visit_count as visit_count,
+            rrs.sub_count as sub_count
+        FROM rc_resource rr
+        LEFT JOIN rc_resource_statistics rrs
+        ON rr.id=rrs.id
+        where 1=1 and rr.rent_id=#{rentId} and rr.status="pub_success"
+        <if test="queryKeyWord!=null">
+            AND MATCH (`name`, dept_name) AGAINST ('*${queryKeyWord}*' IN BOOLEAN MODE)
+        </if>
+        <if test="resourceType!=null">
+            AND rr.format_type in (${resourceType})
+        </if>
+        <if test="catalogCode!=null">
+            AND catalog_code LIKE '${catalogCode}%'
+        </if>
+        <if test="timeFlag=='1'.toString()">
+            ORDER BY rr.update_time DESC
+        </if>
+        <if test="timeFlag=='2'.toString()">
+            ORDER BY rr.update_time ASC
+        </if>
+        <if test="visitCountFlag=='1'.toString()">
+            ORDER BY rrs.visit_count DESC
+        </if>
+        <if test="visitCountFlag=='2'.toString()">
+            ORDER BY rrs.visit_count ASC
+        </if>
+        <if test="subCountFlag=='1'.toString()">
+            ORDER BY rrs.sub_count DESC
+        </if>
+        <if test="subCountFlag=='2'.toString()">
+            ORDER BY rrs.sub_count ASC
+        </if>
+    </select>
 
   <select id="queryByCondition" resultMap="BaseResultMap" parameterType="hashmap">
     select
@@ -104,6 +179,9 @@
     <if test="status!=null">
       and status=#{status}
     </if>
+      <if test="rentId!=null">
+          and rent_id=#{rentId}
+      </if>
     <if test="dept_code!=null">
       and dept_code LIKE '${dept_code}%'
     </if>
@@ -134,6 +212,9 @@
       <if test="catalogCode!=null">
         AND catalog_code LIKE '${catalogCode}%'
       </if>
+      <if test="rentId!=null">
+        AND rent_id = #{rentId}
+      </if>
       <if test="resourceIds != null">
         AND id in
         <foreach collection="resourceIds" item="id" index="index" open="(" close=")" separator=",">
@@ -159,7 +240,9 @@
     <if test="dept_name!=null">
       AND MATCH (`name`, dept_name) AGAINST ('*${dept_name}*' IN BOOLEAN MODE)
     </if>
-
+      <if test="rentId!=null">
+          AND rent_id = #{rentId}
+      </if>
     <if test="dept_code!=null">
       and dept_code LIKE '${dept_code}%'
     </if>
@@ -178,13 +261,13 @@
     keyword,format_type, format_info,format_info_extend,
     share_type,share_condition,share_method,open_type,
     open_condition,refresh_cycle,pub_date,relation_code,
-    bind_table_id,lib_table_id,bind_service_id,status,
+    bind_table_id,lib_table_id,bind_service_id,status,rent_id,
     creator, create_time,update_time,updater)
     values ( #{catalogCode},#{catalogFullName},#{seqNum}, #{code},
     #{name}, #{remark},#{deptName}, #{deptCode}, #{deptNameIds},#{resourceAbstract},
     #{keyword}, #{formatType},#{formatInfo}, #{formatInfoExtend}, #{shareType},
     #{shareCondition}, #{shareMethod},#{openType}, #{openCondition}, #{refreshCycle},
-    #{pubDate}, #{relationCode},#{bindTableId}, #{libTableId},#{bindServiceId}, #{status},
+    #{pubDate}, #{relationCode},#{bindTableId}, #{libTableId},#{bindServiceId}, #{status},#{rentId},
     #{creator}, #{createTime}, #{updateTime}, #{updater})
   </insert>
 
@@ -202,9 +285,35 @@
     share_method=#{shareMethod},open_type=#{openType},open_condition=#{openCondition},
     refresh_cycle=#{refreshCycle},pub_date=#{pubDate},relation_code=#{relationCode},
     bind_table_id=#{bindTableId}, lib_table_id=#{libTableId},
-    bind_service_id=#{bindServiceId},status=#{status},
+    bind_service_id=#{bindServiceId},status=#{status},rent_id=#{rentId},
     create_time = #{createTime},creator = #{creator},
     update_time = #{updateTime}, updater = #{updater}
     where id = #{id}
   </update>
+
+    <!--added by zhoujian on 20190102 查询租户下所有状态=pub_success的资源-->
+    <select id="getAllPublishedResourceByRentId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        FROM rc_resource
+        where rent_id=#{rentId}
+        and status = 'pub_success'
+    </select>
+
+    <!--added by zhoujian on 20190107 查询所有状态=pub_success的资源-->
+    <select id="getAllPublishedResource" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        FROM rc_resource
+        where status = 'pub_success'
+    </select>
+
+    <!--added by zhoujian on 20190107 查询所有状态=pub_success的资源-->
+    <select id="getRentersByPublishedResource" resultType="java.lang.Long">
+        select
+        distinct rent_id
+        FROM rc_resource
+        where status = 'pub_success'
+    </select>
+
 </mapper>

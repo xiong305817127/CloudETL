@@ -822,7 +822,7 @@ public class OracleDDLServiceImpl implements OracleDDLService {
         List<String> result = new ArrayList<>();
         for (String tableName : tableNames) {
             if (StringUtils.isNotBlank(tableName)) {
-                result.add(String.format(DROP_TABLE, tableName));
+                result.add(String.format(DROP_TABLE, addBackQuote(tableName)));
             }
         }
         return result;
@@ -1692,7 +1692,13 @@ public class OracleDDLServiceImpl implements OracleDDLService {
 
         // 是否有类型范围限制,有就加上,没有就不加
         if (StringUtils.isNotBlank(typeLength)) {
-            dataType += "(" + typeLength + ")";
+            dataType += "(";
+            dataType += typeLength;
+            // 精度
+            if (StringUtils.isNotBlank(typePrecision)) {
+                dataType += "," + typePrecision;
+            }
+            dataType += ")";
         }
 
         String replenish = "";
@@ -1921,6 +1927,7 @@ public class OracleDDLServiceImpl implements OracleDDLService {
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
             // 生效到数据库失败后，前台根据code来做处理
             throw new MetaDataException(ResultCodeEnum.DATABASE_ERROR.getCode(),
                     "生效到数据库失败，信息：" + e.getMessage());

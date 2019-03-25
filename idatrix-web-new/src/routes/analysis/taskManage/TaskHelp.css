@@ -1,0 +1,54 @@
+.section {
+  margin: 30px 0;
+  font-size: 14px;
+  line-height:1.6;
+}
+.section :global(header) {
+  font-weight: bold;
+  font-size: 22px;
+}
+.tags {
+  overflow: hidden;
+}
+.tags :global(li) {
+  float: left;
+  font-size: 14px;
+  line-height: 20px;
+  padding:0 24px;
+  border-right:1px solid rgb(215,220,224);
+}
+.tags :global(li.active) {
+  font-weight: bold;
+}
+.tags :global(li:first-child) {
+  padding-left:0;
+}
+.tags :global(li:last-child) {
+  border-right:none;
+}
+.caption {
+  margin: 10px 0 5px;
+}
+.noteImg {
+  border:1px solid rgb(215,220,224);
+  border-radius: 5px;
+}
+.download{
+  margin-left: 15px;
+  border-color: rgb(8, 147, 52);
+  color: rgb(8, 147, 52);
+}
+.noteTable {
+  border-collapse: collapse;
+  width:720px;
+}
+.noteTable :global(th) {
+  background-color: rgb(202, 210, 215);
+  border: 1px solid rgb(221,221,221);
+  padding: 10px;
+  text-align: left;
+}
+.noteTable :global(td) {
+  border: 1px solid rgb(221,221,221);
+  padding: 5px 10px;
+}

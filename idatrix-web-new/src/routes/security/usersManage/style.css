@@ -1,0 +1,30 @@
+/* 用户角色管理 - 角色拾取器 */
+.role-picker {
+  border:1px solid rgb(217, 217, 217);
+  overflow-y: auto;
+}
+.role-picker ul>li{
+  padding:0 10px;
+  margin:0 2px;
+  line-height:30px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor:pointer;
+}
+.role-picker ul>li:hover{
+  background-color: rgb(243, 250, 252);
+}
+.role-picker ul>li.active{
+  background-color: rgb(104, 196, 211);
+  color:#fff;
+}
+.role-picker select {
+  width:100%;
+  height:300px;
+  border:none;
+  line-height: 30px;
+}
+.role-picker select>option {
+  padding:10px;
+}

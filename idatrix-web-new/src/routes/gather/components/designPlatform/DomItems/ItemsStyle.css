@@ -1,0 +1,8 @@
+:global(.CetFileName .ant-card-body) {
+   padding: 0px;
+}
+
+:global(.autoTextArea){
+  border: 1px solid #CCCCCC;
+  border-radius: 10px;
+}

@@ -6,7 +6,6 @@ import com.ys.idatrix.metacube.metamanage.domain.McServerPO;
 import com.ys.idatrix.metacube.metamanage.vo.request.ChangeSearchVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.ServerSearchVO;
 import com.ys.idatrix.metacube.metamanage.vo.response.ServerVO;
-import java.util.List;
 
 public interface McServerService {
 
@@ -30,6 +29,8 @@ public interface McServerService {
      */
     McServerPO getServerById(Long id);
 
+    ServerVO getServerVOById(Long id);
+
     /**
      * 根据ip获取服务器
      */
@@ -43,7 +44,7 @@ public interface McServerService {
     /**
      * 获取服务器列表
      */
-    PageResultBean<List<ServerVO>> list(ServerSearchVO searchVO);
+    PageResultBean<ServerVO> list(ServerSearchVO searchVO);
 
     /**
      * 根据ip和租户id查找服务器
@@ -55,5 +56,5 @@ public interface McServerService {
     /**
      * 变更记录列表
      */
-    PageResultBean<List<McServerDatabaseChangePO>> listChangeLog(ChangeSearchVO searchVO);
+    PageResultBean<McServerDatabaseChangePO> listChangeLog(ChangeSearchVO searchVO);
 }

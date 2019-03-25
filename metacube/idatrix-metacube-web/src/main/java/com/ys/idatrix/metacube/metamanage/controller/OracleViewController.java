@@ -123,7 +123,7 @@ public class OracleViewController {
     @ApiOperation(value = "元数据定义-ORACLE视图删除", notes = "实体和草稿删除都采用此方法", httpMethod = "DELETE")
     @ApiImplicitParam(name = "idList", value = "表id集合，数组", dataType = "array", paramType = "body")
     @DeleteMapping("/delete")
-    public ResultBean delete(List<Long> idList) {
+    public ResultBean delete(@RequestBody List<Long> idList) {
         log.info("删除视图实体或视图草稿，idList：{}", idList);
         viewService.delete(idList);
         return ResultBean.ok();

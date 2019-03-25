@@ -4,6 +4,8 @@ import com.alibaba.fastjson.util.DeserializeBeanInfo;
 import com.alibaba.fastjson.util.FieldInfo;
 import com.alibaba.fastjson.util.TypeUtils;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
+import com.ys.idatrix.metacube.metamanage.domain.TableColumn;
+import com.ys.idatrix.metacube.metamanage.service.impl.McDirectMiningServiceImpl.MiningTaskDto;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetadataBaseVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.TableVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.ViewVO;
@@ -14,39 +16,52 @@ import java.util.List;
 public interface McDirectMiningService {
 
 	/**
-	 * 获取表的信息
-	 * @param databaseType
+	 * 获取当前 schema 正在运行的直采任务 <br>
+	 * 没有则返回 null, 否则 返回正在运行的,或者上次运行(已经结束)的 任务信息
 	 * @param schemaId
 	 * @return
 	 */
-	public  List<? extends TableVO>  getTableAllInfo(Integer databaseType, Long schemaId );
+	public  MiningTaskDto getMiningTask( Long schemaId ,int resourceType);
+	
+	
+	/**
+	 * 获取表的信息
+	 * @param schemaId
+	 * @return
+	 */
+	public  List<? extends TableVO>  getTableAllInfo( Long schemaId );
 	
 	/**
 	 * 获取视图信息
-	 * @param databaseType
 	 * @param schemaId
 	 * @return
 	 */
-	public List<? extends ViewVO>  getViewAllInfo( Integer databaseType, Long schemaId  );
+	public List<? extends ViewVO>  getViewAllInfo( Long schemaId  );
 	
 	/**
 	 * 保存需要采集的表
-	 * @param databaseType
 	 * @param schemaId
 	 * @param metadataBase
 	 * @return
 	 */
-	public List<? extends TableVO>  directMiningTables(Integer databaseType , Long schemaId, MetadataBaseVO... metadataBase ) ;
+	public void  directMiningTables( Long schemaId, MetadataBaseVO... metadataBase ) ;
 	
 	/**
 	 * 保存需要采集的视图
-	 * @param databaseType
 	 * @param schemaId
 	 * @param metadataBase
 	 * @return
 	 */
-	public List<? extends ViewVO>  directMiningViews(Integer databaseType, Long schemaId,MetadataBaseVO... metadataBase ) ;
+	public void  directMiningViews( Long schemaId,MetadataBaseVO... metadataBase ) ;
 	
+	/**
+	 * 获取视图的列信息列表
+	 * @param schemaId
+	 * @param viewName
+	 * @param viewSql
+	 * @return
+	 */
+	public List<TableColumn> getViewColumns(Long schemaId, String viewName, String viewSql);
 	
 	default public  <B, S extends B>  void copyProperties(B source, S target) {
 

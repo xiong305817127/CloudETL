@@ -126,4 +126,12 @@
     </foreach>
   </select>
 
+
+    <select id="getAllAuthValue" resultType="java.lang.Integer">
+        SELECT
+         mra.auth_value
+        FROM mc_resource_auth mra;
+    </select>
+
+
 </mapper>

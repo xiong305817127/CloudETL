@@ -5,19 +5,24 @@ import com.ys.idatrix.metacube.api.beans.ResultBean;
 import com.ys.idatrix.metacube.common.enums.SchemaOperationTypeEnum;
 import com.ys.idatrix.metacube.common.utils.UserUtils;
 import com.ys.idatrix.metacube.metamanage.domain.McSchemaPO;
+import com.ys.idatrix.metacube.metamanage.mapper.McSchemaMapper;
 import com.ys.idatrix.metacube.metamanage.service.McSchemaService;
+import com.ys.idatrix.metacube.metamanage.service.impl.HdfsSchemaServiceImpl;
 import com.ys.idatrix.metacube.metamanage.vo.request.SchemaAddVO;
+import com.ys.idatrix.metacube.metamanage.vo.request.SchemaPartUpdateVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.SchemaSearchVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.SchemaUpdateVO;
+import com.ys.idatrix.metacube.metamanage.vo.response.SchemaListVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import java.util.List;
 import javax.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -34,6 +39,12 @@ public class McSchemaController {
     @Qualifier("schemaServiceImpl")
     private McSchemaService schemaService;
 
+    @Autowired
+    private McSchemaMapper schemaMapper;
+
+    @Autowired
+    private HdfsSchemaServiceImpl hdfsSchemaService;
+
     /**
      * 新建模式
      */
@@ -44,6 +55,7 @@ public class McSchemaController {
         BeanUtils.copyProperties(schemaAddVO, schemaPO);
         schemaPO.setRenterId(UserUtils.getRenterId());
         schemaPO.fillCreateInfo(schemaPO, UserUtils.getUserName());
+        schemaPO.setOrgCode(String.join(",", schemaAddVO.getOrgCode()));
         if (schemaPO.getType() == SchemaOperationTypeEnum.CREATE.getCode()) {
             return ResultBean.ok(schemaService.create(schemaPO));
         }
@@ -58,7 +70,7 @@ public class McSchemaController {
      */
     @GetMapping
     @ApiOperation("模式列表")
-    public ResultBean<PageResultBean<List<McSchemaPO>>> listSchemas(SchemaSearchVO searchVO) {
+    public ResultBean<PageResultBean<SchemaListVO>> listSchemas(SchemaSearchVO searchVO) {
         return ResultBean.ok(schemaService.listByPage(searchVO));
     }
 
@@ -67,12 +79,12 @@ public class McSchemaController {
      */
     @GetMapping("/{id}")
     @ApiOperation("模式详情")
-    public ResultBean<McSchemaPO> getSchemaById(@PathVariable("id") Long id) {
-        return ResultBean.ok(schemaService.getSchemaById(id));
+    public ResultBean<SchemaListVO> getSchemaById(@PathVariable("id") Long id) {
+        return ResultBean.ok(schemaService.getSchemaListVOById(id));
     }
 
     /**
-     * 更新模式 模式名称不能修改
+     * 更新模式 需要检查连接信息是否正确
      */
     @PutMapping("/{id}")
     @ApiOperation("编辑模式")
@@ -81,9 +93,26 @@ public class McSchemaController {
         McSchemaPO schemaPO = new McSchemaPO();
         schemaPO.setId(id);
         BeanUtils.copyProperties(schemaUpdateVO, schemaPO);
+        if (!CollectionUtils.isEmpty(schemaUpdateVO.getOrgCode())) {
+            schemaPO.setOrgCode(String.join(",", schemaUpdateVO.getOrgCode()));
+        }
 
         // TODO 需回写安全的所属组织使用计数器
         return ResultBean.ok(schemaService.update(schemaPO));
+    }
+
+    /**
+     * 部分更新模式
+     */
+    @PatchMapping("/{id}")
+    @ApiOperation("启用/禁用")
+    public ResultBean<McSchemaPO> partUpdate(@PathVariable("id") Long id,
+            @RequestBody SchemaPartUpdateVO schemaUpdateVO) {
+        McSchemaPO schemaPO = new McSchemaPO();
+        schemaPO.setId(id);
+        BeanUtils.copyProperties(schemaUpdateVO, schemaPO);
+        schemaMapper.update(schemaPO);
+        return ResultBean.ok(schemaService.getSchemaById(id));
     }
 
     /**
@@ -97,5 +126,17 @@ public class McSchemaController {
         // TODO 需回写安全的所属组织使用计数器
         return ResultBean.ok(schemaService.delete(schemaService.getSchemaById(id)));
     }
+
+    /**
+     * 检查是否已存在目录或父目录
+     *
+     * @return 已存在返回true，不存在返回false
+     */
+    @GetMapping(value = "/path/exists")
+    @ApiOperation("检查是否已存在目录或父目录")
+    public ResultBean<Boolean> exists(String path) {
+        return ResultBean.ok(hdfsSchemaService.checkDirectoryExists(path, UserUtils.getRenterId()));
+    }
+
 }
 

@@ -269,12 +269,11 @@ public class CloudSession {
 	}
 	
 	/**
-	 * 当前登录用户(执行者)是否拥有租户权限 <br>
-	 * 默认是  当前系统配置可使用超级权限
+	 * 当前系统是否开启权限控制机制 
 	 * @return
 	 */
-	public static boolean isRenterPrivilege() {
-		Boolean privilege = IdatrixPropertyUtil.getBooleanProperty("idatrix.renter.super.privilege.enable", false);
+	public static boolean isPrivilegeEnable() {
+		Boolean privilege = IdatrixPropertyUtil.getBooleanProperty("idatrix.renter.super.privilege.enable", true);
 		return privilege  ;
 		
 	}
@@ -286,10 +285,15 @@ public class CloudSession {
 	 */
 	public static String SuperPrivilegeRoleId = "SuperPrivilegeRoleId" ;
 	public static boolean isSuperPrivilege() {
-		if( isRenterPrivilege() ) {
+		if( isPrivilegeEnable() ) {
 			if( isLoginRenter() ) {
+				//登录者 是租户 , 租户有SystemSetting请求的权限, 其余都没有权限
+				HttpServletRequest request = getRequest() ;
+				if( ( request != null &&  request.getServletPath().toUpperCase().contains("SYSTEMSETTING") ) || !IdatrixPropertyUtil.getBooleanProperty("idatrix.renter.privilege.disable",true)) {
+					return true ;
+				}
 				//租户 默认拥有权限
-				return true ;
+				return false ;
 			}
 			//操作自己的资源,拥有权限
 			if( getLoginUser().equals(getCurrentResourceUser())) {

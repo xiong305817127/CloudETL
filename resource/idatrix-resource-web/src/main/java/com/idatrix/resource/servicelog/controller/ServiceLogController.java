@@ -1,14 +1,15 @@
 package com.idatrix.resource.servicelog.controller;
 
-import com.alibaba.dubbo.common.logger.Logger;
-import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.idatrix.resource.common.controller.BaseController;
-import com.idatrix.resource.common.utils.CommonConstants;
 import com.idatrix.resource.common.utils.CommonUtils;
 import com.idatrix.resource.common.utils.Result;
 import com.idatrix.resource.common.utils.ResultPager;
 import com.idatrix.resource.servicelog.service.IServiceLogService;
 import com.idatrix.resource.servicelog.vo.ServiceLogDetailVO;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,11 +25,10 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/serviceLog")
+@Api(value = "/serviceLog" , tags="日志管理-服务日志管理接口")
 public class ServiceLogController extends BaseController {
 
     private final IServiceLogService iServiceLogService;
-
-    private static final Logger LOG = LoggerFactory.getLogger(ServiceLogController.class);
 
     @Autowired
     public ServiceLogController(IServiceLogService iServiceLogService) {
@@ -36,6 +36,18 @@ public class ServiceLogController extends BaseController {
     }
 
     /*根据ID查询源服务信息*/
+    @ApiOperation(value = "查询服务日志信息", notes="查询服务日志信息", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="serviceCode", value="服务编码", required=false, dataType="String"),
+            @ApiImplicitParam(name="serviceName", value="服务名称", required=false, dataType="String"),
+            @ApiImplicitParam(name="serviceType", value="服务类型", required=false, dataType="String"),
+            @ApiImplicitParam(name="callerDeptName", value="服务调用部门", required=false, dataType="String"),
+            @ApiImplicitParam(name="isSuccess", value="是否执行成功", required=false, dataType="String"),
+            @ApiImplicitParam(name="startTime", value="开始时间", required=false, dataType="String"),
+            @ApiImplicitParam(name="endTime", value="结束时间", required=false, dataType="String"),
+            @ApiImplicitParam(name="page", value="分页起始页", required=false, dataType="Long"),
+            @ApiImplicitParam(name="pageSize", value="分页页面大小", required=false, dataType="Long")
+    })
     @RequestMapping("/getAllServiceLog")
     @ResponseBody
     public Result getAllServiceLogByCondition(@RequestParam(value = "serviceCode", required = false) String  serviceCode,
@@ -75,17 +87,16 @@ public class ServiceLogController extends BaseController {
             ResultPager tasks =
                     iServiceLogService.getServiceLogInfoByCondition(queryCondition, pageNum, pageSize);
             return Result.ok(tasks);
-
-//            if (tasks != null)
-//                return Result.ok(tasks);
-//            else
-//                return Result.error(CommonConstants.EC_NOT_EXISTED_VALUE, "服务日志不存在");
         } catch (Exception e) {
-            return Result.error(CommonConstants.EC_UNEXPECTED, "查询服务日志出现异常");
+            return Result.error("查询服务日志出现异常");
         }
     }
 
     /*根据服务日志ID查询服务执行具体信息*/
+    @ApiOperation(value = "获取服务日志详情", notes="查询服务日志具体信息", httpMethod = "GET")
+    @ApiImplicitParams({
+           @ApiImplicitParam(name="id", value="服务日志ID", required=true, dataType="Long")
+    })
     @RequestMapping("/getServiceLogDetailById")
     @ResponseBody
     public Result getServiceLogDetailById(@RequestParam(value = "id", required = true) Long id) {
@@ -94,13 +105,8 @@ public class ServiceLogController extends BaseController {
             serviceLogDetailVO =  iServiceLogService.getServiceLogDetailById(id);
         } catch (Exception e) {
             e.printStackTrace();
-            return Result.error(CommonConstants.EC_UNEXPECTED, "获取日志详情发生错误 " + e.getMessage());
+            return Result.error("获取日志详情发生错误 " + e.getMessage());
         }
         return Result.ok(serviceLogDetailVO);
-
-//        if (serviceLogDetailVO != null)
-//            return Result.ok(serviceLogDetailVO);
-//        else
-//            return Result.error(CommonConstants.EC_NOT_EXISTED_VALUE, "当前服务日志详情不存在");
     }
 }

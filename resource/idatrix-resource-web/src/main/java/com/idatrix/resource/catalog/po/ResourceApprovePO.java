@@ -1,10 +1,13 @@
 package com.idatrix.resource.catalog.po;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
  * 资源审批表
  */
+@Data
 public class ResourceApprovePO {
 
     /*主键*/
@@ -35,7 +38,10 @@ public class ResourceApprovePO {
     private Date approveTime;
 
     /*是否当前审批：0否，1是*/
-    private Boolean activeFlag;
+    private Boolean activeFlag=true;
+
+    /*租户ID,用于租户隔离*/
+    private Long rentId;
 
     /*创建人*/
     private String creator;
@@ -49,119 +55,5 @@ public class ResourceApprovePO {
     /*修改时间*/
     private Date modifyTime;
 
-    public ResourceApprovePO(){
-        this.activeFlag = true;
-    }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(Long resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public String getApprover() {
-        return approver;
-    }
-
-    public void setApprover(String approver) {
-        this.approver = approver;
-    }
-
-    public String getApproverName() {
-        return approverName;
-    }
-
-    public void setApproverName(String approverName) {
-        this.approverName = approverName;
-    }
-
-    public String getCurrentStatus() {
-        return currentStatus;
-    }
-
-    public void setCurrentStatus(String currentStatus) {
-        this.currentStatus = currentStatus;
-    }
-
-    public String getNextStatus() {
-        return nextStatus;
-    }
-
-    public void setNextStatus(String nextStatus) {
-        this.nextStatus = nextStatus;
-    }
-
-    public String getApproveAction() {
-        return approveAction;
-    }
-
-    public void setApproveAction(String approveAction) {
-        this.approveAction = approveAction;
-    }
-
-    public String getSuggestion() {
-        return suggestion;
-    }
-
-    public void setSuggestion(String suggestion) {
-        this.suggestion = suggestion;
-    }
-
-    public Date getApproveTime() {
-        return approveTime;
-    }
-
-    public void setApproveTime(Date approveTime) {
-        this.approveTime = approveTime;
-    }
-
-    public Boolean getActiveFlag() {
-        return activeFlag;
-    }
-
-    public void setActiveFlag(Boolean activeFlag) {
-        this.activeFlag = activeFlag;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier;
-    }
-
-    public Date getModifyTime() {
-        return modifyTime;
-    }
-
-    public void setModifyTime(Date modifyTime) {
-        this.modifyTime = modifyTime;
-    }
 }

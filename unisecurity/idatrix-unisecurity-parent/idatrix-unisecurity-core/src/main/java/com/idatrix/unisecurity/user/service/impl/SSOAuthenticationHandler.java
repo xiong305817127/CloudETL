@@ -1,5 +1,6 @@
 package com.idatrix.unisecurity.user.service.impl;
 
+import com.idatrix.unisecurity.aspects.WebLogAspect;
 import com.idatrix.unisecurity.common.dao.ClientSystemMapper;
 import com.idatrix.unisecurity.common.domain.*;
 import com.idatrix.unisecurity.common.enums.ResultEnum;
@@ -149,7 +150,7 @@ public class SSOAuthenticationHandler implements IAuthenticationHandler {
             userService.updateLoginUserInfo(user);
 
             // 成功登陆后，记录一条登陆数据
-            LoginCount loginCount = new LoginCount(user.getId(), user.getUsername(), user.getRenterId(), new Date());
+            LoginCount loginCount = new LoginCount(user.getUsername(), WebLogAspect.getIp(request), user.getId(), user.getRenterId(), new Date());
             loginCountService.insertSelective(loginCount);
 
             // 登录成功后，将用户信息缓存到服务端，获取用户的权限返回

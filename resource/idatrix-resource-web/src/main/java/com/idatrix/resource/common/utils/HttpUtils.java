@@ -57,18 +57,19 @@ public class HttpUtils {
 
 	public static HttpEntity getRequestEntity(String url, String requestMethod) throws IOException {
 
-			Map<String, String> map = new HashMap<String, String>();
-			map.put("account", "");
-			map.put("password", "");
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("account", "");
+        map.put("password", "");
 
-			HttpUriRequest request = getRequestMethod(map, url, requestMethod);
-			HttpResponse response = httpClient.execute(request);
-
-			if (response.getStatusLine().getStatusCode() == 200) {
-				return response.getEntity();
-			} else {
-				return null;
-			}
+        HttpUriRequest request = getRequestMethod(map, url, requestMethod);
+        HttpResponse response = httpClient.execute(request);
+        LOG.info("HTTP请求参数：" +request.toString());
+        LOG.info("HTTP请求返回数据：" +response.toString());
+        if (response.getStatusLine().getStatusCode() == 200) {
+            return response.getEntity();
+        } else {
+            return null;
+        }
 	}
 
 	//测试方法 已通过

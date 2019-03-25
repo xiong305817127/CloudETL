@@ -2,10 +2,7 @@ package com.ys.idatrix.db.api.rdb.service;
 
 
 import com.ys.idatrix.db.api.common.RespResult;
-import com.ys.idatrix.db.api.rdb.dto.RdbAlterTable;
-import com.ys.idatrix.db.api.rdb.dto.RdbCreateDatabase;
-import com.ys.idatrix.db.api.rdb.dto.RdbCreateTable;
-import com.ys.idatrix.db.api.rdb.dto.RdbLinkDto;
+import com.ys.idatrix.db.api.rdb.dto.*;
 import com.ys.idatrix.db.api.sql.dto.SqlExecRespDto;
 
 /**
@@ -24,105 +21,105 @@ public interface RdbService {
      * 创建存储系统
      *
      * @param username
-     * @param rdbLinkDto   jdbc信息
+     * @param rdbLink jdbc信息
      * @param database
      * @return
      */
-    RespResult<SqlExecRespDto> createDatabase(String username, RdbLinkDto rdbLinkDto, RdbCreateDatabase database);
+    RespResult<SqlExecRespDto> createDatabase(String username, RdbLinkDto rdbLink, RdbCreateDatabase database);
 
 
     /**
      * 删除数据库
      *
      * @param username
-     * @param dbName
-     * @param rdbLinkDto
+     * @param rdbLink
+     * @param database
      * @return
      */
-    RespResult<SqlExecRespDto> dropDatabase(String username, String dbName, RdbLinkDto rdbLinkDto);
+    RespResult<SqlExecRespDto> dropDatabase(String username, RdbLinkDto rdbLink, RdbDropDatabase database);
 
 
     /**
      * 创建表
      *
      * @param username
-     * @param config
+     * @param rdbLink
      * @param rct
      * @return
      */
-    RespResult<SqlExecRespDto> createTable(String username, RdbLinkDto rdbLinkDto, RdbCreateTable rct);
+    RespResult<SqlExecRespDto> createTable(String username, RdbLinkDto rdbLink, RdbCreateTable rct);
 
 
     /**
      * alter表
      *
      * @param username
-     * @param rdbLinkDto
+     * @param rdbLink
      * @param alterTable
      * @return
      */
-    RespResult<SqlExecRespDto> alterTable(String username, RdbLinkDto rdbLinkDto, RdbAlterTable alterTable);
+    RespResult<SqlExecRespDto> alterTable(String username, RdbLinkDto rdbLink, RdbAlterTable alterTable);
 
 
     /**
      * 删除表接口
      *
-     * @param username  用户名
-     * @param tableName 删除的表名
-     * @param rdbLinkDto    jdbc连接信息
-     * @param bForced   是否强制删除（已存在数据的）
+     * @param username   用户名
+     * @param tableName  删除的表名
+     * @param rdbLink jdbc连接信息
+     * @param bForced    是否强制删除（已存在数据的）
      * @return
      */
-    RespResult<SqlExecRespDto> dropTable(String username, String tableName, RdbLinkDto rdbLinkDto, boolean bForced);
+    RespResult<SqlExecRespDto> dropTable(String username, String tableName, RdbLinkDto rdbLink, boolean bForced);
 
 
     /**
      * oracle 创建序列接口
      *
-     * @param username 用户名
-     * @param config   jdbc信息
-     * @param seqName  序列名称
+     * @param username   用户名
+     * @param rdbLink jdbc信息
+     * @param seqName    序列名称
      * @return
      */
-    RespResult<SqlExecRespDto> createSequence(String username, RdbLinkDto rdbLinkDto, String seqName);
+    RespResult<SqlExecRespDto> createSequence(String username, RdbLinkDto rdbLink, String seqName);
 
     /**
      * oracle 删除序列
      *
-     * @param username 用户名
-     * @param rdbLinkDto   jdbc信息
-     * @param seqName  序列名称
+     * @param username   用户名
+     * @param rdbLink jdbc信息
+     * @param seqName    序列名称
      * @return
      */
-    RespResult<SqlExecRespDto> dropSequence(String username, RdbLinkDto rdbLinkDto, String seqName);
+    RespResult<SqlExecRespDto> dropSequence(String username, RdbLinkDto rdbLink, String seqName);
 
 
     /**
      * 数据库用户校验
      *
      * @param dbUserName
-     * @param rdbLinkDto
+     * @param rdbLink
      * @return
      */
-    RespResult<Boolean> dbUserExists(String dbUserName, RdbLinkDto rdbLinkDto);
+    RespResult<Boolean> dbUserExists(String dbUserName, RdbLinkDto rdbLink);
 
 
     /**
      * 数据库名称校验
      *
      * @param dbName
-     * @param rdbLinkDto
+     * @param rdbLink
      * @return
      */
-    RespResult<Boolean> dbNameExists(String dbName, RdbLinkDto rdbLinkDto);
+    RespResult<Boolean> dbNameExists(String dbName, RdbLinkDto rdbLink);
 
 
     /**
      * db link 连接测试
      *
-     * @param rdbLinkDto
+     * @param rdbLink
      * @return
      */
-    RespResult<Boolean> testDBLink(RdbLinkDto rdbLinkDto);
+    RespResult<Boolean> testDBLink(RdbLinkDto rdbLink);
 
 }

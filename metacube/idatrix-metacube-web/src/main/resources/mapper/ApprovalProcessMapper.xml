@@ -479,7 +479,7 @@
                 <foreach item="auth" collection="authValues" separator="OR">
                     a.auth_value &amp; #{auth} = #{auth}
                 </foreach>
-                }
+                )
             </if>
             <if test="resourceTypes != null">
                 and a.resource_type in
@@ -490,6 +490,23 @@
             </if>
         </where>
         group by a.id
+    </select>
+
+
+    <select id="getAuthByResourceIdAndValue" resultMap="BaseResultMap" >
+        select
+        <include refid="Base_Column_List"/>
+        from mc_approval_process map
+        where 1=1
+        <if test="resourceId != null">
+            and map.resource_id=#{resourceId}
+        </if>
+        <if test="status != null">
+            and map.status=#{status}
+        </if>
+        <if test="deptCode != null">
+            and map.dept_code=#{deptCode}
+        </if>
     </select>
 
 </mapper>

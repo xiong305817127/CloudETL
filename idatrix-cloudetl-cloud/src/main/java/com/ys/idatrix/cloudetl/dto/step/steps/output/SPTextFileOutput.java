@@ -417,7 +417,7 @@ public class SPTextFileOutput implements StepParameter, StepDataRelationshipPars
 
 		if (!Utils.isEmpty(jtfo.getFileName())
 				&& (jtfo.getFileName().endsWith("/") || jtfo.getFileName().endsWith("\\"))) {
-			throw new KettleException("FileName is illegal!");
+			throw new KettleException("文件名不合法! 请在路径最后添加输出的文件名称");
 		}
 		textFileOutputMeta.setFilename(jtfo.getFileName());
 		if (!Utils.isEmpty(jtfo.getFileName()) && !jtfo.getFileNameInField()) {

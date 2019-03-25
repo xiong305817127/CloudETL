@@ -453,7 +453,7 @@ public class DataNodeUtil {
 		// 获取/生成 系统数据节点
 		String systemName = "defaultSystem"  ;
 		SystemProperty sysProperty = new SystemProperty(systemName);
-		sysProperty.setType(SystemType.File);
+		sysProperty.setType( "HDFS".equalsIgnoreCase(fileType)?SystemType.File_Hdfs : SystemType.File_Local );
 		sysProperty.setPosition("cloudetl");
 		sysProperty.setOwner("cloudetl");
 

@@ -4,17 +4,19 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.idatrix.resource.basedata.dao.SystemConfigDAO;
 import com.idatrix.resource.basedata.po.SystemConfigPO;
+import com.idatrix.resource.basedata.service.IDictionaryService;
 import com.idatrix.resource.basedata.service.ISystemConfigService;
 import com.idatrix.resource.catalog.dao.*;
 import com.idatrix.resource.catalog.po.*;
+import com.idatrix.resource.catalog.service.IOverviewService;
 import com.idatrix.resource.catalog.service.IResourceConfigService;
 import com.idatrix.resource.catalog.vo.*;
 import com.idatrix.resource.common.utils.*;
 import com.idatrix.unisecurity.api.domain.Organization;
 import com.idatrix.unisecurity.api.domain.User;
 import com.idatrix.unisecurity.api.service.UserService;
-import com.idatrix.unisecurity.sso.client.UserHolder;
-import com.idatrix.unisecurity.sso.client.model.SSOUser;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,9 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.idatrix.resource.basedata.common.BasedataConstant.CLASSIFY_DICT;
+import static com.idatrix.resource.basedata.common.BasedataConstant.SHARE_DICT;
+import static com.idatrix.resource.basedata.common.BasedataConstant.TYPE_DICT;
 import static com.idatrix.resource.common.utils.ResourceTools.ResourceAction;
 import static com.idatrix.resource.common.utils.ResourceTools.ResourceAction.*;
 import static com.idatrix.resource.common.utils.ResourceTools.ResourceAction.DELETE;
@@ -66,12 +71,16 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
     private UserUtils userUtils;
     @Autowired
     private ISystemConfigService systemConfigService;
+    @Autowired
+    private IOverviewService overviewService;
+    @Autowired
+    private IDictionaryService dictionaryService;
 
     @Override
-    public Long addResourceInfo(String user, ResourceConfigVO resourceConfigVO) throws Exception{
+    public Long addResourceInfo(Long rentId, String user, ResourceConfigVO resourceConfigVO) throws Exception{
         //TODO: 考虑数据查重
-        if(ownSameDate(resourceConfigVO)){
-            throw new RuntimeException("配置中存在相同资源名称或者相同资源代码");
+        if(ownSameDate(rentId, resourceConfigVO)){
+            throw new Exception("配置中存在相同资源名称或者相同资源代码");
         }
         int formatType = resourceConfigVO.getFormatType();
         Long id = resourceConfigVO.getId();
@@ -82,6 +91,7 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
         String codeTmp = resourceConfigVO.getCatalogCode() + "/" +resourceConfigVO.getSeqNum();
         rcPO.setCode(codeTmp);
         rcPO.setCatalogFullName(getResourceCatalogFullName(resourceConfigVO));
+        rcPO.setRentId(rentId);
 
         ResourceAction action = null;
         if(id!=null && id!=0){  //update一下
@@ -93,7 +103,7 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
                   !StringUtils.equals(status, WAIT_REG_APPROVE.getStatusCode()) &&
                    !StringUtils.equals(status, WAIT_PUB_APPROVE.getStatusCode())){
 
-                throw new RuntimeException("当前资源不可编辑");
+                throw new Exception("当前资源不可编辑");
             }
 
             rcPO.setStatus(oldrcPO.getStatus());
@@ -126,53 +136,34 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
         if(resourceConfigVO.getShareType()!=3) {  //不是不予共享都需要处理
             saveSharedDept(user, resourceConfigVO, id);
         }
+
+        //增加字典调用情况
+        dictionaryService.increaseDictUseCount(rentId, SHARE_DICT,String.valueOf(rcPO.getShareMethod()));
+        dictionaryService.increaseDictUseCount(rentId, CLASSIFY_DICT,String.valueOf(rcPO.getFormatType()));
+        dictionaryService.increaseDictUseCount(rentId, TYPE_DICT, rcPO.getFormatInfo());
         return id;
     }
 
     /*将Excel数据批量入库*/
     @Transactional(rollbackFor = Exception.class)
-    private void  saveExcelResource(String user, List<ResourceConfigVO> rcList)throws Exception{
+    private void  saveExcelResource(Long rentId, String user, List<ResourceConfigVO> rcList)throws Exception{
 
         //处理资源的部门列表ID问题
         Boolean userManageFlag = false;
-        SSOUser ssoUser = UserHolder.getUser();
-        Object obj = ssoUser.getProperty("renterId");
-        Long rentId = Long.valueOf((String) obj);
 
-        String userName =(String)ssoUser.getProperty("username");
-        User rentUser = userService.findRenterByRenterId(rentId);
         ////当前用户是租户,存储时候需要对用户进行干预
-        if(StringUtils.equals(userName, rentUser.getUsername())){
+        String rentName = userUtils.getCurrentUserRentName();
+        if(StringUtils.equals(user, rentName)){
             userManageFlag  = true;
         }else {
 
             //数据中心管理员上传也需要特殊处理
-//            String centerAdminName = null;
-//            SystemConfigPO sysConfigPO = systemConfigDAO.getLastestSysConfig();
-//            if (sysConfigPO != null) {
-//                Long centerAdminRole = sysConfigPO.getCenterAdminRole();
-//                if (centerAdminRole != null && centerAdminRole > 0) {
-//                    List<User> userList = new ArrayList<User>();
-//                    userList = userService.findUserByRoleAndRenter(centerAdminRole.intValue(), rentId);
-////                    userList = userService.findUsersByDeptAndRole(deptId, deptAdminRol.intValue());
-//                    if (userList != null && userList.size() > 0) {
-//                        User approveUser = userList.get(0);
-//                        centerAdminName = approveUser.getUsername();
-//                    } else {
-//                        throw new RuntimeException("还未设置数据中心管理员，请先配置数据中心管理员再提交注册");
-//                    }
-//                }
-//            } else {
-//                throw new Exception("系统参数没有配置，请先配置再上传");
-//            }
-//
             String centerAdminName = null;
             User centerUser = systemConfigService.getCurrentUserCenterAdmin();
             if(centerUser!=null){
                 centerAdminName = centerUser.getUsername();
             }
-
-            if (StringUtils.equals(userName, centerAdminName)) {
+            if (StringUtils.equals(user, centerAdminName)) {
                 userManageFlag = true;
             }
         }
@@ -195,29 +186,12 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
                         Integer deptId = parentIds.get(parentIds.size() - 1);
 
                         //数据中心管理员上传也需要特殊处理
-//                        SystemConfigPO sysConfigPO = systemConfigDAO.getLastestSysConfig();
-//                        if (sysConfigPO != null) {
-//                            Long deptStaffRole = sysConfigPO.getDeptStaffRole();
-//                            if (deptStaffRole != null && deptStaffRole > 0) {
-//                                List<User> userList = new ArrayList<User>();
-//                                userList = userService.findUsersByDeptAndRole(deptId, deptStaffRole.intValue());
-//                                if (userList != null && userList.size() > 0) {
-//                                    User approveUser = userList.get(0);
-//                                    deptStaffName = approveUser.getUsername();
-//                                } else {
-//                                    throw new RuntimeException("还未设置部门填报人员信息，请先配置填报人员信息再提交注册");
-//                                }
-//                            }
-//                        } else {
-//                            throw new Exception("系统参数没有配置，请先配置再上传");
-//                        }
-
                         User approveUser = systemConfigService.getDeptStaff(deptId);
                         if(approveUser!=null){
                             deptStaffName = approveUser.getUsername();
                         }
                     }else{
-                        throw new RuntimeException("导入表格中存在非当前租户下部门机构资源目录，部门统一社会信用编码为："+rcVO.getDeptCode());
+                        throw new Exception("导入表格中存在非当前租户下部门机构资源目录，部门统一社会信用编码为："+rcVO.getDeptCode());
                     }
                     user = deptStaffName;
                     deptCodeUserNameMap.put(deptCode, user);
@@ -227,18 +201,15 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
                 Organization org = userService.getUserOrganizationByUserId(Long.valueOf(userUtils.getCurrentUserId()));
                 if(org!=null){
                     if(!StringUtils.equals(org.getUnifiedCreditCode(), rcVO.getDeptCode())){
-                        throw new RuntimeException("当前用户不是租户和数据中心管理员角色，只能添加本部门数据，请修改表格数据");
+                        throw new Exception("当前用户不是租户和数据中心管理员角色，只能添加本部门数据，请修改表格数据");
                     }
                 }else {
-                    throw new RuntimeException("当前用户没有配置所属部门，请先配置再使用");
+                    throw new Exception("当前用户没有配置所属部门，请先配置再使用");
                 }
-//                userService.getUserOrganizationByUserId();
-//                userService
-//                Long importDeptID = rcVO.getDeptNameIdArray().split();
-//                if(deptId)
             }
 
             ResourceConfigPO rcPO = transferResourceConfigVoTOPo(user, rcVO);
+            rcPO.setRentId(rentId);
             resourceConfigDAO.insert(rcPO);
             Long id = rcPO.getId();
 
@@ -248,9 +219,8 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
             //数据库需要存储表格
             int formatType = rcVO.getFormatType();
 //            if(ResourceTools.FormatType.getRefreshCycle(formatType)== DB){
-                List<ResourceColumnVO> rsColumnList = new ArrayList<ResourceColumnVO>();
-                rsColumnList = rcVO.getResourceColumnVOList();
-                if(rsColumnList!=null && rsColumnList.size()>0) {
+                List<ResourceColumnVO> rsColumnList = rcVO.getResourceColumnVOList();
+                if(CollectionUtils.isNotEmpty(rsColumnList)) {
                     saveResourceColumn(user, id, rsColumnList);
                 }
 //            }
@@ -270,10 +240,10 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
 
         ResourceConfigPO rcPO = resourceConfigDAO.getConfigById(id);
         if(rcPO==null){
-            throw new RuntimeException("不存在该资源信息");
+            throw new Exception("不存在该资源信息");
         }
         if(!StringUtils.equals(rcPO.getCreator(), user)){
-            throw new RuntimeException("该用户没有删除本资源权限");
+            throw new Exception("该用户没有删除本资源权限");
         }
         if(StringUtils.equals(rcPO.getStatus(), DRAFT.getStatusCode())
                 || StringUtils.equals(rcPO.getStatus(), DELETE.getActionCode())){
@@ -291,9 +261,14 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
             rsHistoryPO.setActionName(DELETE.getAction());
             rsHistoryPO.setAction(DELETE.getActionCode());
             resourceHistoryDAO.insert(rsHistoryPO);
+
+            Long rentId = userUtils.getCurrentUserRentId();
+            dictionaryService.decreaseDictUseCount(rentId, SHARE_DICT,String.valueOf(rcPO.getShareMethod()));
+            dictionaryService.decreaseDictUseCount(rentId, CLASSIFY_DICT,String.valueOf(rcPO.getFormatType()));
+            dictionaryService.decreaseDictUseCount(rentId, TYPE_DICT, rcPO.getFormatInfo());
             return 0;
         }else{
-            throw new RuntimeException("该资源信息已被占用，不用删除");
+            throw new Exception("该资源信息已被占用，不用删除");
         }
 
     }
@@ -302,11 +277,18 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
         List<ResourceConfigPO> rcPOList = resourceConfigDAO.getConfigByUser(user);
         return transferResourceConfigPoTOVo(rcPOList);
     }
+    public ResourceConfigVO getResourceInfoById(String user, Long id) throws Exception {
+        ResourceConfigVO rcVO = getResourceInfoById(id);
+        int flag = overviewService.getSubscribeFlagByUserAndResourceId(user, id);
+        rcVO.setSubscribeFlag(flag);
+        return rcVO;
+    }
+
 
     public ResourceConfigVO getResourceInfoById(Long id) throws Exception {
         ResourceConfigPO rcPO = resourceConfigDAO.getConfigById(id);
         if(rcPO==null){
-            throw new RuntimeException("不存在该信息资源记录");
+            throw new Exception("不存在该信息资源记录");
         }
 
         ResourceConfigVO rcVO = transferResourceConfigPoTOVo(rcPO);
@@ -356,18 +338,16 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
     public List<ResourceHistoryVO> getHistory(Long id) {
 
         List<ResourceHistoryPO> rhPOList = resourceHistoryDAO.getHistoryByResourceId(id);
-        if(rhPOList==null||rhPOList.size()==0){
-            throw new RuntimeException("该资源记录为空");
-        }
-
         List<ResourceHistoryVO> rhVOList = new ArrayList<ResourceHistoryVO>();
-        for(ResourceHistoryPO rhPO : rhPOList){
-            ResourceHistoryVO rhVO = new ResourceHistoryVO();
-            rhVO.setId(rhPO.getId());
-            rhVO.setActionName(rhPO.getActionName());
-            rhVO.setOperator(rhPO.getCreator());
-            rhVO.setOperatorTime(DateTools.formatDate(rhPO.getCreateTime()));
-            rhVOList.add(rhVO);
+        if(CollectionUtils.isNotEmpty(rhPOList)) {
+            for (ResourceHistoryPO rhPO : rhPOList) {
+                ResourceHistoryVO rhVO = new ResourceHistoryVO();
+                rhVO.setId(rhPO.getId());
+                rhVO.setActionName(rhPO.getActionName());
+                rhVO.setOperator(rhPO.getCreator());
+                rhVO.setOperatorTime(DateTools.formatDate(rhPO.getCreateTime()));
+                rhVOList.add(rhVO);
+            }
         }
         return rhVOList;
     }
@@ -384,11 +364,11 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
     public String saveBatchImport(String user, CommonsMultipartFile multiPartFile) throws Exception {
 
         if(multiPartFile==null){
-            throw new Exception("上传信息没有包含文件");
+            throw new RuntimeException("上传信息没有包含文件");
         }
 
         String fileOriginName = multiPartFile.getOriginalFilename();
-        if(!batchTools.verifyExcel(fileOriginName)){
+        if(!ExcelUtils.verifyExcel(fileOriginName)){
             throw new Exception("上传文件格式不符合要求");
         }
 
@@ -407,16 +387,22 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
     }
 
     @Override
-    public void processExcel(String user, String fileName) throws Exception {
+    public void processExcel(Long rentId, String user, String fileName) throws Exception {
         if(StringUtils.isEmpty(fileName)){
-            throw new Exception("文件名为空");
+            throw new RuntimeException("文件名为空");
         }
+
+        List<CatalogNodePO> catalogPOList = catalogNodeDAO.getAllCatalogNodesByRentId(rentId);
+        if(catalogPOList==null||catalogPOList.size()<=3) {
+            throw new Exception("资源分类配置不完整，请先在资源分类管理中配置");
+        }
+
         String filePath = FileUtils.getFileDirByType("excel")+File.separator+fileName;
         LOG.info("======1=====CurrentTime"+ DateTools.formatDate(new Date())  );
         List<ResourceConfigVO> rcList = batchTools.processResourceExcel(batchTools.readResourceExcelValue(new File(filePath)));
         LOG.info("======2=====CurrentTime"+ DateTools.formatDate(new Date())  );
         //batchTools.preProcesBeforeSave(rcList);
-        saveExcelResource(user, batchTools.preProcesBeforeSave(rcList));
+        saveExcelResource(rentId, user, batchTools.preProcesBeforeSave(rentId, rcList));
         LOG.info("======3=====CurrentTime"+ DateTools.formatDate(new Date())  );
         FileUtils.deletefile(filePath);
     }
@@ -442,7 +428,7 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
         Arrays.sort(catalogListInLib);
         Arrays.sort(catalogIdList);
         if(!Arrays.equals(catalogListInLib, catalogIdList)){
-            if(catalogListInLib!=null && catalogListInLib.length>0){
+            if(ArrayUtils.isNotEmpty(catalogListInLib)){
                 catalogResourceDAO.deleteByResourceId(id);
             }
             for(Long catalogId :catalogIdList){
@@ -463,13 +449,13 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
         if(resourceConfigVO.getShareType()!=3) {  //不是不予共享都需要处理
             Long[] deptIdInLib = deptLimitedDAO.getDeptArrayByResource(id);
             Long[] deptIdList = resourceConfigVO.getShareDeptArray();
-            if(deptIdList==null || deptIdList.length==0){
+            if(ArrayUtils.isEmpty(deptIdList)){
                 return;
             }
             Arrays.sort(deptIdInLib);
             Arrays.sort(deptIdList);
             if(!Arrays.equals(deptIdInLib, deptIdList)){
-                if(deptIdInLib!=null && deptIdInLib.length>0){
+                if(ArrayUtils.isNotEmpty(deptIdInLib)){
                     deptLimitedDAO.deleteByResourceId(id);
                 }
                 for (Long deptId : deptIdList) {
@@ -490,7 +476,7 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
     private List<ResourcePubVO> transferRCToResourcePub(List<ResourceConfigPO> rcList){
 
         List<ResourcePubVO> rpList = new ArrayList<ResourcePubVO>();
-        if(rcList==null || rcList.size()==0) {
+        if(CollectionUtils.isEmpty(rcList)) {
             return rpList;
         }
         for(ResourceConfigPO rc: rcList){
@@ -509,15 +495,15 @@ public class ResourceConfigServiceImpl implements IResourceConfigService {
 
     }
 
-    private Boolean ownSameDate(ResourceConfigVO rc){
+    private Boolean ownSameDate(Long rentId, ResourceConfigVO rc){
 
         Long resourceId = rc.getId();
         if(resourceId!=null && resourceId!=0){
             return false;
         }
-        List<ResourceConfigPO> rcPOList = resourceConfigDAO.getByNameOrCode(rc.getName(),
+        List<ResourceConfigPO> rcPOList = resourceConfigDAO.getByNameOrCodeAndRentId(rentId, rc.getName(),
                 rc.getCatalogCode(), rc.getSeqNum());
-        if(rcPOList!=null && rcPOList.size()>0){
+        if(CollectionUtils.isNotEmpty(rcPOList)){
             return true;
         }
         return false;

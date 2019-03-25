@@ -2,10 +2,7 @@ package com.ys.idatrix.db.test;
 
 import com.alibaba.fastjson.JSON;
 import com.ys.idatrix.db.api.common.RespResult;
-import com.ys.idatrix.db.api.sql.dto.SqlExecReqDto;
-import com.ys.idatrix.db.api.sql.dto.SqlExecRespDto;
-import com.ys.idatrix.db.api.sql.dto.SqlQueryRespDto;
-import com.ys.idatrix.db.api.sql.dto.SqlTaskExecDto;
+import com.ys.idatrix.db.api.sql.dto.*;
 import com.ys.idatrix.db.api.sql.service.SqlExecService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,13 +28,14 @@ public class SqlExecServiceTest {
     public void testQueryMysql(){
         String sql = "select * from sb_app";
         SqlExecReqDto reqDto = new SqlExecReqDto();
+        reqDto.setSchemaDetails(new SchemaDetailsDto());
         reqDto.setCommand(sql);
-        reqDto.setType("MYSQL");
-        reqDto.setIp("10.0.0.85");
-        reqDto.setPort("3306");
-        reqDto.setUsername("root");
-        reqDto.setPassword("admin");
-        reqDto.setSchemaName("servicebase");
+        reqDto.getSchemaDetails().setType("MYSQL");
+        reqDto.getSchemaDetails().setIp("10.0.0.85");
+        reqDto.getSchemaDetails().setPort("3306");
+        reqDto.getSchemaDetails().setUsername("root");
+        reqDto.getSchemaDetails().setPassword("admin");
+        reqDto.getSchemaDetails().setSchemaName("servicebase");
 
         RespResult<SqlQueryRespDto> result = sqlExecService.executeQuery("zhoujian", reqDto);
         printSqlQueryResult(result);
@@ -48,13 +46,14 @@ public class SqlExecServiceTest {
     public void testAsyncExecuteMysql(){
         String sql = "select * from sb_app";
         SqlExecReqDto reqDto = new SqlExecReqDto();
+        reqDto.setSchemaDetails(new SchemaDetailsDto());
         reqDto.setCommand(sql);
-        reqDto.setType("MYSQL");
-        reqDto.setIp("10.0.0.85");
-        reqDto.setPort("3306");
-        reqDto.setUsername("root");
-        reqDto.setPassword("admin");
-        reqDto.setSchemaName("servicebase");
+        reqDto.getSchemaDetails().setType("MYSQL");
+        reqDto.getSchemaDetails().setIp("10.0.0.85");
+        reqDto.getSchemaDetails().setPort("3306");
+        reqDto.getSchemaDetails().setUsername("root");
+        reqDto.getSchemaDetails().setPassword("admin");
+        reqDto.getSchemaDetails().setSchemaName("servicebase");
 
         RespResult<SqlExecRespDto> result = sqlExecService.asyncExecute("zhoujian", reqDto);
         printSqlAsyncResult(result);
@@ -65,13 +64,14 @@ public class SqlExecServiceTest {
     public void testAsyncExecuteMysql2(){
         String sql = "select * from zhj_manual_tb1";
         SqlExecReqDto reqDto = new SqlExecReqDto();
+        reqDto.setSchemaDetails(new SchemaDetailsDto());
         reqDto.setCommand(sql);
-        reqDto.setType("MYSQL");
-        reqDto.setIp("10.0.0.85");
-        reqDto.setPort("3306");
-        reqDto.setUsername("root");
-        reqDto.setPassword("admin");
-        reqDto.setSchemaName("test_mysql_create1");
+        reqDto.getSchemaDetails().setType("MYSQL");
+        reqDto.getSchemaDetails().setIp("10.0.0.85");
+        reqDto.getSchemaDetails().setPort("3306");
+        reqDto.getSchemaDetails().setUsername("root");
+        reqDto.getSchemaDetails().setPassword("admin");
+        reqDto.getSchemaDetails().setSchemaName("test_mysql_create1");
         reqDto.setSchemaId(33L);
         reqDto.setNeedPermission(true);
 

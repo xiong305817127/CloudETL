@@ -15,7 +15,7 @@
         <result column="dept_admin_role" property="deptAdminRole" jdbcType="BIGINT" />
         <result column="center_admin_role" property="centerAdminRole" jdbcType="BIGINT" />
         <result column="sub_approver_role" property="subApproverRole" jdbcType="BIGINT" />
-
+        <result column="rent_id" property="rentId" jdbcType="BIGINT" />
         <result column="creator" property="creator" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
         <result column="modifier" property="modifier" jdbcType="VARCHAR" />
@@ -24,9 +24,18 @@
 
     <sql id="Base_Column_List">
         id, file_root, origin_file_root,file_root_ids,origin_file_root_ids, db_upload_size, file_upload_size,
-        import_interval, dept_staff_role, dept_admin_role,  center_admin_role, sub_approver_role,
+        import_interval, dept_staff_role, dept_admin_role,  center_admin_role, sub_approver_role,rent_id,
         creator, create_time,  modifier, modify_time
     </sql>
+
+
+
+    <select id="getSysConfigByRentId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        FROM rc_sysconfig
+        where rent_id=#{rentId}
+    </select>
 
     <select id="getAdaptByRentId" resultMap="BaseResultMap">
         select
@@ -72,12 +81,12 @@
         origin_file_root_ids,file_root_ids,
         file_root, origin_file_root, db_upload_size, file_upload_size,
         import_interval, dept_staff_role, dept_admin_role,
-        center_admin_role, sub_approver_role,
+        center_admin_role, sub_approver_role, rent_id,
         creator, create_time,  modifier, modify_time)
         values ( #{originFileRootIds}, #{fileRootIds},
         #{fileRoot},#{originFileRoot}, #{dbUploadSize},#{fileUploadSize},
         #{importInterval}, #{deptStaffRole},#{deptAdminRole},
-        #{centerAdminRole},  #{subApproverRole},
+        #{centerAdminRole},  #{subApproverRole}, #{rentId},
        #{creator}, #{createTime}, #{modifier}, #{modifyTime})
     </insert>
 
@@ -96,6 +105,7 @@
         dept_admin_role = #{deptAdminRole},
         center_admin_role = #{centerAdminRole},
         sub_approver_role = #{subApproverRole},
+        rent_id=#{rentId},
         creator = #{creator},
         create_time = #{createTime},
         modifier = #{modifier},

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.portal.dao.PortalResourceDAO">
+
+    <resultMap id="DeptStatisBaseResultMap"
+               type="com.idatrix.resource.portal.vo.DeptResourceStatisticsVO">
+        <id column="type" property="contentType" jdbcType="VARCHAR" />
+        <result column="dept_name" property="deptName" jdbcType="VARCHAR" />
+        <result column="count" property="count" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <resultMap id="ResourcePubMap"
+               type="com.idatrix.resource.portal.vo.ResourcePubInfo">
+        <id column="dept_name" property="deptName" jdbcType="VARCHAR" />
+        <result column="format_type" property="formatType" jdbcType="TINYINT" />
+        <result column="update_time" property="pubTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+
+    <resultMap id="TotalPubMap"
+               type="com.idatrix.resource.portal.vo.PubCount">
+        <id column="total" property="total" jdbcType="BIGINT" />
+        <result column="db_count" property="dbCount" jdbcType="BIGINT" />
+        <result column="interface_count" property="interfaceCount" jdbcType="BIGINT" />
+    </resultMap>
+
+    <resultMap id="ShareStatisticsMap"
+               type="com.idatrix.resource.portal.vo.ShareTypeStatisticsVO">
+        <id column="total_count" property="totalCount" jdbcType="BIGINT" />
+        <result column="unconditional_share_count" property="unconditionalShareCount" jdbcType="BIGINT" />
+        <result column="conditional_share_count" property="conditionalShareCount" jdbcType="BIGINT" />
+        <result column="no_share_count" property="noShareCount" jdbcType="BIGINT" />
+    </resultMap>
+
+    <resultMap id="TypeStatisticsMap"
+               type="com.idatrix.resource.portal.vo.TypeInStatisticsVO">
+        <id column="base_lib_count" property="baseLibCount" jdbcType="BIGINT" />
+        <result column="topic_lib_count" property="topicLibCount" jdbcType="BIGINT" />
+        <result column="dept_lib_count" property="deptLibCount" jdbcType="BIGINT" />
+        <result column="resource_daily_count" property="resourceDailyCount" jdbcType="BIGINT" />
+        <result column="resource_pub_total" property="resourcePubTotal" jdbcType="BIGINT" />
+        <result column="dept_daily_count" property="deptDailyCount" jdbcType="BIGINT" />
+    </resultMap>
+
+    <resultMap id="ResourceUseStatisticsMap" type="com.idatrix.resource.portal.vo.ResourceUseStatisticsVO">
+        <id column="dept_daily_count" property="deptDailyCount" jdbcType="BIGINT" />
+        <result column="dept_count" property="deptCount" jdbcType="BIGINT" />
+        <result column="resource_daily_count" property="resourceDailyCount" jdbcType="BIGINT" />
+        <result column="resource_register_total" property="resourceRegisterTotal" jdbcType="BIGINT" />
+        <result column="files_upload" property="filesUpload" jdbcType="BIGINT" />
+        <result column="datas_upload" property="datasUpload" jdbcType="BIGINT" />
+        <result column="service_api_upload" property="serviceApiUpload" jdbcType="BIGINT" />
+        <result column="taotal_upload_data" property="totalUploadData" jdbcType="BIGINT" />
+        <result column="statistics_time" property="statisticsTime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="getResourceUseStatisticsByRentId" resultMap="ResourceUseStatisticsMap">
+        SELECT
+            (current_timestamp()) as statistics_time,
+            ifnull((select count(DISTINCT(rsd.provide_dept_id)) from rc_statistics_daily rsd where TO_DAYS(rsd.create_time)=TO_DAYS(curdate()) AND rsd.interface_count+rsd.db_count+rsd.file_count>0 AND rent_id=#{rentId}),0) as dept_daily_count,
+            ifnull((SELECT count( DISTINCT ( rr.dept_code ) ) FROM rc_resource rr WHERE rent_id=#{rentId} AND rr.`status` = "pub_success" ),0) AS dept_count ,
+            ifnull((select SUM(rsd.file_count)+SUM(rsd.db_count)+SUM(rsd.interface_count) from rc_statistics_daily rsd where TO_DAYS(rsd.create_time)=TO_DAYS(curdate()) AND rent_id=#{rentId}),0) as resource_daily_count,
+            ifnull((select SUM(rsd.file_count)+SUM(rsd.db_count)+SUM(rsd.interface_count) from rc_statistics_daily rsd where rent_id=#{rentId}),0)as resource_register_total,
+            ifnull((select SUM(rsd.file_count) from rc_statistics_daily rsd where rent_id=#{rentId}),0) as files_upload,
+            ifnull((select SUM(rsd.db_count) from rc_statistics_daily rsd where rent_id=#{rentId}),0) as datas_upload,
+            ifnull((select SUM(rsd.interface_count) from rc_statistics_daily rsd where rent_id=#{rentId}),0) as interface_upload
+        from rc_sysconfig limit 1
+    </select>
+
+
+
+    <select id="getTypeInStatisticsByRentId" resultMap="TypeStatisticsMap">
+      SELECT
+        ifnull((SELECT count( id ) FROM rc_resource rr WHERE rr.catalog_code LIKE "1%" AND rr.rent_id =#{rentId} AND rr.`status` = "pub_success" ),0) AS base_lib_count,
+        ifnull((SELECT count( id ) FROM rc_resource rr WHERE rr.catalog_code LIKE "2%" AND rr.rent_id =#{rentId} AND rr.`status` = "pub_success" ),0)AS topic_lib_count,
+        ifnull((SELECT count( id ) FROM rc_resource rr WHERE rr.catalog_code LIKE "3%" AND rr.rent_id =#{rentId} AND rr.`status` = "pub_success" ),0) AS dept_lib_count,
+        ifnull((SELECT count( DISTINCT ( rr.dept_code ) ) FROM rc_resource rr WHERE rr.rent_id =#{rentId} AND rr.`status` = "pub_success" ) ,0)AS resource_pub_total ,
+        ifnull((SELECT count( DISTINCT ( rr.dept_code ) ) FROM rc_resource rr WHERE rr.rent_id =#{rentId} AND rr.`status` = "pub_success" AND TO_DAYS(rr.pub_date)=TO_DAYS(curdate())),0)AS dept_daily_count ,
+        ifnull((SELECT count(id) FROM rc_resource rr WHERE rr.rent_id =#{rentId} AND rr.`status` = "pub_success" AND TO_DAYS(rr.pub_date)=TO_DAYS(curdate())),0)AS resource_daily_count
+      FROM rc_sysconfig LIMIT 1
+    </select>
+
+
+    <select id="getTotalVisitByRentID" resultType="java.lang.Long">
+        SELECT
+            SUM(rrs.visit_count) as count
+        FROM
+            rc_resource rr
+            LEFT JOIN rc_resource_statistics rrs ON rr.id = rrs.id and rr.rent_id=#{rentId}
+    </select>
+
+    <select id="getShareStatistics" resultMap="ShareStatisticsMap">
+        SELECT
+            ifnull(( SELECT count( id ) FROM rc_resource rr WHERE rr.rent_id = #{rentId} ),0) AS total_count,
+            ifnull(( SELECT count( id ) FROM rc_resource rr WHERE rr.rent_id = #{rentId} AND rr.share_type = 1 ),0) AS unconditional_share_count,
+            ifnull(( SELECT count( id ) FROM rc_resource rr WHERE rr.rent_id = #{rentId} AND rr.share_type = 2 ),0) AS conditional_share_count,
+            ifnull(( SELECT count( id ) FROM rc_resource rr WHERE rr.rent_id = #{rentId} AND rr.share_type = 3 ),0)AS no_share_count
+        FROM
+            rc_resource
+        LIMIT 1;
+    </select>
+
+
+    <select id="getDeptUseResource" resultMap="DeptStatisBaseResultMap">
+        SELECT
+            #{type} as type,
+        <if test='type=="interface"'>
+            ifnull(sum(rsd.interface_count),0) as count,
+        </if>
+        <if test='type=="file"'>
+            ifnull(sum(rsd.file_count),0) as count,
+        </if>
+        <if test='type=="db"'>
+            ifnull(sum(rsd.db_count),0) as count,
+        </if>
+        rsd.dept_name AS dept_name,
+        max(rsd.update_time ) AS update_time
+        FROM
+          rc_statistics_dept rsd
+        WHERE
+          rsd.rent_id=#{rentId}
+        GROUP BY
+          rsd.dept_name
+        ORDER BY
+          count DESC
+        <if test="num!=null">
+          limit #{num}
+        </if>
+    </select>
+
+
+
+    <select id="getDeptSupplyResource" resultMap="DeptStatisBaseResultMap">
+        SELECT
+            "all" as type,
+            count( DISTINCT ( rsd.resource_id ) ) AS count,
+            rsd.provide_dept_name AS dept_name,
+            max( rsd.update_time ) AS update_time
+        FROM
+            rc_statistics_daily rsd
+        WHERE
+            rsd.rent_id=#{rentId}
+        GROUP BY
+            rsd.provide_dept_name
+        ORDER BY
+            count DESC
+        <if test="num!=null">
+            limit #{num}
+        </if>
+    </select>
+
+
+    <select id="getDeptSupplyData" resultMap="DeptStatisBaseResultMap">
+        SELECT
+        "all" as type,
+        (SUM(rsd.file_count)+SUM(rsd.db_count)+SUM(rsd.interface_count)) AS count,
+        rsd.provide_dept_name AS dept_name,
+        max( rsd.update_time ) AS update_time
+        FROM
+        rc_statistics_daily rsd
+        WHERE
+        rsd.rent_id=#{rentId}
+        GROUP BY
+        rsd.provide_dept_name
+        ORDER BY
+        count DESC
+        <if test="num!=null">
+            limit #{num}
+        </if>
+    </select>
+
+
+    <select id="getPubTotalCount" resultMap="TotalPubMap">
+
+    SELECT
+        ifnull(( SELECT count( id ) AS interface_count FROM rc_resource WHERE STATUS = "pub_success" AND rent_id=#{rentId} AND format_type = 7 ),0) AS interface_count,
+        ifnull(( SELECT count( id ) AS db_count FROM rc_resource WHERE STATUS = "pub_success" AND rent_id=#{rentId} AND format_type = 3 ),0) AS db_count,
+        ifnull(( SELECT count( id ) AS total_count FROM rc_resource WHERE STATUS = "pub_success" AND rent_id=#{rentId} ),0) AS total
+    FROM
+        rc_resource
+        LIMIT 1
+  </select>
+
+    <select id="getLastestResourceByCount" resultMap="ResourcePubMap">
+        SELECT
+            rr.dept_name as dept_name,
+            rr.format_type as format_type,
+            rr.update_time as update_time
+        FROM
+            rc_resource rr
+        WHERE
+            rr.`status` = "pub_success"
+            AND rr.rent_id = #{rentId}
+        ORDER BY
+            rr.update_time DESC
+        <if test="count!=null">
+            limit #{count}
+        </if>
+    </select>
+
+    <select id="getResourceStatisticsInfo"
+            resultMap="DeptStatisBaseResultMap">
+        SELECT
+            <if test='type=="interface"'>
+                count(id) as count,
+            </if>
+            <if test='type=="data"'>
+                sum(rsd.db_count)+sum(rsd.file_count)+sum(rsd.interface_count) as count,
+            </if>
+            <if test='type=="resource"'>
+                count(id) as count,
+            </if>
+            rsd.provide_dept_name as dept_name,
+            max(rsd.update_time) as update_time,
+            #{type} as type
+        FROM
+            rc_statistics_daily rsd
+        WHERE 1=1
+            AND rent_id=#{rentId}
+        <if test='type=="data" or type=="resource"' >
+            AND rsd.resource_lib_type=#{libType}
+        </if>
+        <if test='type=="interface"'>
+            AND rsd.resource_type=#{type} AND rsd.resource_lib_type=#{libType}
+        </if>
+        group by rsd.provide_dept_name
+    </select>
+
+
+</mapper>

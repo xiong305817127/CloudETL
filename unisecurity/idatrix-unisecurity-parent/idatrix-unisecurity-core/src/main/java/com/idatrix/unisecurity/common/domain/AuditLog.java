@@ -19,6 +19,8 @@ public class AuditLog implements Serializable{
 
     private String result;
 
+    private Integer opType;
+
     private Long userId;
 
     private String userName;
@@ -38,6 +40,14 @@ public class AuditLog implements Serializable{
         this.userId = userId;
         this.userName = userName;
         this.renterId = renterId;
+    }
+
+    public Integer getOpType() {
+        return opType;
+    }
+
+    public void setOpType(Integer opType) {
+        this.opType = opType;
     }
 
     public Long getId() {

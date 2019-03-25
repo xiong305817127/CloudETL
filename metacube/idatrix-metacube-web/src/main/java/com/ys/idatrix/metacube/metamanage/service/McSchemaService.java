@@ -2,16 +2,23 @@ package com.ys.idatrix.metacube.metamanage.service;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.idatrix.unisecurity.api.domain.Organization;
 import com.ys.idatrix.metacube.api.beans.PageResultBean;
+import com.ys.idatrix.metacube.common.exception.MetaDataException;
 import com.ys.idatrix.metacube.metamanage.domain.McSchemaPO;
 import com.ys.idatrix.metacube.metamanage.mapper.McSchemaMapper;
 import com.ys.idatrix.metacube.metamanage.vo.request.SchemaSearchVO;
+import com.ys.idatrix.metacube.metamanage.vo.response.SchemaListVO;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.beans.BeanUtils;
 
 /**
  * 模式接口抽象 提供了模式操作的一些默认实现
  */
-public interface McSchemaService {
+public interface McSchemaService extends Connectable {
 
     /**
      * 获取McSchemaMapper数据访问接口，实现类需注入依赖
@@ -48,11 +55,36 @@ public interface McSchemaService {
     /**
      * 模式列表
      */
-    default PageResultBean<List<McSchemaPO>> listByPage(SchemaSearchVO searchVO) {
+    default PageResultBean<SchemaListVO> listByPage(SchemaSearchVO searchVO) {
         PageHelper.startPage(searchVO.getPageNum(), searchVO.getPageSize());
         List<McSchemaPO> schemaPOList = getSchemaMapper().listByPage(searchVO);
         PageInfo<McSchemaPO> info = new PageInfo<>(schemaPOList);
-        return PageResultBean.of(searchVO.getPageNum(), info.getTotal(), schemaPOList);
+        return PageResultBean
+                .of(searchVO.getPageNum(), info.getTotal(), convertSchemaListVO(schemaPOList));
+    }
+
+    default List<SchemaListVO> convertSchemaListVO(List<McSchemaPO> mcSchemaPOList) {
+        return mcSchemaPOList.stream().map(e -> {
+            SchemaListVO schemaListVO = new SchemaListVO();
+            BeanUtils.copyProperties(e, schemaListVO);
+            return schemaListVO;
+        }).collect(Collectors.toList());
+    }
+
+    default List<SchemaListVO> fillOrgNameIntoSchemaVO(List<SchemaListVO> schemaVOList,
+            List<Organization> orgList) {
+        return schemaVOList.stream().map(serverVO -> {
+            String orgCode = serverVO.getOrgCode();
+            List<String> orgCodes =
+                    Arrays.asList(orgCode.split(",")).stream().map(s -> s.trim())
+                            .collect(Collectors.toList());
+            List<String> orgNames = new ArrayList<>();
+            orgCodes.forEach(e -> orgNames
+                    .add(orgList.stream().filter(org -> org.getDeptCode().equals(e))
+                            .map(Organization::getDeptName).findAny().orElse("")));
+            serverVO.setOrgName(String.join(",", orgNames));
+            return serverVO;
+        }).collect(Collectors.toList());
     }
 
     /**
@@ -69,13 +101,14 @@ public interface McSchemaService {
      *
      * @param schemaIds 数据库id列表
      */
-    default List<McSchemaPO> listSchemaBySchemaIds(List<Long> schemaIds) {
-        return getSchemaMapper().listSchemaBySchemaIds(schemaIds);
+    default List<McSchemaPO> listSchemaBySchemaIds(List<Long> schemaIds, Long renterId, String ip
+            , List<Integer> databaseTypes) {
+        return getSchemaMapper().listSchemaBySchemaIds(schemaIds, renterId, ip, databaseTypes);
     }
 
     default List<McSchemaPO> listSchema(String orgCode,
-            Long renterId, List<Integer> dbTypeList) {
-        return getSchemaMapper().listSchema(orgCode, renterId, dbTypeList);
+            Long renterId, List<Integer> dbTypeList, String ip) {
+        return getSchemaMapper().listSchema(orgCode, renterId, dbTypeList, ip);
     }
 
     /**
@@ -87,12 +120,16 @@ public interface McSchemaService {
         return getSchemaMapper().getSchemaById(id);
     }
 
+    default SchemaListVO getSchemaListVOById(Long id) {
+        return null;
+    }
+
     /**
      * 删除模式 逻辑删除
      */
     default McSchemaPO delete(McSchemaPO schemaPO) {
         schemaPO.setIsDeleted(1);
-        update(schemaPO);
+        getSchemaMapper().update(schemaPO);
         return schemaPO;
     }
 
@@ -110,7 +147,7 @@ public interface McSchemaService {
      */
     default void checkUniqueness(McSchemaPO schemaPO) {
         if (exists(schemaPO)) {
-            throw new IllegalArgumentException("模式已存在");
+            throw new MetaDataException("模式已存在");
         }
     }
 

@@ -5,6 +5,7 @@ import com.idatrix.resource.catalog.dao.ResourceColumnDAO;
 import com.idatrix.resource.catalog.dao.ResourceConfigDAO;
 import com.idatrix.resource.catalog.po.ResourceColumnPO;
 import com.idatrix.resource.catalog.po.ResourceConfigPO;
+import com.idatrix.resource.catalog.vo.ResourceColumnVO;
 import com.idatrix.resource.common.utils.CommonConstants;
 import com.idatrix.resource.common.utils.DateTools;
 import com.idatrix.resource.subscribe.dao.SubscribeDAO;
@@ -22,11 +23,12 @@ import com.ys.idatrix.cloudetl.subscribe.api.dto.step.InsertUpdateDto;
 import com.ys.idatrix.cloudetl.subscribe.api.dto.step.TableInputDto;
 import com.ys.idatrix.cloudetl.subscribe.api.dto.step.TimerDto;
 import com.ys.idatrix.cloudetl.subscribe.api.service.SubscribeService;
-import com.ys.idatrix.metacube.api.bean.cloudetl.DataBaseInfo;
-import com.ys.idatrix.metacube.api.bean.dataswap.MetadataField;
-import com.ys.idatrix.metacube.api.bean.dataswap.QueryMetadataFieldsResult;
-import com.ys.idatrix.metacube.api.service.cloudetl.CloudETLService;
-import com.ys.idatrix.metacube.api.service.dataswap.DataSwapService;
+import com.ys.idatrix.metacube.api.beans.MetadataDTO;
+import com.ys.idatrix.metacube.api.beans.ResultBean;
+import com.ys.idatrix.metacube.api.beans.dataswap.MetadataField;
+import com.ys.idatrix.metacube.api.beans.dataswap.QueryMetadataFieldsResult;
+import com.ys.idatrix.metacube.api.service.MetadataToDataSwapService;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,9 +55,6 @@ public class ExchangeTask{
     private final Logger LOG= LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    private CloudETLService cloudETLService;
-
-    @Autowired
     private SubscribeDAO subscribeDAO;
 
     @Autowired
@@ -73,8 +72,8 @@ public class ExchangeTask{
     @Autowired
     private SubTaskDAO subTaskDAO;
 
-    @Autowired
-    private DataSwapService metacubeCatalogService;
+    @Autowired(required=false)
+    private MetadataToDataSwapService metacubeCatalogService;
 
     /*增量方式 ：  可为空 ，为空则表示该任务不增量获取，不为空：可选 date,sequence，表示增量类型 日期/序列(数字型)*/
     @Value("${incremental}")
@@ -96,7 +95,7 @@ public class ExchangeTask{
     public void startTask(){
 //        LOG.info("^^^^^^^^^^Exchange Task^^^^^^^^^^");
         List<SubTaskPO> taskList = subTaskDAO.getByStatus(CommonConstants.WAIT_IMPORT);
-        if(taskList!=null && taskList.size()>0){
+        if(CollectionUtils.isNotEmpty(taskList)){
             for(SubTaskPO taskPO:taskList){
                 String user = taskPO.getCreator();
                 String subscribeId = taskPO.getEtlSubscribeId();
@@ -114,7 +113,7 @@ public class ExchangeTask{
                     }
                 }else if(StringUtils.equals(taskPO.getStatus(), CommonConstants.WAIT_IMPORT)){
                     try {
-                        subscribeId = creatTask(taskPO.getId(), taskPO.getSrcMetaId(), taskPO.getDestMetaId());
+                        subscribeId = creatTask(taskPO.getSubTaskId(), taskPO.getSrcMetaId(), taskPO.getDestMetaId());
                         if (StringUtils.isNotEmpty(subscribeId)) {
                            // startSubscribeTask(user, subscribeId);
                             taskPO.setEtlSubscribeId(subscribeId);
@@ -190,11 +189,13 @@ public class ExchangeTask{
     * @param: destMetaId   交换任务目标-元数据ID
     *
     */
-    public String creatTask(Long subscribeId, Long sourceMetaId, Long destMetaId)throws Exception{
+//    public String creatTask(Long subscribeId, Long sourceMetaId, Long destMetaId)throws Exception{
+    public String creatTask(String subNo, Long sourceMetaId, Long destMetaId)throws Exception{
 
-        SubscribePO subscribePO = subscribeDAO.getById(subscribeId);
+//        SubscribePO subscribePO = subscribeDAO.getById(subscribeId);
+        SubscribePO subscribePO = subscribeDAO.getBySubNo(subNo);
         if(subscribePO==null){
-            throw new Exception("subscribeId-"+subscribeId+" 在订阅数据中没有记录");
+            throw new Exception("subscribeId-"+subNo+" 在订阅数据中没有记录");
         }
         ResourceConfigPO rcPO = resourceConfigDAO.getConfigById(subscribePO.getResourceId());
         if(rcPO==null){
@@ -204,11 +205,17 @@ public class ExchangeTask{
 
         List<SubscribeDbioPO> subOutputList = subscribeDbioDAO.getBySubscribeIdAndType(
                 subscribePO.getId(), "input");
-        List<ResourceColumnPO> destPoList = new ArrayList<ResourceColumnPO>();
+        List<ResourceColumnVO> destPoList = new ArrayList<ResourceColumnVO>();
         for(SubscribeDbioPO sdbPO:subOutputList){
             ResourceColumnPO resourceColumnPO = resourceColumnDAO.getColumnById(sdbPO.getColumnId());
             if(resourceColumnPO!=null){
-                destPoList.add(resourceColumnPO);
+                ResourceColumnVO rcVO = new ResourceColumnVO(resourceColumnPO);
+                if(StringUtils.isNotEmpty(sdbPO.getDataMaskingType())){
+                    rcVO.setDataMaskingType(sdbPO.getDataMaskingType());
+                    rcVO.setDataStartIndex(sdbPO.getDataStartIndex());
+                    rcVO.setDataLength(sdbPO.getDataLength());
+                }
+                destPoList.add(rcVO);
             }
         }
 
@@ -256,16 +263,18 @@ public class ExchangeTask{
 
     private TableInputDto assembleTableInputDtoParams(List<ResourceColumnPO> columnPOList, Long metaId) throws Exception {
 
-        DataBaseInfo dataBaseInfo = cloudETLService.getDbInfoByMetaId(metaId);
-        LOG.info("配置任务Input使用元数据信息： {}", dataBaseInfo.toString());
-
         TableInputDto tableInputDto = new TableInputDto();
-        String connection = dataBaseInfo.getName();
-        String schema = dataBaseInfo.getSchema();
 
-        tableInputDto.setConnection(connection);
-        tableInputDto.setSchema(schema);
-        tableInputDto.setTable(dataBaseInfo.getTableName());
+        ResultBean<MetadataDTO> respon = metacubeCatalogService.findTableInfoByID(metaId);
+        if(!respon.isSuccess()){
+            LOG.error("元数据表metaId "+metaId+",获取元数据信息失败："+respon.getMsg());
+            throw new Exception("元数据表metaId "+metaId+",获取元数据信息失败："+respon.getMsg());
+        }
+        MetadataDTO metadataDTO = respon.getData();
+        tableInputDto.setSchemaId(new Long(metadataDTO.getSchemaId()));
+        tableInputDto.setTableId(new Long(metadataDTO.getMetaId()));
+        tableInputDto.setTableType("table");
+        tableInputDto.setTable(metadataDTO.getMetaName());
 
         SearchFieldsDto primaryKey = new SearchFieldsDto();
         List<OutputFieldsDto> outputFields = new ArrayList<OutputFieldsDto>();
@@ -302,28 +311,36 @@ public class ExchangeTask{
 
 
     /*dataInput InsertUpdateDto参数拼装*/
-    private InsertUpdateDto assembleInsertUpdateDto(List<ResourceColumnPO> columnPOList,Long metaId)throws Exception {
+    private InsertUpdateDto assembleInsertUpdateDto(List<ResourceColumnVO> columnPOList,Long metaId)throws Exception {
 
-        DataBaseInfo dataBaseInfo = cloudETLService.getDbInfoByMetaId(metaId);
-        LOG.info("配置任务InsertUpdate使用元数据信息： {}", dataBaseInfo.toString());
+
         InsertUpdateDto insertUpdateDto = new InsertUpdateDto();
-        String connection = dataBaseInfo.getName();
-        String schema = dataBaseInfo.getSchema();
 
-        insertUpdateDto.setConnection(connection);
-        insertUpdateDto.setSchema(schema);
-        insertUpdateDto.setTable(dataBaseInfo.getTableName());
+        ResultBean<MetadataDTO> respon = metacubeCatalogService.findTableInfoByID(metaId);
+        if(!respon.isSuccess()){
+            LOG.error("元数据表metaId "+metaId+",获取元数据信息失败："+respon.getMsg());
+            throw new Exception("元数据表metaId "+metaId+",获取元数据信息失败："+respon.getMsg());
+        }
+        MetadataDTO metadataDTO = respon.getData();
+        insertUpdateDto.setSchemaId(new Long(metadataDTO.getSchemaId()));
+        insertUpdateDto.setTableId(new Long(metadataDTO.getMetaId()));
+        insertUpdateDto.setTable(metadataDTO.getMetaName());
 
         SearchFieldsDto primaryKey = new SearchFieldsDto();
         List<OutputFieldsDto> outputFields = new ArrayList<OutputFieldsDto>();
 
-        for (ResourceColumnPO model : columnPOList) {
+        for (ResourceColumnVO model : columnPOList) {
             OutputFieldsDto outputFieldsDto = new OutputFieldsDto(model.getTableColCode(), model.getTableColCode());
             outputFieldsDto.setUpdate(true);
 
             if (model.getUniqueFlag().equals(true)) {
                 primaryKey = new SearchFieldsDto(model.getTableColCode(), "=", model.getTableColCode());
                 outputFieldsDto.setUpdate(false);
+            }
+            if(StringUtils.equalsAnyIgnoreCase(model.getDataMaskingType(), "mask")){
+                outputFieldsDto.addMaskRule(model.getDataStartIndex(), model.getDataLength());
+            }else if(StringUtils.equalsAnyIgnoreCase(model.getDataMaskingType(), "truncate")){
+                outputFieldsDto.addTruncationRule(model.getDataStartIndex(), model.getDataLength());
             }
             outputFields.add(outputFieldsDto);
         }
@@ -396,15 +413,17 @@ public class ExchangeTask{
 
     //达梦、oracle、mysql 各种不同数据库需要考虑大小写问题，传递给ETL参数根据大小写来固定配置
     private List<String> getSpecilFiled(Long metaId)throws Exception{
+
         List<String> fields = new ArrayList<String>();
         //交换时候必须有字段
         //配置好交换需要用到的字段 robin 2018/08/28
         List<MetadataField> metadataOriginFields = new ArrayList<MetadataField>();
-        QueryMetadataFieldsResult metaResult = metacubeCatalogService.getMetadataFieldsByMetaId(metaId.intValue());
+
+        ResultBean<QueryMetadataFieldsResult> metaResult = metacubeCatalogService.getMetadataFieldsByMetaId(metaId.intValue());
         if(metaResult.isSuccess()){
-            metadataOriginFields = metaResult.getMetadataField();
+            metadataOriginFields = metaResult.getData().getMetadataField();
         }else{
-            LOG.error("获取资源绑定元数据结构异常：metaId {},错误原因：{}", metaId, metaResult.getMessage());
+            LOG.error("获取资源绑定元数据结构异常：metaId {},错误原因：{}", metaId, metaResult.getMsg());
             throw new Exception("获取资源绑定元数据结构异常：metaId"+metaId);
         }
         List<MetadataField> metaFinalFields = new ArrayList<MetadataField>();

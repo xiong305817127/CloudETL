@@ -1,0 +1,17 @@
+.tbody{
+    width: 100%;
+
+    > :global(tr){
+        width: 100%;
+      > :global(td:first-child){
+          width: 30% !important;
+      }
+      > :global(td:last-child){
+          width: 70% !important;
+          max-width: 200px;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+      }
+    }
+  }

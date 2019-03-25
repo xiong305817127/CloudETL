@@ -1,6 +1,6 @@
 package com.idatrix.resource.webservice.vo;
 
-import com.ys.idatrix.db.proxy.api.sql.SqlCommand;
+import com.ys.idatrix.db.api.sql.dto.SqlExecReqDto;
 
 /**
  * 数据SQL操作
@@ -11,7 +11,7 @@ public class SQLInfo {
     private String userName;
 
     /*执行命令数据*/
-    private SqlCommand sqlCommand;
+    private SqlExecReqDto sqlCommand;
 
     public String getUserName() {
         return userName;
@@ -21,11 +21,11 @@ public class SQLInfo {
         this.userName = userName;
     }
 
-    public SqlCommand getSqlCommand() {
+    public SqlExecReqDto getSqlCommand() {
         return sqlCommand;
     }
 
-    public void setSqlCommand(SqlCommand sqlCommand) {
+    public void setSqlCommand(SqlExecReqDto sqlCommand) {
         this.sqlCommand = sqlCommand;
     }
 

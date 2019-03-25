@@ -47,9 +47,10 @@ public class MetaDefBaseServiceTest {
     @Test
     public void testhdfsService(){
         MetaDefHDFSVO dfsVO = new MetaDefHDFSVO();
-        dfsVO.setName("robin_test_service");
+        dfsVO.setName("/robin_test_service");
         dfsVO.setSchemaId(34L);
-        dfsVO.setIdentification("/ki/ki");
+        dfsVO.setRootPath("/robin/test");
+        dfsVO.setIdentification("HDFS存储创建测试");
         dfsVO.setVersion(1);
         metaDefHDFSService.saveExec(463L, "robin", dfsVO);
     }

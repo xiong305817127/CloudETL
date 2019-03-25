@@ -56,7 +56,7 @@ SELECT
 	ifnull( sum( rst.import_count ), 0 ) AS share_data_count 
 FROM
 	rc_subscribe rs
-	LEFT JOIN rc_sub_task rst ON rs.id = rst.id 
+	LEFT JOIN rc_sub_task rst ON rs.sub_no = rst.sub_task_id
 WHERE
 	rs.STATUS = "success" 
 GROUP BY

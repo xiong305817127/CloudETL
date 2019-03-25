@@ -815,7 +815,7 @@ public class CloudController extends BaseAction {
 	@ApiResponses({ @ApiResponse(code = 200, response =FileListDto.class, message = "成功" ) })
 	public @ResponseBody Object uploadFile( MultipartFile file,
 											@RequestParam(required=false)String owner,
-											@ApiParam(name="type",value="文件类型:data,excel,access,txt,csv,json,output,upload, input,hdfs,sftp,ktr,kjb",required = true)String type,
+											@ApiParam(name="type",value="文件类型:data,excel,access,txt,csv,json,output,upload, input,hdfs,sftp,ktr,kjb,mp4",required = true)String type,
 											@ApiParam(name="isCover",value="文件存在时,是否强制覆盖,默认false",required = true,defaultValue="false")@RequestParam(required=false,defaultValue="false")boolean isCover,
 											@ApiParam(name="filterType",value="过滤文件类型,eg. access:只接收access类型(后缀为mdb,accdb)的文件",required = true)@RequestParam(required=false) String filterType) throws Exception{
 		if( FileType.kjb.toString().equalsIgnoreCase(type) || FileType.ktr.toString().equalsIgnoreCase(type)) {
@@ -854,7 +854,7 @@ public class CloudController extends BaseAction {
 	@ApiOperation(value = "下载文件")
 	@ApiImplicitParams( value = {
 	        @ApiImplicitParam(paramType = "query", name = "path", dataType = "String", required = false, value = "文件类型下的相对子目录"),
-	        @ApiImplicitParam(paramType = "query", name = "type", dataType = "String", required = true, value = "文件类型:data,excel,access,txt,csv,json,output,upload, input,hdfs,sftp,ktr,kjb"),
+	        @ApiImplicitParam(paramType = "query", name = "type", dataType = "String", required = true, value = "文件类型:data,excel,access,txt,csv,json,output,upload, input,hdfs,sftp,ktr,kjb,mp4"),
 	})
 	public ResponseEntity<byte[]> downloadFile( FileListRequestDto fileListRequestDto) throws Exception{
 		checkPrivilege();

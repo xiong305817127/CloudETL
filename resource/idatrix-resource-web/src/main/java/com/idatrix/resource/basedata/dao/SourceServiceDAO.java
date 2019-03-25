@@ -22,7 +22,7 @@ public interface SourceServiceDAO {
 
     SourceServicePO getSourceServiceByServiceCode(String serviceCode);
 
-    List<SourceServicePO> getAllSourceService();
+    List<SourceServicePO> getAllSourceService(Long rentId);
 
     List<SourceServicePO> getSourceServicesByCondition(Map<String, String> conditionMap);
 }

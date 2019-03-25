@@ -22,6 +22,7 @@
         idatrix_unisecurity_role
     WHERE
         is_active = 1
+    AND name NOT LIKE '%租户管理员'
     AND renter_id = #{renterId}
     ORDER BY last_update_time DESC
   </select>

@@ -65,17 +65,12 @@ public class CloudMetaCubeDbServiceImpl extends CloudBaseService implements Clou
 	 * @return
 	 * @throws Exception
 	 */
-	private Map<String,List<DatabaseMeta>> getDatabaseMetaList(String owner, Boolean isRead) throws Exception {
+/*	private Map<String,List<DatabaseMeta>> getDatabaseMetaList(String owner, Boolean isRead) throws Exception {
 
 		switch (metaCubeCategory) {
 		case IDATRIX:
 			// Calling MetaCube RPC APIs to get meta data
-			return getUserNameList(owner, new ForeachCallback<String,DatabaseMeta> (){
-				@Override
-				public List<DatabaseMeta> getOne(String user) throws Exception {
-					return  metaCubeDatabase.getDatabaseMetaList(user,isRead);
-				}
-			});
+			
 		case PENTAHO:
 			// Get meta data from local meta store
 			break;
@@ -90,7 +85,8 @@ public class CloudMetaCubeDbServiceImpl extends CloudBaseService implements Clou
 		}
 
 		return Maps.newHashMap();
-	}
+	}*/
+	
 
 	/**
 	 * Get database meta.
@@ -235,8 +231,7 @@ public class CloudMetaCubeDbServiceImpl extends CloudBaseService implements Clou
 			result.setStatus(-1);
 			result.setMessage("Not Found");
 		} else {
-			
-			result.setName(dbMeta.getName());
+			result.setName(dbMeta.getPreferredSchemaName());
 			String message = testDbConnection(dbMeta);
 			result.setStatus("Normal".equals(message) ? 0 : 1);
 			result.setMessage(message);
@@ -282,13 +277,20 @@ public class CloudMetaCubeDbServiceImpl extends CloudBaseService implements Clou
 	public List<DatabaseMeta> getAllDbConnection(String owner) throws Exception {
 		
 		String user = Const.NVL(owner,CloudSession.getLoginUser());
-		Map<String,List<DatabaseMeta>> metaList = getDatabaseMetaList(user,null);
+		
+		Map<String,List<DatabaseMeta>> metaList =  getUserNameList(owner, new ForeachCallback<String,DatabaseMeta> (){
+			@Override
+			public List<DatabaseMeta> getOne(String user) throws Exception {
+				return  metaCubeDatabase.getDatabaseMetaList(user,null);
+			}
+		});
+		
 		if (metaList == null || metaList.isEmpty()) {
 			return Lists.newArrayList();
 		}
 		return metaList.get(user);
 	}
-
+	
 	/**
 	 * Get DB connection by given connection name.
 	 * 
@@ -414,14 +416,13 @@ public class CloudMetaCubeDbServiceImpl extends CloudBaseService implements Clou
 		switch (metaCubeCategory) {
 		case IDATRIX:
 			// Calling MetaCube RPC APIs to get meta data
-			String[] ds = metaCubeDatabase.analysisName(name) ;
-			ds =  ds==null ? new String[] {null,null,"0"} : ds ;
-			List<MetaCubeDbSchemaDto> schemas = metaCubeDatabase.getMetacubeDbSchemas(owner, databaseId, ds[1], Integer.valueOf(ds[2]), ds[0] , isRead);
+			List<MetaCubeDbSchemaDto> schemas = metaCubeDatabase.getMetacubeDbSchemas(owner, databaseId, name , isRead);
 			if( schemas != null && !schemas.isEmpty()) {
 				return schemas.stream().map(mcSchema -> {
 					
 					DbSchemaDto dSchema = new DbSchemaDto();
 					dSchema.setOwner(owner);
+					dSchema.setServerName(mcSchema.getServiceName());
 					dSchema.setSchema(mcSchema.getSchemaName());
 					dSchema.setSchemaId(mcSchema.getSchemaId());
 					dSchema.setConnection(mcSchema.getName());

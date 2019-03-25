@@ -1,5 +1,8 @@
 package com.idatrix.resource.catalog.po;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.Date;
 
 /**
@@ -7,6 +10,8 @@ import java.util.Date;
  * @Author: Wangbin
  * @Date: 2018/5/23
  */
+@Getter
+@Setter
 public class ResourceStatisticsPO {
 
     /*主键*/
@@ -40,85 +45,5 @@ public class ResourceStatisticsPO {
         this.visitCount = 0;
         this.shareDataCount = 0L;
         this.dataCount = 0L;
-    }
-
-    public Date getDataUpdateTime() {
-        return dataUpdateTime;
-    }
-
-    public void setDataUpdateTime(Date dataUpdateTime) {
-        this.dataUpdateTime = dataUpdateTime;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public int getSubCount() {
-        return subCount;
-    }
-
-    public void setSubCount(int subCount) {
-        this.subCount = subCount;
-    }
-
-    public int getVisitCount() {
-        return visitCount;
-    }
-
-    public void setVisitCount(int visitCount) {
-        this.visitCount = visitCount;
-    }
-
-    public Long getDataCount() {
-        return dataCount;
-    }
-
-    public void setDataCount(Long dataCount) {
-        this.dataCount = dataCount;
-    }
-
-    public Long getShareDataCount() {
-        return shareDataCount;
-    }
-
-    public void setShareDataCount(Long shareDataCount) {
-        this.shareDataCount = shareDataCount;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier;
-    }
-
-    public Date getModifyTime() {
-        return modifyTime;
-    }
-
-    public void setModifyTime(Date modifyTime) {
-        this.modifyTime = modifyTime;
     }
 }

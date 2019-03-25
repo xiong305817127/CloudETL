@@ -157,6 +157,15 @@
                     #{dbId}
                 </foreach>
             </if>
+            <if test="renterId != null ">
+                AND db.renter_id = #{renterId}
+            </if>
+            <if test="dbTypes != null and dbTypes.size() > 0">
+                AND db.type IN
+                <foreach close=")" collection="dbTypes" item="type" open="(" separator=",">
+                    #{type}
+                </foreach>
+            </if>
         </where>
     </select>
 

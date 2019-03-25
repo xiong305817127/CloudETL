@@ -44,7 +44,6 @@ public class TableColumn {
     @ApiModelProperty("是否为无符号")
     private Boolean isUnsigned = false;
 
-    @NotBlank(message = "字段描述不能为空", groups = Save.class)
     @ApiModelProperty("字段描述")
     private String description;
 

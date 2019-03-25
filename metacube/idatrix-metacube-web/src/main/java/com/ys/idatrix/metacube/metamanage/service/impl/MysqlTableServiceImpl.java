@@ -4,6 +4,9 @@ import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.ys.idatrix.graph.service.api.dto.edge.FkRelationshipDto;
+import com.ys.idatrix.graph.service.api.dto.node.TableNodeDto;
 import com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum;
 import com.ys.idatrix.metacube.api.beans.PageResultBean;
 import com.ys.idatrix.metacube.common.enums.DataStatusEnum;
@@ -19,6 +22,7 @@ import com.ys.idatrix.metacube.metamanage.vo.request.AlterSqlVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo;
 import com.ys.idatrix.metacube.metamanage.vo.request.MySqlTableVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.TableVO;
+import com.ys.idatrix.metacube.sysmanage.service.ThemeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,13 +108,17 @@ public class MysqlTableServiceImpl implements MysqlTableService {
     @Override
     public MySqlTableVO searchById(Long tableId) {
         Metadata table = metadataMapper.selectByPrimaryKey(tableId); // 表基本信息
-        List<TableColumn> columnList = tableColumnMapper.findTableColumnListByTableId(table.getId()); // 表字段信息
-        List<TableIdxMysql> tableIndexList = tableIdxMysqlMapper.findIndexListByTableId(table.getId()); // 表索引信息
-        List<TableFkMysql> tableFkMysqlList = tableFkMysqlMapper.findListByTableId(table.getId()); // 表外键信息
+        List<TableColumn> columnList =
+                tableColumnMapper.findTableColumnListByTableId(table.getId()); // 表字段信息
+        List<TableIdxMysql> tableIndexList =
+                tableIdxMysqlMapper.findIndexListByTableId(table.getId()); // 表索引信息
+        List<TableFkMysql> tableFkMysqlList =
+                tableFkMysqlMapper.findListByTableId(table.getId()); // 表外键信息
         // 外键参数补充
         foreignKeyReplenish(tableFkMysqlList);
         // 将数据封装到对象中
-        MySqlTableVO result = new MySqlTableVO(table, columnList, tableIndexList, tableFkMysqlList);
+        MySqlTableVO result =
+                new MySqlTableVO(table, columnList, tableIndexList, tableFkMysqlList);
         return result;
     }
 
@@ -139,8 +147,28 @@ public class MysqlTableServiceImpl implements MysqlTableService {
         addTable(mysqlTable);
         // 生效到实体表，如果生效失败，抛出异常给前台，如果成功，生成版本信息
         generateOrUpdateEntityTable(mysqlTable.getId());
-        // 表同步到数据地图
+        // 表节点同步到数据地图
         graphSyncService.graphSaveTableNode(mysqlTable.getId());
+        // 表外键同步到数据地图
+        graphSaveOrUpdateFkRlat(mysqlTable.getId());
+    }
+
+    @Override
+    public void addMiningTable(MySqlTableVO mysqlTable ) {
+    	 // 修改当前表为生效状态
+        mysqlTable.setStatus(DataStatusEnum.VALID.getValue());
+        // 新增
+    	addTable(mysqlTable);
+        // 生成快照版本
+        Metadata table = metadataMapper.selectByPrimaryKey(mysqlTable.getId()); // 表基本信息
+        List<TableColumn> columnList = tableColumnMapper.findTableColumnListByTableId(table.getId()); // 表字段信息
+        List<TableIdxMysql> tableIndexList = tableIdxMysqlMapper.findIndexListByTableId(table.getId()); // 表索引信息
+        List<TableFkMysql> tableFkMysqlList = tableFkMysqlMapper.findListByTableId(table.getId()); // 表外键信息
+        mysqlSnapshotService.generateCreateTableSnapshot(table, columnList, tableIndexList, tableFkMysqlList, "直采");
+        // 表节点同步到数据地图
+        graphSyncService.graphSaveTableNode(mysqlTable.getId());
+        // 表外键同步到数据地图
+        graphSaveOrUpdateFkRlat(mysqlTable.getId());
     }
 
     @Override
@@ -288,6 +316,8 @@ public class MysqlTableServiceImpl implements MysqlTableService {
         updateTable(mysqlTable);
         // 修改生效到实体表，如果修改生效失败，抛出异常给前台，如果成功，生成版本信息
         generateOrUpdateEntityTable(mysqlTable.getId());
+        // 更新数据地图外键关系
+        graphSaveOrUpdateFkRlat(mysqlTable.getId());
     }
 
     public void updateTable(MySqlTableVO mysqlTable) {
@@ -474,7 +504,7 @@ public class MysqlTableServiceImpl implements MysqlTableService {
     public void delete(List<Long> idList) {
         if (CollectionUtils.isEmpty(idList)) {
             throw new MetaDataException("要删除的数据不能为空");
-        }
+    }
         // 需要实际去删除实体表的数据
         List<String> removeTableNames = new ArrayList<>();
         // 保存下某个表信息
@@ -507,10 +537,12 @@ public class MysqlTableServiceImpl implements MysqlTableService {
             // 如果为表，是否需要删除实体表
             removeTableNames.add(table.getName());
         }
-        // 获取删除语句
-        List<String> list = mySqlDDLService.getDeleteTableSql(removeTableNames);
-        // 删除生效到数据库中
-        mySqlDDLService.goToDatabase(tableCopy, list);
+        if(CollectionUtils.isNotEmpty(removeTableNames)) {
+            // 获取删除语句
+            List<String> list = mySqlDDLService.getDeleteTableSql(removeTableNames);
+            // 删除生效到数据库中
+            mySqlDDLService.goToDatabase(tableCopy, list);
+        }
     }
 
     @Override
@@ -572,18 +604,104 @@ public class MysqlTableServiceImpl implements MysqlTableService {
         for (TableFkMysql foreignKey : foreignKeyList) {
             // 模式名
             foreignKey.setReferenceSchemaName(schema.getName());
-            // 表名
-            Metadata referenceMetadata = metadataMapper.selectByPrimaryKey(foreignKey.getReferenceTableId());
-            foreignKey.setReferenceTableName(referenceMetadata.getName());
-            // 字段名
-            String[] referenceColumnIdArr = foreignKey.getReferenceColumn().split(",");
-            List<TableColumn> referenceColumnList = columnService.getTableColumnListByIdList(Arrays.asList(referenceColumnIdArr));
+            // 当前关联字段名
+            String[] columnIdArr = foreignKey.getColumnIds().split(",");
+            List<TableColumn> columnList = columnService.getTableColumnListByIdList(Arrays.asList(columnIdArr));
             List<String> columnNames = new ArrayList<>();
-            referenceColumnList.forEach(value -> {
+            columnList.forEach(value -> {
                 columnNames.add(value.getColumnName());
             });
-            foreignKey.setReferenceColumnNames(String.join(",", columnNames));
+            foreignKey.setColumnNames(String.join(",", columnNames));
+
+            // 参考表名
+            Metadata referenceMetadata = metadataMapper.selectByPrimaryKey(foreignKey.getReferenceTableId());
+            foreignKey.setReferenceTableName(referenceMetadata.getName());
+            // 参考字段名
+            String[] referenceColumnIdArr = foreignKey.getReferenceColumn().split(",");
+            List<TableColumn> referenceColumnList = columnService.getTableColumnListByIdList(Arrays.asList(referenceColumnIdArr));
+            List<String> referenceColumnNames = new ArrayList<>();
+            referenceColumnList.forEach(value -> {
+                referenceColumnNames.add(value.getColumnName());
+            });
+            foreignKey.setReferenceColumnNames(String.join(",", referenceColumnNames));
         }
     }
 
+    private void graphSaveOrUpdateFkRlat(Long tableId) {
+        Metadata metadata = metadataMapper.selectByPrimaryKey(tableId);
+        // 当前表外键信息
+        List<TableFkMysql> tableFkMysqlList =
+                tableFkMysqlMapper.findListByTableId(tableId); // 表外键信息
+        if(metadata.getVersion() <= 1) { // 新增
+            graphSaveFkRlat(tableId, tableFkMysqlList);
+        } else { // 修改
+            Integer version = metadata.getVersion() - 1;
+            List<TableFkMysql> snapshotForeignKeyList =
+                    mysqlSnapshotService.getSnapshotForeignKeyListByTableId(tableId, version); // 旧版本表外键信息
+            if(CollectionUtils.isEmpty(tableFkMysqlList) && CollectionUtils.isEmpty(snapshotForeignKeyList)) {
+                return;
+            }
+            // 如果新或旧的外键集合其中一个为null,则主动一个空ArrayList,便于后续处理
+            if (CollectionUtils.isEmpty(tableFkMysqlList)) {
+                tableFkMysqlList = new ArrayList<>();
+            }
+            if (CollectionUtils.isEmpty(snapshotForeignKeyList)) {
+                snapshotForeignKeyList = new ArrayList<>();
+            }
+
+            // copy一份不要修改到之前参数
+            ArrayList<TableFkMysql> oldForeignKeyList = Lists.newArrayList(snapshotForeignKeyList);
+            ArrayList<TableFkMysql> newForeignKeyList = Lists.newArrayList(tableFkMysqlList);
+
+            // 在copy一份做参照
+            ArrayList<TableFkMysql> oldCopy = Lists.newArrayList(snapshotForeignKeyList);
+            ArrayList<TableFkMysql> newCopy = Lists.newArrayList(tableFkMysqlList);
+
+            // 不变的索引bean集合 //求交集。自定义对象重写 hashcode 和 equals
+            oldCopy.retainAll(newCopy);
+
+            // 待删除的外键集合，解释：被修改或以被删除的外键
+            oldForeignKeyList.removeAll(oldCopy);
+
+            // 待新增的外键集合，解释：被修改或新增的外键
+            newForeignKeyList.removeAll(oldCopy);
+
+            // 删除
+            for (TableFkMysql fk : oldForeignKeyList) {
+                graphSyncService.deleteFkRlat(fk.getTableId(), fk.getName());
+            }
+            // 新增
+            graphSaveFkRlat(tableId, newForeignKeyList);
+        }
+    }
+
+    public void graphSaveFkRlat(Long tableId, List<TableFkMysql> tableFkMysqlList) {
+        if(CollectionUtils.isNotEmpty(tableFkMysqlList)) {
+            // 当前表
+            TableNodeDto startTableDto = graphSyncService.getTableNodeDto(tableId);
+            List<FkRelationshipDto> result = new ArrayList<>();
+            // 遍历外键
+            for (TableFkMysql foreignKey : tableFkMysqlList) {
+                TableNodeDto endTableDto =
+                        graphSyncService.getTableNodeDto(foreignKey.getReferenceTableId());// 外键表
+                String fkName = foreignKey.getName(); // 外键名
+                String[] columnIdArr = foreignKey.getColumnIds().split(",");// 当前表字段
+                String[] referenceColumnIdArr = foreignKey.getReferenceColumn().split(","); // 参考表字段
+                // 遍历字段
+                for (int i = 0; i < columnIdArr.length; i++) {
+                    FkRelationshipDto dto = new FkRelationshipDto();
+                    dto.setStartNode(startTableDto);
+                    dto.setEndNode(endTableDto);
+                    dto.setFkName(fkName);
+                    // 字段信息
+                    TableColumn column = tableColumnMapper.selectByPrimaryKey(Long.parseLong(columnIdArr[i]));
+                    TableColumn referenceColumn = tableColumnMapper.selectByPrimaryKey(Long.parseLong(referenceColumnIdArr[i]));
+                    dto.setStartFieldName(column.getColumnName());
+                    dto.setEndFieldName(referenceColumn.getColumnName());
+                    result.add(dto);
+                }
+            }
+            graphSyncService.saveFkRlat(result);
+        }
+    }
 }

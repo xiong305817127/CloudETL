@@ -1,5 +1,7 @@
 package com.idatrix.resource.datareport.po;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
@@ -7,6 +9,7 @@ import java.util.Date;
  * @Description： 数据上报时,上传文件类时生成的政务信息资源文件表
  * @Date: 2018/06/11
  */
+@Data
 public class ResourceFilePO {
 	/*主键*/
 	private Long id;
@@ -41,125 +44,4 @@ public class ResourceFilePO {
 
 	private Date modifyTime;
 
-	public String getFileDescription() {
-		return fileDescription;
-	}
-
-	public void setFileDescription(String fileDescription) {
-		this.fileDescription = fileDescription;
-	}
-
-	public String getFileType() {
-		return fileType;
-	}
-
-	public void setFileType(String fileType) {
-		this.fileType = fileType;
-	}
-
-	public String getFileSize() {
-		return fileSize;
-	}
-
-	public void setFileSize(String fileSize) {
-		this.fileSize = fileSize;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public Long getResourceId() {
-		return resourceId;
-	}
-
-	public void setResourceId(Long resourceId) {
-		this.resourceId = resourceId;
-	}
-
-	public String getOriginFileName() {
-		return originFileName;
-	}
-
-	public void setOriginFileName(String originFileName) {
-		this.originFileName = originFileName;
-	}
-
-	public String getPubFileName() {
-		return pubFileName;
-	}
-
-	public void setPubFileName(String pubFileName) {
-		this.pubFileName = pubFileName;
-	}
-
-	public Integer getFileVersion() {
-		return fileVersion;
-	}
-
-	public void setFileVersion(Integer fileVersion) {
-		this.fileVersion = fileVersion;
-	}
-
-	public String getDataBatch() {
-		return dataBatch;
-	}
-
-	public void setDataBatch(String dataBatch) {
-		this.dataBatch = dataBatch;
-	}
-
-	public String getCreator() {
-		return creator;
-	}
-
-	public void setCreator(String creator) {
-		this.creator = creator;
-	}
-
-	public Date getCreateTime() {
-		return createTime;
-	}
-
-	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
-	}
-
-	public String getModifier() {
-		return modifier;
-	}
-
-	public void setModifier(String modifier) {
-		this.modifier = modifier;
-	}
-
-	public Date getModifyTime() {
-		return modifyTime;
-	}
-
-	public void setModifyTime(Date modifyTime) {
-		this.modifyTime = modifyTime;
-	}
-
-	@Override
-	public String toString() {
-		return "ResourceFilePO{" +
-				"id=" + id +
-				", resourceId=" + resourceId +
-				", originFileName='" + originFileName + '\'' +
-				", pubFileName='" + pubFileName + '\'' +
-				", fileVersion=" + fileVersion +
-				", dataBatch='" + dataBatch + '\'' +
-				", fileSize='" + fileSize + '\'' +
-				", fileType='" + fileType + '\'' +
-				", creator='" + creator + '\'' +
-				", createTime=" + createTime +
-				", modifier='" + modifier + '\'' +
-				", modifyTime=" + modifyTime +
-				'}';
-	}
 }

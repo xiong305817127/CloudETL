@@ -4865,8 +4865,10 @@ public class ValueMetaBase implements ValueMetaInterface {
     throws SQLException {
 	  
 	  //xionghan 增加origin
-	 String origin = rm.getTableName( index );
-	 v.setOrigin(origin); 
+	  try {
+		  String origin = rm.getTableName( index );
+		  v.setOrigin(origin); 
+	  }catch(Exception ignored){  }
 	  
     // Grab the comment as a description to the field as well.
     String comments = rm.getColumnLabel( index );
@@ -4896,9 +4898,10 @@ public class ValueMetaBase implements ValueMetaInterface {
     // v.setOriginalAutoIncrement(originalAutoIncrement);
 
     //xionghan 自采需要放开
+    try {
      int originalNullable=rm.isNullable(index); //DISABLED FOR PERFORMANCE REASONS : PDI-1788
      v.setOriginalNullable(originalNullable);
-    
+    }catch(Exception ignored){ }
 
     boolean originalSigned = false;
     try {

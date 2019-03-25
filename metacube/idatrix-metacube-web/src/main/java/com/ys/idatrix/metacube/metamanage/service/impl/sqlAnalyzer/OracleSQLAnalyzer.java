@@ -4,13 +4,7 @@ import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
 import com.alibaba.druid.sql.ast.expr.SQLSequenceExpr;
-import com.alibaba.druid.sql.ast.statement.SQLAssignItem;
-import com.alibaba.druid.sql.ast.statement.SQLBlockStatement;
-import com.alibaba.druid.sql.ast.statement.SQLCreateTriggerStatement;
-import com.alibaba.druid.sql.ast.statement.SQLIfStatement;
-import com.alibaba.druid.sql.ast.statement.SQLSelectItem;
-import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
-import com.alibaba.druid.sql.ast.statement.SQLSetStatement;
+import com.alibaba.druid.sql.ast.statement.*;
 import com.alibaba.druid.sql.dialect.oracle.ast.stmt.OracleSelectQueryBlock;
 import com.alibaba.druid.util.JdbcConstants;
 import com.alibaba.dubbo.config.annotation.Reference;
@@ -19,44 +13,30 @@ import com.google.inject.internal.util.Maps;
 import com.ys.idatrix.db.api.sql.service.SqlExecService;
 import com.ys.idatrix.metacube.common.enums.DBEnum;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
-import com.ys.idatrix.metacube.metamanage.domain.McSchemaPO;
-import com.ys.idatrix.metacube.metamanage.domain.Metadata;
-import com.ys.idatrix.metacube.metamanage.domain.TableChOracle;
-import com.ys.idatrix.metacube.metamanage.domain.TableColumn;
-import com.ys.idatrix.metacube.metamanage.domain.TableFkOracle;
-import com.ys.idatrix.metacube.metamanage.domain.TableIdxOracle;
-import com.ys.idatrix.metacube.metamanage.domain.TablePkOracle;
-import com.ys.idatrix.metacube.metamanage.domain.TableSetOracle;
-import com.ys.idatrix.metacube.metamanage.domain.TableUnOracle;
-import com.ys.idatrix.metacube.metamanage.mapper.McDatabaseMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.McSchemaMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.MetadataMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.TableColumnMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.TablePkOracleMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.TableUnOracleMapper;
+import com.ys.idatrix.metacube.metamanage.domain.*;
+import com.ys.idatrix.metacube.metamanage.mapper.*;
+import com.ys.idatrix.metacube.metamanage.service.impl.sqlAnalyzer.dto.DatabaseConnect;
+import com.ys.idatrix.metacube.metamanage.service.impl.sqlAnalyzer.dto.DependencyNotExistException;
 import com.ys.idatrix.metacube.metamanage.service.impl.sqlAnalyzer.dto.TablesDependency;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetadataBaseVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.OracleTableVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.TableVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.ViewVO;
-import com.ys.idatrix.metacube.metamanage.vo.response.DatasourceVO;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 @Component("oracleSQLAnalyzer")
 public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
 
     @Autowired
     private McSchemaMapper schemaMapper;
-
-    @Autowired
-    private McDatabaseMapper databaseMapper;
 
     @Autowired
     private MetadataMapper metadataMapper;
@@ -77,10 +57,10 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
     }
 
     @Override
-    public List<OracleTableVO> getTablesFromDB(Long schemaId, String... tableFilter) {
+    public List<OracleTableVO> getTablesFromDB(DatabaseConnect dbInfo,  String... tableFilter) {
 
         List<OracleTableVO> res = new ArrayList<>();
-        List<MetadataBaseVO> result = getTablesInfoFromDB(schemaId, true, tableFilter);
+        List<MetadataBaseVO> result = getTablesInfoFromDB(dbInfo, true, tableFilter);
         if (result != null) {
             result.stream().forEach(mb -> {
                 OracleTableVO md = new OracleTableVO();
@@ -98,10 +78,10 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
     }
 
     @Override
-    public List<ViewVO> getViewsFromDB(Long schemaId, String... viewFilter) {
+    public List<ViewVO> getViewsFromDB(DatabaseConnect dbInfo,  String... viewFilter) {
 
         List<ViewVO> res = new ArrayList<>();
-        List<MetadataBaseVO> result = getTablesInfoFromDB(schemaId, false, viewFilter);
+        List<MetadataBaseVO> result = getTablesInfoFromDB(dbInfo, false, viewFilter);
         if (result != null) {
 
             result.stream().forEach(mb -> {
@@ -123,24 +103,20 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
 
 
     @Override
-    public List<TablesDependency> getTablesDependency(Long schemaId, String... tableFilter) {
+    public List<TablesDependency> getTablesDependency(DatabaseConnect dbInfo,  String... tableFilter) {
 
-        McSchemaPO schema = schemaMapper.findById(schemaId);
-        if (schema == null) {
-            throw new MetaDataException("Schema[" + schemaId + "]未找到.");
-        }
         List<TablesDependency> result = new ArrayList<>();
         ;
-        List<? extends TableVO> tables = getTablesFromDB(schemaId, tableFilter);
+        List<? extends TableVO> tables = getTablesFromDB(dbInfo, tableFilter);
         if (tables != null && tables.size() > 0) {
             tables.stream().forEach(tab -> {
                 try {
-                    List<TableFkOracle> fks = getTableForeignkeys(schema, tab.getName(), true);
+                    List<TableFkOracle> fks = getTableForeignkeys(dbInfo, tab.getName(), true);
                     if (fks != null && fks.size() > 0) {
                         fks.forEach(fk -> {
                             TablesDependency td = new TablesDependency();
-                            td.setSchemaId(schemaId);
-                            td.setSchemaName(schema.getName());
+                            td.setSchemaId(dbInfo.getSchemaId());
+                            td.setSchemaName(dbInfo.getSchema().getName());
                             td.setTableId(tab.getId());
                             td.setTableName(tab.getName());
                             td.setColumns(fk.getColumnNames());
@@ -162,8 +138,8 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
     }
 
     @Override
-    public List<TableColumn> getViewColumns(Long schemaId, String viewName, String viewSql) {
-        return getFieldsFromDB(schemaId, viewName, null);
+    public List<TableColumn> getViewColumns(DatabaseConnect dbInfo,  String viewName, String viewSql) {
+        return getFieldsFromDB(dbInfo, viewName, null);
     }
 
     //===========================================获取 外键/主键/唯一键/索引/字段 /检查约束/表设置 ============================================================
@@ -173,16 +149,11 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
      *
      * @param ignoreDependency 当依赖的外键表不在系统中时是否忽略(不抛出DependencyNotExistException)
      */
-    public List<TableFkOracle> getTableForeignkeys(McSchemaPO schema, String tableName,
-            boolean ignoreDependency) throws DependencyNotExistException {
-        if (schema == null) {
-            throw new MetaDataException("Schema 不能为空 .");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"2".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
+    public List<TableFkOracle> getTableForeignkeys(DatabaseConnect dbInfo,  String tableName,  boolean ignoreDependency) throws DependencyNotExistException {
 
+    	
+    	McSchemaPO schema = dbInfo.getSchema() ;
+    	
         String sql = "select  c.constraint_name NAME , c.OWNER SCHEMANAME , " +
                 "cl.constraint_name FLAG, c.R_OWNER REF_SCHEMA,c.r_constraint_name REF_RESTRAIN_ID, cl.table_name REF_TABLENAME, cl.column_name REF_COLUMNNAME, "
                 +
@@ -193,7 +164,7 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
 
         Map<String, TableFkOracle> result = new HashMap<>();
         List<String> ignoreList = Lists.newArrayList();
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
             @Override
             public void dealRow(int index, Map<String, Object> map, List<String> columnNames)
                     throws MetaDataException {
@@ -295,8 +266,7 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
 
                         } else if (!ignoreDependency) {
                             //TODO 外键参考表不存在 , 需要先采集依赖表 , 需要先判断是否有循环依赖,避免死循环
-                            throw new DependencyNotExistException(ref_tableName, ref_schemaId,
-                                    tableName, schema.getId());
+                            throw new DependencyNotExistException(ref_tableName, ref_schemaId,  tableName, dbInfo.getSchemaId());
                         } else {
                             //不存在 , 忽略,进行下一个
                             ignoreList.add(name);
@@ -332,14 +302,7 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
     /**
      * 获取表的 主键信息
      */
-    public TablePkOracle getTablePrimaryKeys(McSchemaPO schema, String tableName) {
-        if (schema == null) {
-            throw new MetaDataException("Schema 不能为空 .");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"2".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
+    public TablePkOracle getTablePrimaryKeys(DatabaseConnect dbInfo,  String tableName) {
 
         String sql =
                 "select cu.constraint_name NAME ,cu.column_name COLUMNNAME, cu.position LOCATION \r\n"
@@ -349,7 +312,7 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
 
         List<String> columns = Lists.newArrayList();
         TablePkOracle result = new TablePkOracle();
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
 
             @Override
             public void dealRow(int index, Map<String, Object> map, List<String> columnNames)
@@ -369,7 +332,7 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
         if (!StringUtils.isEmpty(result.getName()) && columns.size() == 1 && !StringUtils
                 .isEmpty(columns.get(0))) {
             //只有一个主键时 才查找序列
-            String sequenceName = getSequenceFromTrigger(schema, tableName, columns.get(0));
+            String sequenceName = getSequenceFromTrigger(dbInfo, tableName, columns.get(0));
             if (!StringUtils.isEmpty(sequenceName)) {
                 result.setSequenceName(sequenceName);
                 result.setSequenceStatus(4);
@@ -382,21 +345,13 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
     /**
      * 获取表的 唯一键 列表
      */
-    public List<TableUnOracle> getTableUniqueKey(McSchemaPO schema, String tableName) {
-        if (schema == null) {
-            throw new MetaDataException("Schema 不能为空 .");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"2".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
+    public List<TableUnOracle> getTableUniqueKey(DatabaseConnect dbInfo,  String tableName) {
 
-        String sql =
-                "select au.constraint_name NAME , cu.column_name COLUMNNAME, cu.position POSITION from user_cons_columns cu, user_constraints au where cu.constraint_name = au.constraint_name and au.constraint_type = 'U' and au.table_name = '"
+        String sql =  "select au.constraint_name NAME , cu.column_name COLUMNNAME, cu.position POSITION from user_cons_columns cu, user_constraints au where cu.constraint_name = au.constraint_name and au.constraint_type = 'U' and au.table_name = '"
                         + tableName + "'";
 
         Map<String, TableUnOracle> result = new HashMap<>();
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
 
             @Override
             public void dealRow(int index, Map<String, Object> map, List<String> columnNames)
@@ -429,15 +384,7 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
      *
      * @param ignoreIndexs , 需要忽略的索引名列表 , 主键,唯一键 会默认建立对应索引,需要忽略
      */
-    public List<TableIdxOracle> getTableIndexs(McSchemaPO schema, String tableName,
-            List<String> ignoreIndexs) {
-        if (schema == null) {
-            throw new MetaDataException("Schema 不能为空 .");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"2".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
+    public List<TableIdxOracle> getTableIndexs(DatabaseConnect dbInfo,  String tableName,   List<String> ignoreIndexs) {
 
         String sql =
                 "select t.index_name  INDEXNAME,t.table_name TABLENAME , t.column_name COLUMNNAME ,t.column_position COLUMNPOSITION ,t.DESCEND DESCEND , i.index_type INDEXTYPE , i.uniqueness UNIQUENESS  , e.column_expression COLUMNEXPRESSION "
@@ -449,7 +396,7 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
                         "where  t.table_name = '" + tableName + "'";
 
         Map<String, TableIdxOracle> result = new HashMap<>();
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
 
             @Override
             public void dealRow(int index, Map<String, Object> map, List<String> columnNames)
@@ -512,28 +459,21 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
     /**
      * 获取表的 所有域字段列表
      */
-    public List<TableColumn> getTableColumns(Long schemaId, String tableName, TablePkOracle pks) {
-        return getFieldsFromDB(schemaId, tableName, pks);
+    public List<TableColumn> getTableColumns(DatabaseConnect dbInfo,  String tableName, TablePkOracle pks) {
+        return getFieldsFromDB(dbInfo, tableName, pks);
     }
 
     /**
      * 获取 表的 检查约束 列表
      */
-    public List<TableChOracle> getTableCheck(McSchemaPO schema, String tableName) {
-        if (schema == null) {
-            throw new MetaDataException("Schema 不能为空 .");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"2".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
+    public List<TableChOracle> getTableCheck(DatabaseConnect dbInfo,  String tableName) {
 
         String sql =
                 "select au.constraint_name NAME , au.search_condition SEARCHCONDITION from  user_constraints au where au.constraint_type = 'C' and au.table_name = '"
                         + tableName + "'";
 
         List<TableChOracle> result = Lists.newArrayList();
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
 
             @Override
             public void dealRow(int index, Map<String, Object> map, List<String> columnNames)
@@ -556,20 +496,13 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
     /**
      * 获取 表的 设置信息
      */
-    public TableSetOracle getTableSetting(McSchemaPO schema, String tableName) {
-        if (schema == null) {
-            throw new MetaDataException("Schema 不能为空 .");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"2".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
+    public TableSetOracle getTableSetting(DatabaseConnect dbInfo,  String tableName) {
 
         String sql = "select tablespace_name TABLESPACENAME from dba_tables where table_name = '"
                 + tableName + "'";
 
         List<TableSetOracle> result = Lists.newArrayList();
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
 
             @Override
             public void dealRow(int index, Map<String, Object> map, List<String> columnNames)
@@ -587,28 +520,19 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
     //#########################################Oracle 分析器 专用有方法#########################################################
 
     @Deprecated
-    protected SQLStatement analyzerCreateSql(Long schemaId, String tableName) {
-        return analyzerSql(getCreateTableSqlFromDB(schemaId, tableName));
+    protected SQLStatement analyzerCreateSql(DatabaseConnect dbInfo,  String tableName) {
+        return analyzerSql(getCreateTableSqlFromDB(dbInfo, tableName));
     }
 
     @Deprecated
-    protected String getCreateTableSqlFromDB(Long schemaId, String tableName) {
-
-        McSchemaPO schema = schemaMapper.findById(schemaId);
-        if (schema == null) {
-            throw new MetaDataException("Schema[" + schemaId + "]未找到.");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"2".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
+    protected String getCreateTableSqlFromDB(DatabaseConnect dbInfo,  String tableName) {
 
         String sql =
                 "SELECT DBMS_LOB.SUBSTR( DBMS_METADATA.GET_DDL('TABLE', TABLE_NAME ),32767) FROM DUAL,USER_TABLES WHERE TABLE_NAME='"
                         + tableName + "'; ";
 
         StringBuffer result = new StringBuffer();
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
 
             @Override
             public void dealRow(int index, Map<String, Object> map, List<String> columnNames)
@@ -627,17 +551,8 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
      * @param isTable ,是否是表, 否则是视图
      * @param filter , 不为空时 返回列表中的表信息, 否则返回所有的表信息
      */
-    protected List<MetadataBaseVO> getTablesInfoFromDB(Long schemaId, boolean isTable,
-            String... filter) {
+    protected List<MetadataBaseVO> getTablesInfoFromDB(DatabaseConnect dbInfo,  boolean isTable,  String... filter) {
 
-        McSchemaPO schema = schemaMapper.findById(schemaId);
-        if (schema == null) {
-            throw new MetaDataException("Schema[" + schemaId + "]未找到.");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"2".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
         List<String> filterList = Lists.newArrayList();
         if (filter != null && filter.length > 0) {
             for (String f : filter) {
@@ -651,7 +566,7 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
         }
 
         List<MetadataBaseVO> res = new ArrayList<>();
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
 
             @Override
             public void dealRow(int index, Map<String, Object> map, List<String> columnNames)
@@ -684,21 +599,12 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
     /**
      * 采集 数据库中 视图的真实创建语句 ( 包括  视图sql语句)
      */
-    public String getCreateViewSqlFromDB(Long schemaId, String viewName) {
-
-        McSchemaPO schema = schemaMapper.findById(schemaId);
-        if (schema == null) {
-            throw new MetaDataException("Schema[" + schemaId + "]未找到.");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"2".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
+    public String getCreateViewSqlFromDB(DatabaseConnect dbInfo,  String viewName) {
 
         String sql = "select text from user_views where view_name='" + viewName + "'";
 
         StringBuffer result = new StringBuffer();
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
 
             @Override
             public void dealRow(int index, Map<String, Object> map, List<String> columnNames)
@@ -715,20 +621,10 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
     /**
      * 采集 数据库中 视图或者表 对应的列字段信息
      */
-    protected List<TableColumn> getFieldsFromDB(Long schemaId, String viewOrTableName,
+    protected List<TableColumn> getFieldsFromDB(DatabaseConnect dbInfo,  String viewOrTableName,
             TablePkOracle pks) {
 
-        McSchemaPO schema = schemaMapper.findById(schemaId);
-        if (schema == null) {
-            throw new MetaDataException("Schema[" + schemaId + "]未找到.");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"2".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
-
-        String sql =
-                "select t.COLUMN_ID LOCATION ,t.COLUMN_NAME COLUMNNAME , t.DATA_TYPE COLUMNTYPE," +
+        String sql =  "select t.COLUMN_ID LOCATION ,t.COLUMN_NAME COLUMNNAME , t.DATA_TYPE COLUMNTYPE," +
                         "				t.DATA_LENGTH TYPELENGTH, t.DATA_PRECISION TYPEPRECISION , t.DATA_SCALE TYPESCALE,"
                         +
                         "				t.NULLABLE ISNULL, t.DATA_DEFAULT DEFAULTVALUE ,c.COMMENTS DESCRIPTION "
@@ -737,7 +633,7 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
                         + viewOrTableName + "'";
 
         List<TableColumn> res = new ArrayList<>();
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo , sql, new dealRowInterface() {
 
             @Override
             public void dealRow(int index, Map<String, Object> map, List<String> columnNames)
@@ -748,9 +644,9 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
                 tc.setColumnName(name);
                 tc.setColumnType(map.get("COLUMNTYPE").toString());
                 tc.setIsNull("Y".equalsIgnoreCase(
-                        map.get("ISNULL") != null ? map.get("ISNULL").toString() : ""));
+                        map.get("ISNULL") != null && !"NULL".equalsIgnoreCase(map.get("ISNULL").toString()) ? map.get("ISNULL").toString() : ""));
                 tc.setDefaultValue(
-                        map.get("DEFAULTVALUE") != null ? map.get("DEFAULTVALUE").toString() : "");
+                        map.get("DEFAULTVALUE") != null && !"NULL".equalsIgnoreCase(map.get("DEFAULTVALUE").toString()) ? map.get("DEFAULTVALUE").toString() : "");
                 tc.setLocation(map.get("LOCATION") != null ? Integer
                         .valueOf(map.get("LOCATION").toString()) : null);
                 tc.setDescription(
@@ -778,7 +674,6 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
                 res.add(tc);
 
             }
-
         });
         return res;
     }
@@ -788,21 +683,15 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
      *
      * @return 返回 key:触发器名称 , value:触发器创建语句
      */
-    protected Map<String, String> getTriggerSqlMap(McSchemaPO schema, String tableName) {
-        if (schema == null) {
-            throw new MetaDataException("Schema 不能为空 .");
-        }
-        DatasourceVO datasource = databaseMapper.getDatasourceInfoById(schema.getDbId());
-        if (!"2".equalsIgnoreCase(datasource.getType())) {
-            throw new MetaDataException("错误的数据库类型");
-        }
+    protected Map<String, String> getTriggerSqlMap(DatabaseConnect dbInfo,  String tableName) {
+       
 
         String sql =
                 "SELECT trigger_name TRIGGERNAME, DBMS_LOB.SUBSTR( DBMS_METADATA.GET_DDL('TRIGGER',trigger_name) ,32767) TRISQL FROM all_triggers  where table_name=  '"
                         + tableName + "'";
 
         Map<String, String> res = Maps.newHashMap();
-        execSqlCommand(sqlExecService, datasource, schema, sql, new dealRowInterface() {
+        execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
 
             @Override
             public void dealRow(int index, Map<String, Object> map, List<String> columnNames)
@@ -817,9 +706,9 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
     /**
      * 从表的触发器列表中分析 主键是否有依赖自增的序列
      */
-    protected String getSequenceFromTrigger(McSchemaPO schema, String tableName, String pkName) {
+    protected String getSequenceFromTrigger(DatabaseConnect dbInfo, String tableName, String pkName) {
 
-        Map<String, String> triggers = getTriggerSqlMap(schema, tableName);
+        Map<String, String> triggers = getTriggerSqlMap(dbInfo, tableName);
         if (triggers != null) {
             for (Entry<String, String> tri : triggers.entrySet()) {
                 //获取到的sql中 EDITIONABLE 和 REFERENCING 解析语法错误

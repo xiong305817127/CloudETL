@@ -264,7 +264,7 @@ public class SPTableOutput implements StepParameter, StepDataRelationshipParser 
 		to.setCommit(tableOutputMeta.getCommitSize());
 
 		DatabaseMeta databaseMeta = tableOutputMeta.getDatabaseMeta();
-		to.setConnection(databaseMeta == null ? "" : databaseMeta.getName());
+		to.setConnection(databaseMeta == null ? "" : databaseMeta.getDisplayName());
 
 		List<TableOutputFieldDto> tofList = new ArrayList<>();
 		String[] fieldDatabase = tableOutputMeta.getFieldDatabase();
@@ -311,7 +311,7 @@ public class SPTableOutput implements StepParameter, StepDataRelationshipParser 
 		setToAttribute(stepMeta, "table.schemaId" , jto.getSchemaId());
 		setToAttribute(stepMeta, "table.tableId" , jto.getTableId() );
 		
-		DatabaseMeta d = DatabaseMeta.findDatabase(databases, jto.getConnection());
+		DatabaseMeta d = DatabaseMeta.findDatabase(databases, jto.getSchemaId()!= null ? Long.toString(jto.getSchemaId()): null );
 		if(d != null) {
 			transMeta.addOrReplaceDatabase(d);
 			tableOutputMeta.setDatabaseMeta(d);

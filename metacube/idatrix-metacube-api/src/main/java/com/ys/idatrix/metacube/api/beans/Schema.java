@@ -1,8 +1,9 @@
 package com.ys.idatrix.metacube.api.beans;
 
-import java.io.Serializable;
 import lombok.Data;
 import lombok.experimental.Accessors;
+
+import java.io.Serializable;
 
 /**
  * 模式传输对象

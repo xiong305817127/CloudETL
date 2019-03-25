@@ -1,0 +1,14 @@
+.Content {
+  display: flex;
+  justify-content: center;
+}
+.Content .tableContent {
+  width: 1200px;
+  padding: 20px;
+}
+.Content .tableContent .infoContent {
+  padding-top: 20px;
+}
+.Content .tableContent .infoContent :global .ant-table-bordered .ant-table-thead > tr > th {
+  background: #f7f7f7;
+}

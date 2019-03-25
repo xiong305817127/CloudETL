@@ -16,11 +16,15 @@ import com.idatrix.resource.webservice.service.IServiceLogService;
 import com.idatrix.resource.webservice.vo.InputParamVO;
 import com.idatrix.resource.webservice.vo.SQLInfo;
 import com.idatrix.resource.webservice.webservice.ISubscribeSearchService;
-import com.ys.idatrix.db.agent.api.db.SqlQueryResult;
-import com.ys.idatrix.db.proxy.api.sql.SqlCommand;
-import com.ys.idatrix.db.proxy.api.sql.SqlExecuteDao;
-import com.ys.idatrix.metacube.api.bean.cloudetl.DataBaseInfo;
-import com.ys.idatrix.metacube.api.service.cloudetl.CloudETLService;
+import com.idatrix.unisecurity.api.service.UserService;
+import com.ys.idatrix.db.api.common.RespResult;
+import com.ys.idatrix.db.api.sql.dto.SchemaModeEnum;
+import com.ys.idatrix.db.api.sql.dto.SqlExecReqDto;
+import com.ys.idatrix.db.api.sql.dto.SqlQueryRespDto;
+import com.ys.idatrix.db.api.sql.service.SqlExecService;
+import com.ys.idatrix.metacube.api.beans.MetadataDTO;
+import com.ys.idatrix.metacube.api.beans.ResultBean;
+import com.ys.idatrix.metacube.api.service.MetadataToDataSwapService;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -33,12 +37,13 @@ import java.util.Date;
 import java.util.List;
 
 
+
 @Component("subscribeSearchWebservice")
 public class SubscribeSearchServiceImpl implements ISubscribeSearchService {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubscribeSearchServiceImpl.class);
 
-    public SubscribeSearchServiceImpl(){
+    public SubscribeSearchServiceImpl() {
         super();
     }
 
@@ -52,10 +57,7 @@ public class SubscribeSearchServiceImpl implements ISubscribeSearchService {
     private ResourceConfigDAO resourceConfigDAO;
 
     @Autowired
-    private CloudETLService cloudETLService;
-
-    @Autowired
-    private SqlExecuteDao sqlExecuteDao;
+    private SqlExecService sqlExecuteDao;
 
     @Autowired
     private IServiceLogService serviceLogService;
@@ -63,8 +65,15 @@ public class SubscribeSearchServiceImpl implements ISubscribeSearchService {
     @Autowired
     private ResourceColumnDAO resourceColumnDAO;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired(required=false)
+    private MetadataToDataSwapService metacubeCatalogService;
+
     @Override
-    public ResultDTO databaseSearchByCondition(List<ParamDTO> inputParams, String subscribeKey, Integer pageNum, Integer pageSize) {
+    public ResultDTO databaseSearchByCondition(List<ParamDTO> inputParams, String subscribeKey,
+            Integer pageNum, Integer pageSize) {
 
         long startTime = System.currentTimeMillis();
 
@@ -72,9 +81,11 @@ public class SubscribeSearchServiceImpl implements ISubscribeSearchService {
 
         SubscribePO subscribePO = subscribeDAO.getBySubscribeKey(subscribeKey);
 
-        String inputStr = JSON.toJSONString(new InputParamVO(inputParams, subscribeKey, pageNum, pageSize));
+        String inputStr = JSON
+                .toJSONString(new InputParamVO(inputParams, subscribeKey, pageNum, pageSize));
         String outputStr = "", errorMsg = "", errorStack = "";
         int isSuccess = 0;
+        int num = 0;
 
         try {
             //查询前，对权限以及查询参数进行校验
@@ -82,58 +93,63 @@ public class SubscribeSearchServiceImpl implements ISubscribeSearchService {
 
             //获取总的count数目
             SQLInfo sqlCountCommand = assembleQueryCountSQL(subscribePO, subscribeKey, inputParams);
-            SqlQueryResult sqlResult = executeQuery(subscribeKey, sqlCountCommand);
-            Object totalSize=sqlResult.getData().get(0).get("total");
-            resultDTO.setTotalSize( Long.valueOf(String.valueOf(totalSize)));
+            RespResult<SqlQueryRespDto> sqlResult = executeQuery(subscribeKey, sqlCountCommand);
+            Object totalSize = sqlResult.getData().getData().get(0).get("total");
+            resultDTO.setTotalSize(Long.valueOf(String.valueOf(totalSize)));
 
             //执行sql命令返回数据
-            int page = pageNum==null?0:pageNum.intValue();
-            int size = pageSize==null?20:pageSize.intValue();
+            int page = pageNum == null ? 0 : pageNum.intValue();
+            int size = pageSize == null ? 20 : pageSize.intValue();
             SQLInfo sqlInfo = assembleSQL(subscribePO, subscribeKey, inputParams, page, size);
-            SqlQueryResult sqlCommandResult = executeQuery(subscribeKey, sqlInfo);
+            RespResult<SqlQueryRespDto> sqlCommandResult = executeQuery(subscribeKey, sqlInfo);
 
             resultDTO.setStatusCode(CommonConstants.SUCCESS_VALUE);
-            resultDTO.setColumns(sqlCommandResult.getColumns());
+            resultDTO.setColumns(sqlCommandResult.getData().getColumns());
             resultDTO.setData(JSON.toJSONString(sqlCommandResult.getData()));
             outputStr = JSON.toJSONString(resultDTO);
             isSuccess = 1;
+            num = sqlCommandResult.getData().getData().size();
         } catch (CommonServiceException e) {
             e.printStackTrace();
-            if (e.getErrorCode() == CommonConstants.EC_SEARCH_PARAM_ERROR) {
+            if (CommonConstants.EC_SEARCH_PARAM_ERROR.equals(e.getErrorCode())) {
                 resultDTO.setStatusCode(e.getErrorCode());
-                resultDTO.setErrorMsg("输入参数校验失败:"+e.getMessage());
+                resultDTO.setErrorMsg("输入参数校验失败:" + e.getMessage());
                 errorMsg = "输入参数校验失败";
                 errorStack = e.getMessage();
-            } else if (e.getErrorCode() == CommonConstants.EC_SEARCH_NO_AUTH_ERROR) {
+            } else if (CommonConstants.EC_SEARCH_NO_AUTH_ERROR.equals(e.getErrorCode())) {
                 resultDTO.setStatusCode(e.getErrorCode());
-                resultDTO.setErrorMsg("无调用权限："+e.getMessage());
+                resultDTO.setErrorMsg("无调用权限：" + e.getMessage());
                 errorMsg = "无调用权限";
                 errorStack = e.getMessage();
             } else {
                 resultDTO.setStatusCode(CommonConstants.EC_SEARCH_CALL_FAILURE);
-                resultDTO.setErrorMsg("调用失败："+e.getMessage());
+                resultDTO.setErrorMsg("调用失败：" + e.getMessage());
                 errorMsg = "调用失败";
                 errorStack = e.getMessage();
             }
-            LOG.error(new Date() + "订阅编码" + subscribeKey + "调用出现异常：" + e.getErrorCode() + " " + e.getMessage());
+            LOG.error(new Date() + "订阅编码" + subscribeKey + "调用出现异常：" + e.getErrorCode() + " " + e
+                    .getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             resultDTO.setStatusCode(CommonConstants.EC_UNEXPECTED);
             resultDTO.setErrorMsg("订阅编码" + subscribeKey + " 调用失败 " + e.getMessage());
 
-            errorMsg = "调用失败: "+ e.getMessage();
+            errorMsg = "调用失败: " + e.getMessage();
             errorStack = ExceptionUtils.getFullStackTrace(e);
             LOG.error(new Date() + "订阅编码" + subscribeKey + " 调用失败 " + e.getMessage());
         }
 
         //之前时间为s,如果时间低于1s,用户看到运行时间为0
-        int excTime = (int)(System.currentTimeMillis()-startTime);
-        LOG.info("订阅编码" + subscribeKey + " 本次调用时间： "+excTime+" ms");
+        int excTime = (int) (System.currentTimeMillis() - startTime);
+        LOG.info("订阅编码" + subscribeKey + " 本次调用时间： " + excTime + " ms");
+
+        Long renterId = userService.findByUserName(subscribePO.getCreator()).getRenterId();
 
         try {
-            serviceLogService.insertServiceLogRecord(subscribePO.getResourceId(), subscribePO.getDeptId(),
-                    subscribePO.getDeptName(), isSuccess, excTime, inputStr, outputStr, errorMsg, errorStack,
-                    subscribePO.getCreator());
+            serviceLogService
+                    .insertServiceLogRecord(subscribePO.getResourceId(), subscribePO.getDeptId(),
+                            subscribePO.getDeptName(), isSuccess, num, excTime, inputStr, outputStr,
+                            errorMsg, errorStack, subscribePO.getCreator(), renterId);
         } catch (CommonServiceException e) {
             e.printStackTrace();
             LOG.error("保存数据库服务出错：" + e.getMessage());
@@ -142,24 +158,24 @@ public class SubscribeSearchServiceImpl implements ISubscribeSearchService {
         return resultDTO;
     }
 
+    private SQLInfo assembleSQL(SubscribePO subscribePO, String subscribeKey,
+            List<ParamDTO> inputParams,
+            int pageNum, int pageSize) throws CommonServiceException {
 
 
-    private SQLInfo assembleSQL(SubscribePO subscribePO, String subscribeKey, List<ParamDTO> inputParams,
-                                int pageNum, int pageSize) throws CommonServiceException  {
-
-        SqlCommand sqlCommand = new SqlCommand();
-        ResourceConfigPO resourceConfigPO = resourceConfigDAO.getConfigById(subscribePO.getResourceId());
-        if (resourceConfigPO == null)
+        ResourceConfigPO resourceConfigPO = resourceConfigDAO
+                .getConfigById(subscribePO.getResourceId());
+        if (resourceConfigPO == null) {
             throw new CommonServiceException(CommonConstants.EC_NOT_EXISTED_VALUE,
                     "根据当前订阅编码" + subscribeKey + "对应资源信息" + subscribePO.getResourceId() + "不存在");
+        }
 
-        DataBaseInfo dataBaseInfo = cloudETLService.getDbInfoByMetaId(resourceConfigPO.getBindTableId());
-        if (dataBaseInfo == null)
+        ResultBean<MetadataDTO> metadata = metacubeCatalogService.findTableInfoByID(resourceConfigPO.getBindTableId());
+        if(!metadata.isSuccess()){
             throw new CommonServiceException(CommonConstants.EC_NOT_EXISTED_VALUE,
-                    "根据当前订阅编码" + subscribeKey + "对应元数据信息" + resourceConfigPO.getBindTableId() + "不存在");
-
-        String dsName = dataBaseInfo.getName();
-        String table = dataBaseInfo.getTableName();
+                    "根据当前订阅编码" + subscribeKey + "对应元数据信息" + resourceConfigPO.getBindTableId()
+                            + "不存在");
+        }
 
         //获取返回结果字段
         List<SubscribeDbioPO> resultColList
@@ -168,34 +184,47 @@ public class SubscribeSearchServiceImpl implements ISubscribeSearchService {
         StringBuffer resultColStrBuffer = new StringBuffer();
 
         for (SubscribeDbioPO model : resultColList) {
-            resultColStrBuffer.append(resourceColumnDAO.getColumnById(model.getColumnId()).getTableColCode()).append(",");
+            resultColStrBuffer
+                    .append(resourceColumnDAO.getColumnById(model.getColumnId()).getTableColCode())
+                    .append(",");
         }
 
         String resultColStr
-                = resultColStrBuffer.toString().substring(0, resultColStrBuffer.toString().length() - 1);
+                = resultColStrBuffer.toString()
+                .substring(0, resultColStrBuffer.toString().length() - 1);
 
         StringBuffer sqlBuffer = new StringBuffer();
 
         sqlBuffer.append("SELECT ");
         sqlBuffer.append(resultColStr).append(" ");
-        sqlBuffer.append(" FROM ").append(table).append(" ");
+        sqlBuffer.append(" FROM ").append(metadata.getData().getMetaName()).append(" ");
 
         if (inputParams != null && !inputParams.isEmpty()) {
             sqlBuffer.append(" WHERE 1=1 ");
 
             for (ParamDTO model : inputParams) {
                 sqlBuffer.append(" AND ");
-                sqlBuffer.append(model.getParamCode()).append(" = '").append(model.getParamValue()).append("' ");
+                sqlBuffer.append(model.getParamCode()).append(" = '").append(model.getParamValue())
+                        .append("' ");
             }
         }
 
-        sqlCommand.setDbSource(dsName);
-        String pageSqlCommad = getPageHelperSQLCommand(sqlBuffer.toString(), resourceConfigPO, pageNum, pageSize);
-        if(StringUtils.isEmpty(pageSqlCommad)){
+
+        String pageSqlCommad = getPageHelperSQLCommand(sqlBuffer.toString(), resourceConfigPO,
+                pageNum, pageSize);
+
+
+        SqlExecReqDto sqlCommand = new SqlExecReqDto();
+        sqlCommand.setSchemaModeEnum(SchemaModeEnum.id);
+        if (StringUtils.isEmpty(pageSqlCommad)) {
             sqlCommand.setCommand(sqlBuffer.toString());
-        }else {
+        } else {
             sqlCommand.setCommand(pageSqlCommad);
         }
+        sqlCommand.setSchemaId(new Long(metadata.getData().getSchemaId()));
+        sqlCommand.setSchemaModeEnum(SchemaModeEnum.id);
+
+
 
         SQLInfo sqlInfo = new SQLInfo();
         sqlInfo.setSqlCommand(sqlCommand);
@@ -204,32 +233,34 @@ public class SubscribeSearchServiceImpl implements ISubscribeSearchService {
     }
 
     //根据数据库类型返回 分页语句
-    private String getPageHelperSQLCommand(String originCommand, ResourceConfigPO rcPO, int pageNum ,int pageSize){
+    private String getPageHelperSQLCommand(String originCommand, ResourceConfigPO rcPO, int pageNum,
+            int pageSize) {
 
         String formatInfo = rcPO.getFormatInfo();
-        if(StringUtils.startsWithIgnoreCase(formatInfo, "mysql") ||
-                StringUtils.startsWithIgnoreCase(formatInfo, "dm")){
+        if (StringUtils.startsWithIgnoreCase(formatInfo, "mysql") ||
+                StringUtils.startsWithIgnoreCase(formatInfo, "dm")) {
 
             StringBuilder sqlBuilder = new StringBuilder(originCommand.length() + 14);
             sqlBuilder.append(originCommand);
             if (pageNum == 0) {
-                sqlBuilder.append(" LIMIT "+pageSize);
+                sqlBuilder.append(" LIMIT " + pageSize);
             } else {
-                sqlBuilder.append(" LIMIT "+pageNum*pageSize+" , " + pageSize);
+                sqlBuilder.append(" LIMIT " + pageNum * pageSize + " , " + pageSize);
             }
             return sqlBuilder.toString();
-        }else if(StringUtils.startsWithIgnoreCase(formatInfo, "oracle")){
+        } else if (StringUtils.startsWithIgnoreCase(formatInfo, "oracle")) {
             StringBuilder sqlBuilder = new StringBuilder(originCommand.length() + 120);
             sqlBuilder.append("SELECT * FROM ( ");
             sqlBuilder.append(" SELECT TMP_PAGE.*, ROWNUM ROW_ID FROM ( ");
             sqlBuilder.append(originCommand);
             sqlBuilder.append(" ) TMP_PAGE)");
-            sqlBuilder.append(" WHERE ROW_ID <= "+(pageNum+1)*pageSize + " AND ROW_ID > "+ pageNum*pageSize);
+            sqlBuilder.append(" WHERE ROW_ID <= " + (pageNum + 1) * pageSize + " AND ROW_ID > "
+                    + pageNum * pageSize);
             return sqlBuilder.toString();
-        }else if(StringUtils.startsWithIgnoreCase(formatInfo, "postgresql")){
+        } else if (StringUtils.startsWithIgnoreCase(formatInfo, "postgresql")) {
             StringBuilder sqlBuilder = new StringBuilder(originCommand.length() + 14);
             sqlBuilder.append(originCommand);
-            sqlBuilder.append(" LIMIT "+pageSize+" offset " + pageNum*pageSize);
+            sqlBuilder.append(" LIMIT " + pageSize + " offset " + pageNum * pageSize);
 
             return sqlBuilder.toString();
         }
@@ -237,22 +268,24 @@ public class SubscribeSearchServiceImpl implements ISubscribeSearchService {
     }
 
 
-    private SQLInfo assembleQueryCountSQL(SubscribePO subscribePO, String subscribeKey, List<ParamDTO> inputParams)
-            throws CommonServiceException  {
+    private SQLInfo assembleQueryCountSQL(SubscribePO subscribePO, String subscribeKey,
+            List<ParamDTO> inputParams)
+            throws CommonServiceException {
 
-        SqlCommand sqlCommand = new SqlCommand();
-        ResourceConfigPO resourceConfigPO = resourceConfigDAO.getConfigById(subscribePO.getResourceId());
-        if (resourceConfigPO == null)
+        SqlExecReqDto sqlCommand = new SqlExecReqDto();
+        ResourceConfigPO resourceConfigPO = resourceConfigDAO
+                .getConfigById(subscribePO.getResourceId());
+        if (resourceConfigPO == null) {
             throw new CommonServiceException(CommonConstants.EC_NOT_EXISTED_VALUE,
                     "根据当前订阅编码" + subscribeKey + "对应资源信息" + subscribePO.getResourceId() + "不存在");
+        }
 
-        DataBaseInfo dataBaseInfo = cloudETLService.getDbInfoByMetaId(resourceConfigPO.getBindTableId());
-        if (dataBaseInfo == null)
+        ResultBean<MetadataDTO> metadata = metacubeCatalogService.findTableInfoByID(resourceConfigPO.getBindTableId());
+        if(!metadata.isSuccess()){
             throw new CommonServiceException(CommonConstants.EC_NOT_EXISTED_VALUE,
-                    "根据当前订阅编码" + subscribeKey + "对应元数据信息" + resourceConfigPO.getBindTableId() + "不存在");
-
-        String dsName = dataBaseInfo.getName();
-        String table = dataBaseInfo.getTableName();
+                    "根据当前订阅编码" + subscribeKey + "对应元数据信息" + resourceConfigPO.getBindTableId()
+                            + "不存在");
+        }
 
         //获取返回结果字段
         List<SubscribeDbioPO> resultColList
@@ -265,25 +298,26 @@ public class SubscribeSearchServiceImpl implements ISubscribeSearchService {
         }
 
         String resultColStr
-                = resultColStrBuffer.toString().substring(0, resultColStrBuffer.toString().length() - 1);
+                = resultColStrBuffer.toString()
+                .substring(0, resultColStrBuffer.toString().length() - 1);
 
         StringBuffer sqlBuffer = new StringBuffer();
         sqlBuffer.append("SELECT ");
         sqlBuffer.append("count(*) as total");
-        sqlBuffer.append(" FROM ").append(table).append(" ");
+        sqlBuffer.append(" FROM ").append(metadata.getData().getMetaName()).append(" ");
 
         if (inputParams != null && !inputParams.isEmpty()) {
             sqlBuffer.append(" WHERE 1=1 ");
             for (ParamDTO model : inputParams) {
                 sqlBuffer.append(" AND ");
-                sqlBuffer.append(model.getParamCode()).append(" = '").append(model.getParamValue()).append("' ");
+                sqlBuffer.append(model.getParamCode()).append(" = '").append(model.getParamValue())
+                        .append("' ");
             }
         }
 
-        sqlCommand.setDbSource(dsName);
+        sqlCommand.setSchemaId(new Long(metadata.getData().getSchemaId()));
+        sqlCommand.setSchemaModeEnum(SchemaModeEnum.id);
         sqlCommand.setCommand(sqlBuffer.toString());
-        //sqlcommand里面增加 schema
-        sqlCommand.setDbSchema(dataBaseInfo.getSchema());
 
         SQLInfo sqlInfo = new SQLInfo();
         sqlInfo.setSqlCommand(sqlCommand);
@@ -291,35 +325,40 @@ public class SubscribeSearchServiceImpl implements ISubscribeSearchService {
         return sqlInfo;
     }
 
-    private SqlQueryResult executeQuery(String subscribeKey, SQLInfo sqlInfo) throws CommonServiceException, RuntimeException  {
+    private  RespResult<SqlQueryRespDto> executeQuery(String subscribeKey, SQLInfo sqlInfo)
+            throws CommonServiceException, RuntimeException {
 
         LOG.info("查询执行sql信息为： " + sqlInfo.toString());
-        SqlQueryResult sqlQueryResult = sqlExecuteDao.executeQuery(sqlInfo.getUserName(), sqlInfo.getSqlCommand());
-        if(sqlQueryResult != null){
-            if(sqlQueryResult.isSuccess()){
+        RespResult<SqlQueryRespDto> sqlQueryResult = sqlExecuteDao
+                .executeQuery(sqlInfo.getUserName(), sqlInfo.getSqlCommand());
+        if (sqlQueryResult != null) {
+            if (sqlQueryResult.isSuccess()) {
                 return sqlQueryResult;
-            }else{
+            } else {
                 throw new CommonServiceException(CommonConstants.EC_NOT_EXISTED_VALUE,
-                        "订阅编码" + subscribeKey + "执行SQL失败: "+ sqlQueryResult.getMessage());
+                        "订阅编码" + subscribeKey + "执行SQL失败: " + sqlQueryResult.getMsg());
             }
-        }else{
+        } else {
             throw new CommonServiceException(CommonConstants.EC_NOT_EXISTED_VALUE,
                     "订阅编码" + subscribeKey + "获取SQL执行ID失败");
         }
     }
 
-    private void validateBeforeSearch(List<ParamDTO> inputParams, String subscribeKey, SubscribePO subscribePO)
+    private void validateBeforeSearch(List<ParamDTO> inputParams, String subscribeKey,
+            SubscribePO subscribePO)
             throws CommonServiceException {
-        if (subscribePO == null)
+        if (subscribePO == null) {
             throw new CommonServiceException(CommonConstants.EC_NOT_EXISTED_VALUE,
                     "根据当前订阅编码" + subscribeKey + "无法查到对应订阅信息");
+        }
 
         Date today = new Date();
 
         //进行订阅权限校验
-        if (today.getTime() > subscribePO.getEndDate().getTime())
+        if (today.getTime() > subscribePO.getEndDate().getTime()) {
             throw new CommonServiceException(CommonConstants.EC_SEARCH_NO_AUTH_ERROR,
                     "当前订阅编码" + subscribeKey + "已过期，无订阅权限");
+        }
 
         //进行查询参数校验
         List<SubscribeDbioPO> searchConditionList
@@ -335,9 +374,10 @@ public class SubscribeSearchServiceImpl implements ISubscribeSearchService {
 
             if (inputParams != null && !inputParams.isEmpty()) {
                 for (ParamDTO model : inputParams) {
-                    if(!subscribeColumnList.contains(model.getParamCode())){
+                    if (!subscribeColumnList.contains(model.getParamCode())) {
                         throw new CommonServiceException(CommonConstants.EC_SEARCH_PARAM_ERROR,
-                                "输入参数" + model.getParamName() + " " + model.getParamCode() + "不在订阅项" +
+                                "输入参数" + model.getParamName() + " " + model.getParamCode() + "不在订阅项"
+                                        +
                                         subscribeKey + "查询参数之列");
                     }
                 }

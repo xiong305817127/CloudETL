@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.idatrix.resource.basedata.dao.FileDAO">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.idatrix.resource.basedata.po.FilePO">
+        <id column="id" property="id"/>
+        <result column="source" property="source"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="storage_file_name" property="storageFileName"/>
+        <result column="origin_file_name" property="originFileName"/>
+        <result column="file_size" property="fileSize"/>
+        <result column="file_extension" property="fileExtension"/>
+        <result column="file_description" property="fileDescription"/>
+        <result column="creator" property="creator"/>
+        <result column="create_time" property="createTime"/>
+        <result column="modifier" property="modifier"/>
+        <result column="modify_time" property="modifyTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+    <insert id="insert" keyProperty="id"
+            parameterType="com.idatrix.resource.basedata.po.FilePO" useGeneratedKeys="true">
+        INSERT into rc_file
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="source !=null ">source,
+            </if>
+            <if test="parentId !=null ">parent_id,
+            </if>
+            <if test="storageFileName !=null ">storage_file_name,
+            </if>
+            <if test="originFileName !=null ">origin_file_name,
+            </if>
+            <if test="fileSize !=null ">file_size,
+            </if>
+            <if test="fileExtension !=null ">file_extension,
+            </if>
+            <if test="fileDescription !=null ">file_description,
+            </if>
+            <if test="creator !=null ">creator,
+            </if>
+            <if test="createTime !=null ">create_time,
+            </if>
+            <if test="modifier !=null ">modifier,
+            </if>
+            <if test="modifyTime !=null ">modify_time,
+            </if>
+        </trim>
+
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="source !=null ">#{source},
+            </if>
+            <if test="parentId !=null ">#{parentId},
+            </if>
+            <if test="storageFileName !=null ">#{storageFileName},
+            </if>
+            <if test="originFileName !=null ">#{originFileName},
+            </if>
+            <if test="fileSize !=null ">#{fileSize},
+            </if>
+            <if test="fileExtension !=null ">#{fileExtension},
+            </if>
+            <if test="fileDescription !=null ">#{fileDescription},
+            </if>
+            <if test="creator !=null ">#{creator},
+            </if>
+            <if test="createTime !=null ">#{createTime},
+            </if>
+            <if test="modifier !=null ">#{modifier},
+            </if>
+            <if test="modifyTime !=null ">#{modifyTime},
+            </if>
+        </trim>
+    </insert>
+
+    <insert id="batchInsert" keyProperty="id"
+            parameterType="java.util.List" useGeneratedKeys="true">
+        INSERT into rc_file (
+        source,parent_id,storage_file_name,origin_file_name,file_size,file_extension,file_description,
+        creator,create_time,modifier,modify_time)
+        VALUES
+        <foreach collection="list" index="index" item="item" separator=",">
+            (#{item.source}, #{item.parentId}, #{item.storageFileName}, #{item.originFileName},
+            #{item.fileSize},
+            #{item.fileExtension}, #{item.fileDescription}, #{item.creator}, #{item.createTime},
+            #{item.modifier},
+            #{item.modifyTime})
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="com.idatrix.resource.basedata.po.FilePO">
+        UPDATE rc_file
+        <set>
+            <if test="source != null">
+                source=#{source},
+            </if>
+            <if test="parentId!=null">
+                parent_id = #{parentId},
+            </if>
+            <if test="storageFileName!=null">
+                storage_file_name = #{storageFileName},
+            </if>
+            <if test="originFileName!=null">
+                origin_file_name = #{originFileName},
+            </if>
+            <if test="fileSize!=null">
+                file_size = #{fileSize},
+            </if>
+            <if test="fileExtension!=null">
+                file_extension = #{fileExtension},
+            </if>
+            <if test="fileDescription!=null">
+                file_description = #{fileDescription},
+            </if>
+            <if test="modifier!=null">
+                modifier = #{modifier},
+            </if>
+            <if test="modifyTime!=null">
+                modify_time = #{modifyTime},
+            </if>
+            <if test="isDeleted!=null">
+                is_deleted = #{isDeleted}
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="batchUpdateParentIdByIds">
+        UPDATE rc_file
+        SET parent_id = #{parentId}
+        WHERE id IN
+        <foreach close=")" collection="ids" index="index" item="id" open="(" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="getFile" parameterType="com.idatrix.resource.basedata.vo.FileQueryVO"
+            resultMap="BaseResultMap">
+        SELECT
+        *
+        FROM
+        rc_file
+        <where>
+            is_deleted = 0
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="source != null">
+                AND source = #{source}
+            </if>
+            <if test="parentId != null">
+                AND parent_id = #{parentId}
+            </if>
+            <if test="storageFileName != null">
+                AND storage_file_name = #{storageFileName}
+            </if>
+            <if test="originFileName != null">
+                AND origin_file_name = #{originFileName}
+            </if>
+            <if test="creator != null">
+                AND creator = #{creator}
+            </if>
+        </where>
+    </select>
+
+    <select id="getFileById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT * FROM rc_file WHERE id = #{id} AND is_deleted = 0
+    </select>
+
+    <select id="getFilesBySourceAndParentIdAndCreator" resultMap="BaseResultMap">
+        SELECT * FROM rc_file WHERE source = #{source} AND parent_id = #{parentId} AND creator =
+        #{creator} AND is_deleted = 0
+    </select>
+
+</mapper>

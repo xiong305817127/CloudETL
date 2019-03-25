@@ -35,7 +35,7 @@ public class PermissionAllocationController {
             @ApiImplicitParam(name = "id", value = "角色ID", required = true, dataType = "Long", paramType = "query")
     })
     @RequestMapping(value = "/selectPermissionById", method = RequestMethod.GET)
-    public ResultVo selectPermissionById(@NotBlank(message = "角色ID不能为空") @RequestParam("id") Long roleId) {
+    public ResultVo selectPermissionById(@NotNull(message = "角色ID不能为空") @RequestParam("id") Long roleId) {
         List<UPermissionBo> permissionBos = permissionService.selectPermissionByRoleId(roleId);
         return ResultVoUtils.ok(permissionBos);
     }

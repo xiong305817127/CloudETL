@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -81,17 +83,14 @@ public final class CommonUtils {
 
 	public static String getWSDLContentsByRemoteAddress(String url) {
 		String message = "";
-
+        LOG.info("HttpClient 请求: " + url );
 		try {
 			HttpEntity entity = HttpUtils.getRequestEntity(url, CommonConstants.REQUEST_GET_METHOD);
-
 			if (entity != null)
 				message = EntityUtils.toString(entity, "utf-8");
 		} catch (IOException io) {
-			LOG.error("HttpClient 请求失败: " + url);
-			LOG.error("HttpClient 失败原因: " + io.getMessage());
+			io.printStackTrace();
 		}
-
 		return message;
 	}
 
@@ -155,6 +154,55 @@ public final class CommonUtils {
         }
         Collections.reverse(monthStr); //倒序一下
         return monthStr;
+    }
+
+    /**
+     * 获取最近 days天日期时间
+     * @param days
+     * @return
+     */
+    public static List<String> getRecentDayList(int days){
+        List<String> dayList = new ArrayList<String>();
+        if(days<=0){
+            return dayList;
+        }
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date();
+        String dateString = sdf.format(cal.getTime());
+
+        for (int index = 0; index<days; index++) {
+            dateString = sdf.format(cal.getTime());
+            dayList.add(dateString);
+            cal.add(Calendar.DAY_OF_MONTH, -1);
+        }
+        Collections.reverse(dayList); //倒序一下
+        return dayList;
+    }
+
+    /**
+     * 获取最近 从startTime到endTime时间
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    public static List<String> getRecentDayList(Date startTime, Date endTime){
+        List<String> dayList = new ArrayList<String>();
+        if(startTime.after(endTime)){
+            return null;
+        }
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = startTime;
+        cal.setTime(date);
+        String dateString = sdf.format(cal.getTime());
+
+        while(cal.getTime().before(endTime)){
+            dateString = sdf.format(cal.getTime());
+            dayList.add(dateString);
+            cal.add(Calendar.DAY_OF_MONTH, 1);
+        }
+        return dayList;
     }
 
     public static String formatMonthStr(String month) {
@@ -267,4 +315,121 @@ public final class CommonUtils {
 			return fileSize + "KB";
 //        return fileSize.toString();
 	}
+
+    public static void setObjectByField(Object object, String importFieldName, String value) throws Exception {
+        // 获得对象的类型
+        Class<?> classType = object.getClass();
+//        LOG.info("Class:" + classType.getName());
+
+        // 获得对象的所有属性
+        Field fields[] = classType.getDeclaredFields();
+        Field field = null;
+        for (int i = 0; i < fields.length; i++) {
+            if (StringUtils.equals(fields[i].getName(), importFieldName)) {
+                field = fields[i];
+                break;
+            }
+        }
+        if(field==null){
+            throw new Exception(classType.getName()+" 类中不存在 "+importFieldName+" 属性");
+        }
+        String fieldName = field.getName();
+        Class fieldType = field.getType();
+        String fieldTypeName = fieldType.getName();
+        Object objValue = null;
+        if(StringUtils.equals(fieldTypeName, Long.class.getName())){
+            objValue = Long.valueOf(value);
+        }else if(StringUtils.equals(fieldTypeName, String.class.getName())){
+            objValue = value;
+        }else if(StringUtils.equals(fieldTypeName,Boolean.class.getName())){
+            objValue = Boolean.valueOf(value);
+        }else if(StringUtils.equals(fieldTypeName,long.class.getName())) {
+            objValue = Long.valueOf(value).longValue();
+        }else if(StringUtils.equals(fieldTypeName,int.class.getName())) {
+            objValue = Integer.valueOf(value).intValue();
+        }else if(StringUtils.equals(fieldTypeName, Date.class.getName())){
+            objValue = DateTools.parseDate(value);
+        }
+//        LOG.info("name====={}",fieldName);
+//        LOG.info("type====={}",fieldTypeName);
+        String firstLetter = fieldName.substring(0, 1).toUpperCase();
+        // 获得和属性对应的getXXX()方法的名字
+        //String getMethodName = "get" + firstLetter + fieldName.substring(1);
+        // 获得和属性对应的setXXX()方法的名字
+        String setMethodName = "set" + firstLetter + fieldName.substring(1);
+
+        // 获得和属性对应的getXXX()方法
+        //Method getMethod = classType.getMethod(getMethodName, new Class[]{});
+        // 获得和属性对应的setXXX()方法
+        Method setMethod = classType.getMethod(setMethodName, new Class[]{field.getType()});
+
+        // 调用原对象的getXXX()方法
+        //Object value = getMethod.invoke(object, new Object[]{});
+        //System.out.println("value===="+value);
+        //System.out.println(fieldName + ":" + value);
+        // 调用拷贝对象的setXXX()方法
+        setMethod.invoke(object, new Object[]{objValue});
+    }
+
+
+    public static Object getObjectByField(Object object, String importFieldName) throws Exception {
+        // 获得对象的类型
+        Class<?> classType = object.getClass();
+
+        // 获得对象的所有属性
+        Field fields[] = classType.getDeclaredFields();
+        Field field = null;
+        for (int i = 0; i < fields.length; i++) {
+            if (StringUtils.equals(fields[i].getName(), importFieldName)) {
+                field = fields[i];
+                break;
+            }
+        }
+        if(field==null){
+            throw new Exception(classType.getName()+" 类中不存在 "+importFieldName+" 属性");
+        }
+        String fieldName = field.getName();
+        Class fieldType = field.getType();
+        String fieldTypeName = fieldType.getName();
+        Object objValue = null;
+
+//        LOG.info("name====={}",fieldName);
+//        LOG.info("type====={}",fieldTypeName);
+        String firstLetter = fieldName.substring(0, 1).toUpperCase();
+        // 获得和属性对应的getXXX()方法的名字
+        String getMethodName = "get" + firstLetter + fieldName.substring(1);
+        // 获得和属性对应的setXXX()方法的名字
+        String setMethodName = "set" + firstLetter + fieldName.substring(1);
+
+        // 获得和属性对应的getXXX()方法
+        Method getMethod = classType.getMethod(getMethodName, new Class[]{});
+        // 获得和属性对应的setXXX()方法
+        Method setMethod = classType.getMethod(setMethodName, new Class[]{field.getType()});
+
+        // 调用原对象的getXXX()方法
+        Object value = getMethod.invoke(object, new Object[]{});
+        //System.out.println("value===="+value);
+        //System.out.println(fieldName + ":" + value);
+        // 调用拷贝对象的setXXX()方法
+        //setMethod.invoke(object, new Object[]{objValue});
+        return value;
+    }
+
+    /**
+     * 将变量中原有数值增加 value给定值
+     * @param object
+     * @param importFieldName
+     * @param value
+     * @throws Exception
+     */
+    public static void refreshAddValue(Object object, String importFieldName, Long value)throws Exception{
+        if(importFieldName !=null && StringUtils.isNotEmpty(importFieldName) && value!=null) {
+            Object oldValue = CommonUtils.getObjectByField(object, importFieldName);
+            Long oldSaveValue = oldValue==null?0L:(Long)oldValue;
+            Long addValue = Long.valueOf(value)+oldSaveValue;
+            CommonUtils.setObjectByField(object, importFieldName, addValue.toString());
+        }
+    }
+
+
 }

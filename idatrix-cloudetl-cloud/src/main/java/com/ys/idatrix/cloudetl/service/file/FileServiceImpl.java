@@ -126,7 +126,24 @@ public class FileServiceImpl extends CloudBaseService implements FileService {
 		if (!FilePathUtil.isUploadType(type) && !FileType.output.equals(type)) {
 			throw new KettleException("type " + type + " is not support!");
 		}
-
+		if( FileType.mp4.equals(type) ) {
+			//视频下载
+			String root = FilePathUtil.getRealFileName(owner ,"", type);
+			FileObject fileObj = KettleVFS.getFileObject(root);
+			try {
+				if( fileObj != null ) {
+					for( FileObject child  : fileObj.getChildren()) {
+						if( child.isFile() && child.getName().getBaseName().startsWith(path)) {
+							return child ;
+						}
+						child.close();
+					}
+				}
+					
+			}finally {
+				fileObj.close();
+			}
+		}
 		path = FilePathUtil.getRealFileName(owner ,path, type);
 
 		if (!FilePathUtil.fileIsExist(path, false)) {
@@ -209,23 +226,29 @@ public class FileServiceImpl extends CloudBaseService implements FileService {
 
 		owner = Const.NVL(owner,  CloudSession.getResourceUser() );
 		FileType type = FileType.getFileType(  Const.NVL(typeStr, "input" ) ); 
+		String fileName = file.getOriginalFilename();
+		if( typeStr.startsWith("mp4") && typeStr.contains("::")) {
+			type = FileType.mp4 ;
+			String ext = fileName.substring(file.getOriginalFilename().lastIndexOf("."));
+			fileName = typeStr.split("::")[1] +ext;
+		}
 		FileType filterType = FileType.getFileType(  Const.NVL(filterTypeStr, type.name() ) ); 
 
 		String root = FilePathUtil.getRealFileName(owner ,"", type);
-		String filePath = file.getOriginalFilename();
+		String filePath = fileName;
 		if ( FilePathUtil.TEMPLETE.contains(type) ) {
-			filePath = type + "/" + file.getOriginalFilename();
+			filePath = type + "/" + fileName;
 		}
-
-		String path = root + file.getOriginalFilename();
+		
+		String path = root + fileName ;
 		FileObject uploadfile = KettleVFS.getFileObject(path);
 		if (uploadfile.exists() && !isCover) {
 			uploadfile.close();
-			throw new KettleException("file :" + file.getOriginalFilename() + " is exist!");
+			throw new KettleException("file :" + fileName + " is exist!");
 		}
 		if (!FilePathUtil.fileExtensionIfSupport(filterType, uploadfile)) {
 			uploadfile.close();
-			throw new KettleException("file :" + file.getOriginalFilename() + " extension is not support!");
+			throw new KettleException("file :" + fileName + " extension is not support!");
 		}
 
 		FileObject parent = uploadfile.getParent();

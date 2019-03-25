@@ -1,7 +1,7 @@
 package com.idatrix.metacube.service;
 
 import com.ys.idatrix.metacube.metamanage.domain.ResourceAuth;
-import com.ys.idatrix.metacube.metamanage.service.ResourceAuthService;
+import com.ys.idatrix.metacube.authorize.service.ResourceAuthService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

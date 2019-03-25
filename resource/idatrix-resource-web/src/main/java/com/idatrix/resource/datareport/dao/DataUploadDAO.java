@@ -4,6 +4,7 @@ import com.idatrix.resource.datareport.po.DataUploadPO;
 import com.idatrix.resource.datareport.po.SearchDataUploadPO;
 import com.idatrix.resource.taskmanage.po.UploadTaskOverviewPO;
 import com.idatrix.resource.taskmanage.vo.DescribeInfoVO;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -27,9 +28,16 @@ public interface DataUploadDAO {
 
 	Long getMaxTaskSeq();
 
-	Long getTaskCount();
+	Long getTaskCount(Long rentId);
 
 	List<UploadTaskOverviewPO> queryOverview(Map<String, String>con);
 
-    List<DescribeInfoVO> getTaskInfoByMonth(Long num);
+    List<DescribeInfoVO> getTaskInfoByMonth(@Param("rentId")Long rentId,
+                                            @Param("num") Long num);
+
+    /**************************多租户隔离增加的接口**************************/
+
+
+
+
 }

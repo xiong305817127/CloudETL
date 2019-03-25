@@ -1,4 +1,3 @@
-import com.github.pagehelper.PageInfo;
 import com.idatrix.unisecurity.auditLog.service.AuditLogService;
 import com.idatrix.unisecurity.common.domain.AuditLog;
 import com.idatrix.unisecurity.common.domain.URole;
@@ -23,9 +22,9 @@ public class TransactionTest {
 
     @Test
     public void findPage(){
-        AuditLogService service = applicationContext.getBean(AuditLogService.class);
+        /*AuditLogService service = applicationContext.getBean(AuditLogService.class);
         PageInfo<AuditLog> pageInfo = service.findPage(1, 10);
-        System.out.println(pageInfo);
+        System.out.println(pageInfo);*/
     }
 
     @Test

@@ -5,10 +5,7 @@ import com.idatrix.resource.basedata.service.ISystemConfigService;
 import com.idatrix.resource.catalog.dao.ResourceConfigDAO;
 import com.idatrix.resource.catalog.po.ResourceConfigPO;
 import com.idatrix.resource.common.cache.SequenceNumberManager;
-import com.idatrix.resource.common.utils.CommonConstants;
-import com.idatrix.resource.common.utils.DateTools;
-import com.idatrix.resource.common.utils.FileUtils;
-import com.idatrix.resource.common.utils.UserUtils;
+import com.idatrix.resource.common.utils.*;
 import com.idatrix.resource.datareport.dao.DataUploadDAO;
 import com.idatrix.resource.datareport.dao.DataUploadDetailDAO;
 import com.idatrix.resource.datareport.po.DataUploadDetailPO;
@@ -19,6 +16,7 @@ import com.idatrix.resource.exchange.exception.RequestDataException;
 import com.idatrix.resource.exchange.po.ExchangeSubscribeInfoPO;
 import com.idatrix.resource.exchange.po.ExchangeSubscribeTaskPO;
 import com.idatrix.resource.exchange.service.IExchangeSubscribeService;
+import com.idatrix.resource.exchange.vo.request.ETLFileInfo;
 import com.idatrix.resource.exchange.vo.request.ExchangeSubscribeVO;
 import com.idatrix.resource.exchange.vo.request.LocalFileInfo;
 import com.idatrix.resource.taskmanage.dao.SubTaskDAO;
@@ -34,18 +32,14 @@ import com.ys.idatrix.cloudetl.subscribe.api.dto.SubscribeResultDto;
 import com.ys.idatrix.cloudetl.subscribe.api.dto.parts.FileTransmitDto;
 import com.ys.idatrix.cloudetl.subscribe.api.dto.parts.OutputFieldsDto;
 import com.ys.idatrix.cloudetl.subscribe.api.dto.parts.SearchFieldsDto;
-import com.ys.idatrix.cloudetl.subscribe.api.dto.step.SftpPutDto;
-import com.ys.idatrix.cloudetl.subscribe.api.dto.step.StepDto;
-import com.ys.idatrix.cloudetl.subscribe.api.dto.step.TableInputDto;
-import com.ys.idatrix.cloudetl.subscribe.api.dto.step.TableOutputDto;
+import com.ys.idatrix.cloudetl.subscribe.api.dto.step.*;
 import com.ys.idatrix.cloudetl.subscribe.api.service.SubscribeService;
-import com.ys.idatrix.db.proxy.api.hdfs.HdfsUnrestrictedDao;
-import com.ys.idatrix.metacube.api.bean.base.BaseResult;
-import com.ys.idatrix.metacube.api.bean.cloudetl.DataBaseInfo;
-import com.ys.idatrix.metacube.api.bean.dataswap.*;
-import com.ys.idatrix.metacube.api.service.cloudetl.CloudETLService;
-import com.ys.idatrix.metacube.api.service.dataswap.DataSwapService;
-import org.apache.commons.io.IOUtils;
+import com.ys.idatrix.db.api.hdfs.service.HdfsUnrestrictedService;
+import com.ys.idatrix.metacube.api.beans.MetadataDTO;
+import com.ys.idatrix.metacube.api.beans.ResultBean;
+import com.ys.idatrix.metacube.api.beans.dataswap.*;
+import com.ys.idatrix.metacube.api.service.MetadataToDataSwapService;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,16 +49,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.ys.idatrix.metacube.api.bean.dataswap.AuthorizedFlowType.SUBSCRIBED;
+import static com.ys.idatrix.metacube.api.beans.dataswap.AuthorizedFlowType.SUBSCRIBED;
+
 
 /**
  * 神马订阅交换实现
@@ -89,8 +81,8 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
     @Autowired
     private TerminalManageDAO terminalManageDAO;
 
-    @Autowired
-    private DataSwapService metacubeCatalogService;
+    @Autowired(required=false)
+    private MetadataToDataSwapService metacubeCatalogService;
 
     @Autowired
     private SubscribeService subscribeService;
@@ -105,9 +97,6 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
     private ExchangeSubscribeInfoDAO exchangeInfoDAO;
 
     @Autowired
-    private CloudETLService cloudETLService;
-
-    @Autowired
     private OrganizationService organizationService;
 
     @Autowired
@@ -120,7 +109,7 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
     private DataUploadDetailDAO dataUploadDetailDAO;
 
     @Autowired
-    private HdfsUnrestrictedDao hdfsUnDaoHessian;
+    private HdfsUnrestrictedService hdfsUnDaoHessian;
 
     @Autowired
     private ExchangeSubscribeTaskDAO exchangeSubscribeTaskDAO;
@@ -150,16 +139,17 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
     /*和第三方系统对接资源信息编码前缀*/
     @Value("${resource.code.prefix}")
     private String resourceCodePrefix = "330003";
+    /*ETL处理时候将HDFS文件下载到本地然后进行传输*/
+    @Value("${etl.local.dir}")
+    private String etlLocalDir="/data/sftp/";
 
 
-
-    /*
-    *   根据获取的数据库资料测试数据库联调和表权限
-    *
-    *   @param type表示数据库类型：接口定义为DM_DATABASE、Oracle、MySql、PostgreSql
-    *
-    *
-    */
+    /**
+     *  根据获取的数据库资料测试数据库联调和表权限
+     * @param exchangeVO type表示数据库类型：接口定义为DM_DATABASE、Oracle、MySql、PostgreSql
+     * @return
+     * @throws Exception
+     */
     private boolean getDbLinkTest(ExchangeSubscribeVO exchangeVO) throws Exception{
 
         //有效值检测
@@ -196,7 +186,12 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
         return true;
     }
 
-    /*将接口的数据库类型转换成系统能够处理的数据库类型*/
+
+    /**
+     *   将接口的数据库类型转换成系统能够处理的数据库类型
+     * @param type
+     * @return
+     */
     String getLocalDbType(String type){
 
         //数据库匹配
@@ -229,6 +224,20 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
     }
 
 
+    private  boolean getDBDataValid(ExchangeSubscribeVO exchangeVO){
+        if(StringUtils.isEmpty(exchangeVO.getDbIp()) ||
+            StringUtils.isEmpty(exchangeVO.getDbUser()) ||
+                StringUtils.isEmpty(exchangeVO.getDbPassword())||
+                    StringUtils.isEmpty(exchangeVO.getDbSchemaName()) ||
+                        StringUtils.isEmpty(exchangeVO.getDbTableName()) ||
+                            StringUtils.isEmpty(exchangeVO.getDbName()) ||
+                                StringUtils.isEmpty(exchangeVO.getDbType())
+                ){
+            return false;
+        }
+        return true;
+    }
+
     private  boolean getDataValid(ExchangeSubscribeVO exchangeVO){
         if(StringUtils.isEmpty(exchangeVO.getResourceCode()) ||
             StringUtils.isEmpty(exchangeVO.getResourceType()) ||
@@ -257,7 +266,7 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
         }
 
         List<Integer> parentIds = userService.findParentIdsByUnifiedCreditCode(deptUnifiedCreditCode, rentId);
-        if(parentIds==null || parentIds.size()==0){
+        if(CollectionUtils.isEmpty(parentIds)){
             throw new InnerTerminalConfigException("第三方用户调用部门编码没有入库，部门编码 " + deptUnifiedCreditCode
                     + "用户名为 "+userUtils.getCurrentUserName()); //数据不完整
         }
@@ -271,7 +280,7 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
 
 
     @Override
-    public void processExchange(String user, ExchangeSubscribeVO exchangeSubscribeVO) throws Exception {
+    public void processExchange(Long rentId, String user, ExchangeSubscribeVO exchangeSubscribeVO) throws Exception {
 
         String resourceType = exchangeSubscribeVO.getResourceType();
 
@@ -304,35 +313,43 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
 
         //考虑   我们系统资源信息编码="前缀码"+九次方资源信息编码，需要区分是本系统还是在第三方系统里面有记录
         String localResourceCode = resourceCodePrefix+exchangeSubscribeVO.getResourceCode();
-        ResourceConfigPO rcPO = resourceConfigDAO.getConfigByResourceCode(localResourceCode);
+        ResourceConfigPO rcPO = resourceConfigDAO.getConfigByResourceCodeAndRentId(rentId, localResourceCode);
         if(rcPO!=null){
             if(StringUtils.equalsIgnoreCase(resourceType, "db")){
                 sourceTableId = rcPO.getBindTableId();
                 if(sourceTableId==null || sourceTableId.equals(0L)){
-                    throw new RequestDataException("交换传输参数为db类型，本系统内部记录类型是 "+rcPO.getFormatType()+"，没有配置绑定的物理表信息，" +
+                    throw new RequestDataException("交换传输参数为db类型，本系统内部记录类型是 "+
+                            ResourceTools.FormatType.getFormatInfoZH(rcPO.getFormatType()) +" ，没有配置绑定的物理表信息，" +
                             "请和本系统相关人员核对资源目录信息内容");
                 }
                 destMetaId = creatFrontDBMetaId(user, sourceTableId, organization);
-                etlID = creatExchangeSubscribeTask(exchangeSubscribeVO, user, organization,
+                etlID = creatExchangeSubscribeTask(exchangeInfoPO, organization,
                         sourceTableId, (long)destMetaId, rcPO.getId(), thirdSubsribeNum);
             }else{
-                etlID = creatExchangeSubscribeTask(exchangeSubscribeVO, user, organization, 0L, 0L, rcPO.getId(),
+                if(ResourceTools.FormatType.getFormatType(rcPO.getFormatType())== ResourceTools.FormatType.DB){
+                    throw new RequestDataException("交换传输参数为file类型，本系统内部记录类型是 "+
+                            ResourceTools.FormatType.getFormatInfoZH(rcPO.getFormatType())+",请和本系统相关人员核对资源目录信息内容");
+                }
+
+                etlID = creatExchangeSubscribeTask(exchangeInfoPO, organization, 0L, 0L, rcPO.getId(),
                         thirdSubsribeNum);
             }
 
             //TODO：在系统内容有的信息资源目录生成订阅记录方便查询
 
-
-
         }else{
             if(StringUtils.equalsIgnoreCase(resourceType, "file") ){
                 throw new RequestDataException("交换传输参数为file类型，本系统内部记录没有对应文件记录，请和本系统相关人员核对资源目录信息内容"); //数据不完整
             }else if(StringUtils.equalsIgnoreCase(resourceType, "db")){
+
+                if(!getDBDataValid(exchangeSubscribeVO)){
+                    throw new RequestDataException("交换传输参数为db类型，本系统内部不存在该资源目录信息，但是请求的数据库信息不够完整"); //数据不完整
+                }
                 //调用元数据中接口 采集传过来数据表结构 生成元数据
                 sourceTableId = (long)getMetaIdByCollection(user, exchangeSubscribeVO);
                 destMetaId = creatFrontDBMetaId(user, sourceTableId, organization);
-                etlID = creatExchangeSubscribeTask(exchangeSubscribeVO, user, organization,
-                        sourceTableId, (long)destMetaId, rcPO.getId(), thirdSubsribeNum);
+                etlID = creatExchangeSubscribeTask(exchangeInfoPO, organization,
+                        sourceTableId, (long)destMetaId, 0L, thirdSubsribeNum);
             }
         }
 
@@ -352,6 +369,7 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
             subTaskPO.setSubTaskId(subNum);
             subTaskPO.setSrcMetaId(sourceTableId);
             subTaskPO.setDestMetaId((long)destMetaId);
+            subTaskPO.setRentId(rentId);
             subTaskPO.setCreator(user);
             subTaskPO.setModifier(user);
             subTaskPO.setCreateTime(new Date());
@@ -373,6 +391,13 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
         }
     }
 
+    /**
+     * 通过神州数码传过来的订阅信息，进行数据库表直采生成元数据 metaId
+     * @param user
+     * @param exchangeSubscribeVO
+     * @return
+     * @throws Exception
+     */
     private int getMetaIdByCollection(String user, ExchangeSubscribeVO exchangeSubscribeVO) throws Exception{
         ExternalTableCollection tableCollection = new ExternalTableCollection();
         tableCollection.setDbIp(exchangeSubscribeVO.getDbIp());
@@ -385,11 +410,11 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
         tableCollection.setDbSchemaName(exchangeSubscribeVO.getDbSchemaName());
         tableCollection.setDbTableName(exchangeSubscribeVO.getDbTableName());
         LOG.info("元数据采集调用参数："+ tableCollection.toString());
-        CollectExternalTableResult result = metacubeCatalogService.collectExternalTable(tableCollection);
+        ResultBean<CollectExternalTableResult> result= metacubeCatalogService.collectExternalTable(tableCollection);
         if(!result.isSuccess()){
-            throw new Exception("元数据采集参数，失败原因："+result.getMessage());
+            throw new Exception("元数据采集参数，失败原因："+result.getMsg());
         }
-        return result.getMetaId();
+        return result.getData().getMetaId();
     }
 
 
@@ -405,75 +430,74 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
     private int creatFrontDBMetaId(String user, Long bindTableId, Organization organization)throws Exception{
 
         int destMetaId = 0;
-
         TerminalManagePO tmPO = terminalManageDAO.getTerminalManageRecordByDeptId(organization.getId());
         if(tmPO==null){
             throw new InnerTerminalConfigException("第三方订阅交换部门前置机没有配置,部门名称为 "+ organization.getDeptName()
-            + " 部门租户为 " + organization.getRenterName());
+            + " ,部门租户ID为 " + organization.getRenterId());
         }
 
        //获取元数据字段
         List<MetadataField> metadataOriginFields = new ArrayList<MetadataField>();
-        QueryMetadataFieldsResult metaResult = metacubeCatalogService.getMetadataFieldsByMetaId(bindTableId.intValue());
+        ResultBean<QueryMetadataFieldsResult> metaResult = metacubeCatalogService.getMetadataFieldsByMetaId(bindTableId.intValue());
         if(metaResult.isSuccess()){
-            metadataOriginFields = metaResult.getMetadataField();
+            metadataOriginFields = metaResult.getData().getMetadataField();
         }else{
-            throw new Exception("第三方订阅交换获取字段失败 "+metaResult.getMessage());
+            throw new Exception("第三方订阅交换获取字段失败 "+metaResult.getMsg());
         }
-
 
         //获取前置机数据数据库，并且创建表格
         MetadataTable meta = new MetadataTable();
         meta.setMetaid(bindTableId.intValue());  //需要复制的元数据ID
-
-        Long deptId =Long.valueOf(tmPO.getDeptFinalId());
-        Long dsId = Long.valueOf(tmPO.getTmDBId());
         //参数dsId和storeDatabase 存储一个值
-        meta.setDsId(dsId.intValue());
-        meta.setDsId(dsId.intValue());
-        meta.setDept("[\""+deptId+"\"]");
+        meta.setSchemeId(Long.valueOf(tmPO.getSchemaId()));
 
-        //默认使用订阅部门目录填报员用户
-        meta.setOwner(user);
-        meta.setCreator(user);
-
-        //增加schema概念，在前置机复制数据库时，需要传schema参数
-        if(StringUtils.isNotEmpty(tmPO.getSchemaName())) {
-            meta.setSchema(tmPO.getSchemaName());
+        //获取上次MetaId
+        Long deptId =Long.valueOf(tmPO.getDeptFinalId());
+        Long lastMetaId = exchangeSubscribeTaskDAO.getMaxDestMetaId(bindTableId, deptId);
+        if(lastMetaId==null || lastMetaId.equals(0L)){
+            lastMetaId = -1L;
         }
+        meta.setPreviousMetaid(lastMetaId.intValue());
 
         //获取前置机数据数据库，并且创建表格
-        SubscribeCrtTbResult tbResult = metacubeCatalogService.createTableBySubscribe(user, meta, metadataOriginFields);
-        if(tbResult.isSuccess() || tbResult.isHasExists()){
-            destMetaId = tbResult.getMetaId();
+        ResultBean<SubscribeCrtTbResult> tbResult = metacubeCatalogService.createTableBySubscribe(user, meta, metadataOriginFields);
+        if(tbResult.isSuccess()){
+            destMetaId = tbResult.getData().getMetaId();
         }else{
             String tmInfo = "前置机地址："+ tmPO.getTmIP() + "，前置机名称："+ tmPO.getTmName() + " ,订阅方部门："+tmPO.getDeptName()
                     + " ,数据库类型：" + tmPO.getTmDBType() + " ,绑定数据库：" + tmPO.getTmDBName();
 
-            LOG.error(DateTools.formatDate(new Date())+"-在部门前置机上创建数据表失败,失败原因: "+ tbResult.getMessage());
-            throw new Exception("第三方订阅交换复制数据库表异常，在部门前置机上创建数据表失败,失败原因: "+ tbResult.getMessage()+"。" +
+            LOG.error(DateTools.formatDate(new Date())+"-在部门前置机上创建数据表失败,失败原因: "+ tbResult.getMsg());
+            throw new Exception("第三方订阅交换复制数据库表异常，在部门前置机上创建数据表失败,失败原因: "+ tbResult.getMsg()+"。" +
                     tmInfo);
         }
 
         //创建完表格时候，对中心库进行授权
-        BaseResult baseResult = metacubeCatalogService.authorizedTableForUser(user, bindTableId.intValue(),
-                deptId.intValue(), SUBSCRIBED);
+        ResultBean<Boolean> baseResult = metacubeCatalogService.authorizedTableForUser(user, bindTableId.intValue(),
+                tmPO.getDeptCode(), SUBSCRIBED);
         if(!baseResult.isSuccess()){
-            throw new Exception("第三方订阅交换异常，资源对应数据表授权失败，失败原因："+baseResult.getMessage());
+            throw new Exception("第三方订阅交换异常，资源对应数据表授权失败，失败原因："+baseResult.getMsg());
         }
         return destMetaId;
     }
 
-    private String getDescpt(ExchangeSubscribeVO exSVO){
-        return exSVO.getResourceType()+"-"+exSVO.getDbIp()+":"+exSVO.getDbPort()+"-"+exSVO.getDbName()
-                +"-("+exSVO.getDbSchemaName()+")-"+exSVO.getDbTableName();
+    private String getDescpt(ExchangeSubscribeInfoPO taskPO){
+        return taskPO.getResourceType()+"-"+taskPO.getDbIp()+":"+taskPO.getDbPort()+"-"+taskPO.getDbName()
+                +"-("+taskPO.getDbSchemaName()+")-"+taskPO.getDbTableName();
     }
 
 
-    private SftpPutDto getFileExchanageDto(Long resourceId, Long deptId) throws Exception{
+    private FileCopyDto getFileExchanageDto(Long resourceId, Long deptId) throws Exception{
+
+        /*文件拷贝到HDFS上由原来文件名变成实际名*/
+        ETLFileInfo etlFileInfo = getETLFileInfo(resourceId);
+
+        FileCopyDto fileCopyDto = new FileCopyDto();
+        fileCopyDto.setDestinationIsAfile(true);
+        fileCopyDto.setFiles(etlFileInfo.getFileTransList());
+
 
         SftpPutDto sftpPutDto = new SftpPutDto();
-
         sftpPutDto.setServerName(sftpServiceIp);
         sftpPutDto.setServerPort(sftpServicePort);
         sftpPutDto.setUserName(sftpServiceUser);
@@ -485,48 +509,55 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
         if(staffUser!=null){
             deptUserName = staffUser.getUsername();
         }
-        String destDir =sftpServiceDir+ File.separator + deptUserName;
+        String destDir =sftpServiceDir + deptUserName;
         sftpPutDto.setSftpDirectory(destDir);
 
         //文件路径mask,需要先下载到本地，然后上传到sftp里面去
-        LocalFileInfo fileInfo = getLocalTransferFileDir(resourceId);
+        LocalFileInfo fileInfo = etlFileInfo.getLocalFileInfo();
         if(fileInfo==null || fileInfo.getFileMask()==null){
             return null;
         }
         sftpPutDto.setLocalDirectory(fileInfo.getFileDir());
         sftpPutDto.setFileMask(fileInfo.getFileMask());
-        return sftpPutDto;
+
+        fileCopyDto.addNextStepDto(sftpPutDto);
+        return fileCopyDto;
     }
 
 
     //创建交换任务，使用同步方式
-    private String creatExchangeSubscribeTask(ExchangeSubscribeVO exSVO, String user, Organization organization,
+    private String creatExchangeSubscribeTask(ExchangeSubscribeInfoPO taskInfoPO, Organization organization,
                                               Long sourceMetaId,Long destMetaId, Long resourceId, Long thirdSubsribeNum) throws Exception{
 
         Long deptId = organization.getId();
         String deptName = organization.getDeptName();
 
-        ExchangeSubscribeTaskPO exchangeTaskPO = new ExchangeSubscribeTaskPO(exSVO, user, deptId, deptName);
+        ExchangeSubscribeTaskPO exchangeTaskPO = new ExchangeSubscribeTaskPO(taskInfoPO, deptId, deptName);
 
         //交换任务描述
+        String user = taskInfoPO.getCreator();
         StringBuilder descpt = new StringBuilder(user+"-");
-        descpt.append(getDescpt(exSVO));
+        descpt.append(getDescpt(taskInfoPO));
         String userName = user;   //采用数据上报创建者作为ETL任务的userId, ETL的任务号作为ETL的名字
 
         NumberFormat f=new DecimalFormat("00000000");
         String subNum = CommonConstants.PREFIX_SUBSCRIBE+ f.format(thirdSubsribeNum);
+        exchangeTaskPO.setId(taskInfoPO.getId());
         exchangeTaskPO.setSeq(thirdSubsribeNum);
         exchangeTaskPO.setSubNo(subNum);
+        exchangeTaskPO.setSrcMetaId(sourceMetaId);
+        exchangeTaskPO.setDestMetaId(destMetaId);
+        exchangeSubscribeTaskDAO.insert(exchangeTaskPO);
 
 
         String jobName = subNum;
         String prefix = "THIRD-PART-EXCHANGE-";
-        String group = prefix+exSVO.getResourceType().toUpperCase();
+        String group = prefix+taskInfoPO.getResourceType().toUpperCase();
         CreateJobDto createJobDto = new CreateJobDto(userName, jobName, group, descpt.toString());
 
         try {
             List<StepDto> tableList = new ArrayList<>();
-            if(StringUtils.equalsIgnoreCase("db", exSVO.getResourceType())) {
+            if(StringUtils.equalsIgnoreCase("db", taskInfoPO.getResourceType())) {
                 TableInputDto tableInputDto = assembleTableInputDtoParams(sourceMetaId);
                 createJobDto.setDataInput(tableInputDto);
 
@@ -536,8 +567,8 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
 
             }else{
                 List<FileTransmitDto> targetList = new ArrayList<FileTransmitDto>();
-                SftpPutDto sftpPutDto = getFileExchanageDto(resourceId, deptId);
-                tableList.add(sftpPutDto);
+                FileCopyDto fileCopyDto = getFileExchanageDto(resourceId, deptId);
+                tableList.add(fileCopyDto);
                 createJobDto.setJobDataOutputs(tableList);
             }
         } catch (NullPointerException e) {
@@ -551,7 +582,6 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
         String etlSubscribeId = null;
         if (subscribeResultDto.getStatus() == 0) {
             etlSubscribeId = subscribeResultDto.getSubscribeId();
-            exchangeSubscribeTaskDAO.insert(exchangeTaskPO);
             LOG.info("数据交换记录" + subscribeResultDto.getName() +
                     "创建ETL任务-subscribeId" + etlSubscribeId );
         } else {
@@ -560,9 +590,12 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
         return etlSubscribeId;
     }
 
-    /*HDFS文件传输的时候，先将文件下载到本地，然后在使用sftp上传到前置机部门目录下面*/
-    private LocalFileInfo getLocalTransferFileDir(Long resourceId) throws Exception{
 
+    /*HDFS文件传输的时候，先将文件下载到本地，然后在使用sftp上传到前置机部门目录下面*/
+    private ETLFileInfo getETLFileInfo(Long resourceId) throws Exception{
+
+        ETLFileInfo etlInfo = new ETLFileInfo();
+        List<FileTransmitDto> fileInfoList = new ArrayList<>();
         LocalFileInfo fileInfo = new LocalFileInfo();
 
         //用户上传路径和文件名称
@@ -577,66 +610,114 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
         }
 
         /*本地文件名称为: */
+        String filePath = etlLocalDir+FileUtils.getFileDirName();
+        fileInfo.setFileDir(filePath);
+
         List<DataUploadDetailPO> dataUploadPOList = dataUploadDetailDAO.getUploadDetailsByResourceId(resourceId);
         if(dataUploadPOList!=null && dataUploadPOList.size()>0){
-            String localFileDir = FileUtils.createUpdateDirByInfo().getPath();
-            fileInfo.setFileDir(localFileDir);
 
-            List<String> localFileList = new ArrayList<>();
-            StringBuilder fileMask = new StringBuilder();
-            for(DataUploadDetailPO dataPO:dataUploadPOList){
-                String fileName = dataPO.getPubFileName();
-                String downFileName = hdfsDir+dataPO.getOriginFileName();
-                localFileList.add(fileName);
-                fileMask.append(fileName+"|");
+           List<String> localFileList = new ArrayList<>();
+           StringBuilder fileMask = new StringBuilder();
+           for(DataUploadDetailPO dataPO:dataUploadPOList){
 
-                InputStream inputStream = null;
-                try {
+               String fileName = dataPO.getPubFileName();
+               String downFileName = hdfsDir+dataPO.getOriginFileName();
+               localFileList.add(fileName);
+               fileMask.append(fileName+"|");
 
-                    inputStream = hdfsUnDaoHessian.downloadFileByStream(downFileName);
-                    if (null == inputStream) {
-                        LOG.error("第三方订阅交换文件下载失败，请确定文件是否不存在 "+downFileName);
-                        throw new InnerTerminalConfigException("文件下载失败，请确定文件是否不存在 "+downFileName);
-                    }
-                }catch (Exception e){
-                    e.printStackTrace();
-                    LOG.error("第三方订阅交换文件下载出现异常："+e.getMessage());
-                    throw new InnerTerminalConfigException("文件下载出现异常："+e.getMessage());
-                }
-
-                FileOutputStream out;
-                String localFileName = localFileDir+File.separator+fileName;
-                try {
-                    out = new FileOutputStream(localFileName);
-                    IOUtils.copy(inputStream, out);
-                    out.flush();
-                    out.close();
-                } catch (IOException e) {
-                    LOG.error("第三方订阅交换文件下载后拷贝失败", e);
-                    throw new RuntimeException("第三方订阅交换文件下载后拷贝失败" + e.getMessage());
-                }
-            }
-            fileInfo.setFileNameList(localFileList);
-            fileInfo.setFileMask(fileMask.substring(0, fileMask.length()-1));
+               String destFile = filePath+File.separator+fileName;
+               FileTransmitDto fileTrans = new FileTransmitDto(downFileName, destFile);
+               fileTrans.setDestinationName("local");
+               fileInfoList.add(fileTrans);
+           }
+           fileInfo.setFileNameList(localFileList);
+           fileInfo.setFileMask(fileMask.substring(0, fileMask.length()-1));
         }else{
             LOG.info("第三方订阅交换，该资源目录下已经上传的文件数据为空");
+            return etlInfo;
         }
-        return fileInfo;
+        etlInfo.setFileTransList(fileInfoList);
+        etlInfo.setLocalFileInfo(fileInfo);
+        return etlInfo;
     }
+
+    /*HDFS文件传输的时候，先将文件下载到本地，然后在使用sftp上传到前置机部门目录下面*/
+//    private LocalFileInfo getLocalTransferFileDir(Long resourceId) throws Exception{
+//
+//        LocalFileInfo fileInfo = new LocalFileInfo();
+//
+//        //用户上传路径和文件名称
+//        ResourceConfigPO rcPO = resourceConfigDAO.getConfigById(resourceId);
+//        if(rcPO==null){
+//            throw new InnerTerminalConfigException("第三方订阅交换资源信息目录不存在，resourceId="+resourceId);
+//        }
+//        String hdfsDir = null;
+//        SystemConfigPO sysConf = systemConfigService.getSystemConfigByUser(rcPO.getCreator());
+//        if(sysConf!=null){
+//            hdfsDir = sysConf.getFileRoot();
+//        }
+//
+//        /*本地文件名称为: */
+//        List<DataUploadDetailPO> dataUploadPOList = dataUploadDetailDAO.getUploadDetailsByResourceId(resourceId);
+//        if(dataUploadPOList!=null && dataUploadPOList.size()>0){
+//            String localFileDir = FileUtils.createUpdateDirByInfo().getPath();
+//            fileInfo.setFileDir(localFileDir);
+//
+//            List<String> localFileList = new ArrayList<>();
+//            StringBuilder fileMask = new StringBuilder();
+//            for(DataUploadDetailPO dataPO:dataUploadPOList){
+//                String fileName = dataPO.getPubFileName();
+//                String downFileName = hdfsDir+dataPO.getOriginFileName();
+//                localFileList.add(fileName);
+//                fileMask.append(fileName+"|");
+//
+//                InputStream inputStream = null;
+//                try {
+//
+//                    inputStream = hdfsUnDaoHessian.downloadFileByStream(downFileName);
+//                    if (null == inputStream) {
+//                        LOG.error("第三方订阅交换文件下载失败，请确定文件是否不存在 "+downFileName);
+//                        throw new InnerTerminalConfigException("文件下载失败，请确定文件是否不存在 "+downFileName);
+//                    }
+//                }catch (Exception e){
+//                    e.printStackTrace();
+//                    LOG.error("第三方订阅交换文件下载出现异常："+e.getMessage());
+//                    throw new InnerTerminalConfigException("文件下载出现异常："+e.getMessage());
+//                }
+//
+//                FileOutputStream out;
+//                String localFileName = localFileDir+File.separator+fileName;
+//                try {
+//                    out = new FileOutputStream(localFileName);
+//                    IOUtils.copy(inputStream, out);
+//                    out.flush();
+//                    out.close();
+//                } catch (IOException e) {
+//                    LOG.error("第三方订阅交换文件下载后拷贝失败", e);
+//                    throw new RuntimeException("第三方订阅交换文件下载后拷贝失败" + e.getMessage());
+//                }
+//            }
+//            fileInfo.setFileNameList(localFileList);
+//            fileInfo.setFileMask(fileMask.substring(0, fileMask.length()-1));
+//        }else{
+//            LOG.info("第三方订阅交换，该资源目录下已经上传的文件数据为空");
+//        }
+//        return fileInfo;
+//    }
 
 
     private TableInputDto assembleTableInputDtoParams(Long metaId) throws Exception {
 
-        DataBaseInfo dataBaseInfo = cloudETLService.getDbInfoByMetaId(metaId);
-        LOG.info("第三方交换Input使用元数据信息： {}", dataBaseInfo.toString());
-
         TableInputDto tableInputDto = new TableInputDto();
-        String connection = dataBaseInfo.getName();
-        String schema = dataBaseInfo.getSchema();
-
-        tableInputDto.setConnection(connection);
-        tableInputDto.setSchema(schema);
-        tableInputDto.setTable(dataBaseInfo.getTableName());
+        ResultBean<MetadataDTO> respon = metacubeCatalogService.findTableInfoByID(metaId);
+        if(!respon.isSuccess()){
+            LOG.error("元数据表metaId "+metaId+",获取元数据信息失败："+respon.getMsg());
+            throw new Exception("元数据表metaId "+metaId+",获取元数据信息失败："+respon.getMsg());
+        }
+        MetadataDTO metadataDTO = respon.getData();
+        tableInputDto.setSchemaId(new Long(metadataDTO.getSchemaId()));
+        tableInputDto.setTableId(new Long(metadataDTO.getMetaId()));
+        tableInputDto.setTable(metadataDTO.getMetaName());
 
         SearchFieldsDto primaryKey = new SearchFieldsDto();
         List<OutputFieldsDto> outputFields = new ArrayList<OutputFieldsDto>();
@@ -651,23 +732,24 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
     /*订阅时候，1.就是使用表复制，所有表内容内容是否重复需要在源表保证。 2.无从知道表里面主键结构。 直接使用TableOutputDto结构*/
     private TableOutputDto assembleInsertUpdateDto(Long metaId)throws Exception {
 
-        DataBaseInfo dataBaseInfo = cloudETLService.getDbInfoByMetaId(metaId);
-        LOG.info("第三方订阅交换配置任务InsertUpdate使用元数据信息： {}", dataBaseInfo.toString());
         TableOutputDto tableOutputDto = new TableOutputDto();
-        String connection = dataBaseInfo.getName();
-        String schema = dataBaseInfo.getSchema();
-
-        tableOutputDto.setConnection(connection);
-        tableOutputDto.setSchema(schema);
-        tableOutputDto.setTable(dataBaseInfo.getTableName());
+        ResultBean<MetadataDTO> respon = metacubeCatalogService.findTableInfoByID(metaId);
+        if(!respon.isSuccess()){
+            LOG.error("元数据表metaId "+metaId+",获取元数据信息失败："+respon.getMsg());
+            throw new Exception("元数据表metaId "+metaId+",获取元数据信息失败："+respon.getMsg());
+        }
+        MetadataDTO metadataDTO = respon.getData();
+        tableOutputDto.setSchemaId(new Long(metadataDTO.getSchemaId()));
+        tableOutputDto.setTableId(new Long(metadataDTO.getMetaId()));
+        tableOutputDto.setTable(metadataDTO.getMetaName());
 
         List<OutputFieldsDto> outputFields = new ArrayList<OutputFieldsDto>();
         List<MetadataField> metadataOriginFields = new ArrayList<MetadataField>();
-        QueryMetadataFieldsResult metaResult = metacubeCatalogService.getMetadataFieldsByMetaId(metaId.intValue());
+        ResultBean<QueryMetadataFieldsResult> metaResult = metacubeCatalogService.getMetadataFieldsByMetaId(metaId.intValue());
         if(metaResult.isSuccess()){
-            metadataOriginFields = metaResult.getMetadataField();
+            metadataOriginFields = metaResult.getData().getMetadataField();
         }else{
-            LOG.error("第三方订阅交换获取资源绑定元数据结构异常：metaId {},错误原因：{}", metaId, metaResult.getMessage());
+            LOG.error("第三方订阅交换获取资源绑定元数据结构异常：metaId {},错误原因：{}", metaId, metaResult.getMsg());
             throw new Exception("第三方订阅交换获取资源绑定元数据结构异常：metaId"+metaId);
         }
 
@@ -687,11 +769,11 @@ public class ExchangeSubscribeServiceImpl implements IExchangeSubscribeService {
     private List<String> getSpecilFiled(Long metaId)throws Exception{
 
         List<MetadataField> metadataOriginFields = new ArrayList<MetadataField>();
-        QueryMetadataFieldsResult metaResult = metacubeCatalogService.getMetadataFieldsByMetaId(metaId.intValue());
+        ResultBean<QueryMetadataFieldsResult> metaResult = metacubeCatalogService.getMetadataFieldsByMetaId(metaId.intValue());
         if(metaResult.isSuccess()){
-            metadataOriginFields = metaResult.getMetadataField();
+            metadataOriginFields = metaResult.getData().getMetadataField();
         }else{
-            LOG.error("第三方订阅交换获取资源绑定元数据结构异常：metaId {},错误原因：{}", metaId, metaResult.getMessage());
+            LOG.error("第三方订阅交换获取资源绑定元数据结构异常：metaId {},错误原因：{}", metaId, metaResult.getMsg());
             throw new Exception("第三方订阅交换获取资源绑定元数据结构异常：metaId"+metaId);
         }
 

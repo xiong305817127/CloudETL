@@ -32,4 +32,8 @@ public class MetadataSearchVo extends SearchVO {
     @ApiModelProperty("所属组织代码")
     private String regCode;
 
+    /**es 搜索定义**/
+    @ApiModelProperty("数据库id")
+    private Long dbId;
+
 }

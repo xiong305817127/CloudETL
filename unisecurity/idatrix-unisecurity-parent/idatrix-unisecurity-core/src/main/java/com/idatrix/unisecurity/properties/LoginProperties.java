@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 /**
  * 登录有关的一些属性配置
  * @ClassName LoginProperties
- * @Description TODO
+ * @Description
  * @Author ouyang
  * @Date 2018/9/28 14:10
  * @Version 1.0

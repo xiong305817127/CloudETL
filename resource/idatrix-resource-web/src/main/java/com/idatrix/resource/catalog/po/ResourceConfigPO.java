@@ -1,5 +1,7 @@
 package com.idatrix.resource.catalog.po;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
@@ -7,6 +9,7 @@ import java.util.Date;
  * @Author: Wangbin
  * @Date: 2018/5/23
  */
+@Data
 public class ResourceConfigPO
 {
     /*资源ID（自动增加）*/
@@ -91,6 +94,9 @@ public class ResourceConfigPO
     /*状态(0.草稿 1.退回修改2.注册审核拒绝10.待注册审核19.已注册20.待发布审核22.发布审核拒绝23.取消发布29.发布) */
     private String status;
 
+    /*租户ID，用户租户隔离*/
+    private Long rentId;
+
     private Date createTime;
 
     private String creator;
@@ -99,284 +105,5 @@ public class ResourceConfigPO
 
     private String updater;
 
-    public String getLibTableId() {
-        return libTableId;
-    }
 
-    public void setLibTableId(String libTableId) {
-        this.libTableId = libTableId;
-    }
-
-    public String getDeptNameIds() {
-        return deptNameIds;
-    }
-
-    public void setDeptNameIds(String deptNameIds) {
-        this.deptNameIds = deptNameIds;
-    }
-
-    public String getCatalogFullName() {
-        return catalogFullName;
-    }
-
-    public void setCatalogFullName(String catalogFullName) {
-        this.catalogFullName = catalogFullName;
-    }
-
-    public String getStatus() { return status; }
-
-    public void setStatus(String status) { this.status = status; }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getCatalogCode() {
-        return catalogCode;
-    }
-
-    public void setCatalogCode(String catalogCode) {
-        this.catalogCode = catalogCode;
-    }
-
-    public String getSeqNum() {
-        return seqNum;
-    }
-
-    public void setSeqNum(String seqNum) {
-        this.seqNum = seqNum;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
-    public String getDeptName() {
-        return deptName;
-    }
-
-    public void setDeptName(String deptName) {
-        this.deptName = deptName;
-    }
-
-    public String getDeptCode() {
-        return deptCode;
-    }
-
-    public void setDeptCode(String deptCode) {
-        this.deptCode = deptCode;
-    }
-
-    public String getResourceAbstract() {
-        return resourceAbstract;
-    }
-
-    public void setResourceAbstract(String resourceAbstract) {
-        this.resourceAbstract = resourceAbstract;
-    }
-
-    public String getKeyword() {
-        return keyword;
-    }
-
-    public void setKeyword(String keyword) {
-        this.keyword = keyword;
-    }
-
-    public int getFormatType() {
-        return formatType;
-    }
-
-    public void setFormatType(int formatType) {
-        this.formatType = formatType;
-    }
-
-    public String getFormatInfo() {
-        return formatInfo;
-    }
-
-    public void setFormatInfo(String formatInfo) {
-        this.formatInfo = formatInfo;
-    }
-
-    public String getFormatInfoExtend() {
-        return formatInfoExtend;
-    }
-
-    public void setFormatInfoExtend(String formatInfoExtend) {
-        this.formatInfoExtend = formatInfoExtend;
-    }
-
-    public int getShareType() {
-        return shareType;
-    }
-
-    public void setShareType(int shareType) {
-        this.shareType = shareType;
-    }
-
-    public String getShareCondition() {
-        return shareCondition;
-    }
-
-    public void setShareCondition(String shareCondition) {
-        this.shareCondition = shareCondition;
-    }
-
-    public int getShareMethod() {
-        return shareMethod;
-    }
-
-    public void setShareMethod(int shareMethod) {
-        this.shareMethod = shareMethod;
-    }
-
-    public int getOpenType() {
-        return openType;
-    }
-
-    public void setOpenType(int openType) {
-        this.openType = openType;
-    }
-
-    public String getOpenCondition() {
-        return openCondition;
-    }
-
-    public void setOpenCondition(String openCondition) {
-        this.openCondition = openCondition;
-    }
-
-    public int getRefreshCycle() {
-        return refreshCycle;
-    }
-
-    public void setRefreshCycle(int refreshCycle) {
-        this.refreshCycle = refreshCycle;
-    }
-
-    public Date getPubDate() {
-        return pubDate;
-    }
-
-    public void setPubDate(Date pubDate) {
-        this.pubDate = pubDate;
-    }
-
-    public String getRelationCode() {
-        return relationCode;
-    }
-
-    public void setRelationCode(String relationCode) {
-        this.relationCode = relationCode;
-    }
-
-    public Long getBindTableId() {
-        return bindTableId;
-    }
-
-    public void setBindTableId(Long bindTableId) {
-        this.bindTableId = bindTableId;
-    }
-
-    public Long getBindServiceId() {
-        return bindServiceId;
-    }
-
-    public void setBindServiceId(Long bindServiceId) {
-        this.bindServiceId = bindServiceId;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public String getUpdater() {
-        return updater;
-    }
-
-    public void setUpdater(String updater) {
-        this.updater = updater;
-    }
-
-    @Override
-    public String toString() {
-        return "ResourceConfigPO{" +
-                "id=" + id +
-                ", catalogFullName='" + catalogFullName + '\'' +
-                ", catalogCode='" + catalogCode + '\'' +
-                ", seqNum='" + seqNum + '\'' +
-                ", code='" + code + '\'' +
-                ", name='" + name + '\'' +
-                ", remark='" + remark + '\'' +
-                ", deptName='" + deptName + '\'' +
-                ", deptCode='" + deptCode + '\'' +
-                ", deptNameIds='" + deptNameIds + '\'' +
-                ", resourceAbstract='" + resourceAbstract + '\'' +
-                ", keyword='" + keyword + '\'' +
-                ", formatType=" + formatType +
-                ", formatInfo='" + formatInfo + '\'' +
-                ", formatInfoExtend='" + formatInfoExtend + '\'' +
-                ", shareType=" + shareType +
-                ", shareCondition='" + shareCondition + '\'' +
-                ", shareMethod=" + shareMethod +
-                ", openType=" + openType +
-                ", openCondition='" + openCondition + '\'' +
-                ", refreshCycle=" + refreshCycle +
-                ", pubDate=" + pubDate +
-                ", relationCode='" + relationCode + '\'' +
-                ", bindTableId=" + bindTableId +
-                ", bindServiceId=" + bindServiceId +
-                ", libTableId='" + libTableId + '\'' +
-                ", status='" + status + '\'' +
-                ", createTime=" + createTime +
-                ", creator='" + creator + '\'' +
-                ", updateTime=" + updateTime +
-                ", updater='" + updater + '\'' +
-                '}';
-    }
 }

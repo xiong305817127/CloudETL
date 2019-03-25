@@ -1,0 +1,228 @@
+.rowHeader{
+  height: 200px;
+}
+.HeaderRow{
+  height: 42px;
+  line-height: 42px;
+  margin-top: 42px;
+}
+
+.HeaderRow:hover{
+  color: white;
+  cursor: pointer;
+}
+
+
+#MenuStyle  :global(.ant-menu-item-selected) > :global(a){
+   color:white;
+}
+#MenuStyle  :global(.ant-menu-item-selected) > :global(a):hover{
+  color:white;
+}
+
+
+/*中间部分*/
+.rowContent{
+  padding: 15px 40px 15px 20px;
+  border-bottom: 1px solid  #d7dee1;
+}
+/*状态*/
+.status{
+  margin: 10px 0;
+}
+.circle{
+  margin-top: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 100%;
+}
+
+
+/*菜单列表*/
+
+.Sider .DataSystem .Col1{
+  font-size: 12px;
+  line-height: 12px;
+  background: url("../../image/App/change_black.png");
+  background-size: 100% 100%;
+}
+
+.Sider .DataSystemClick{
+  background: #12b9d2;
+  color: white;
+}
+
+.Sider .DataSystemClick .Col1{
+  font-size: 12px;
+  line-height: 12px;
+  background: url("../../image/App/change.png");
+  background-size: 100% 100%;
+}
+
+
+.Sider .Server .Col1{
+  font-size: 12px;
+  line-height: 12px;
+  background: url("../../image/App/server_feil_black.png");
+  background-size: 100% 100%;
+}
+
+.Sider .ServerClick{
+  background: #12b9d2;
+  color: white;
+}
+.Sider .ServerClick .Col1{
+  font-size: 12px;
+  line-height: 12px;
+  background: url("../../image/App/server_feil.png");
+  background-size: 100% 100%;
+}
+
+.Sider .Cluster .Col1{
+  font-size: 12px;
+  line-height: 12px;
+  background: url("../../image/App/serer_black.png");
+  background-size: 100% 100%;
+}
+
+.Sider .ClusterClick{
+  background: #12b9d2;
+  color: white;
+}
+.Sider .ClusterClick .Col1{
+  font-size: 12px;
+  line-height: 12px;
+  background: url("../../image/App/server.png");
+  background-size: 100% 100%;
+}
+
+.Sider .HadoopCluster .Col1{
+  font-size: 12px;
+  line-height: 12px;
+  background: url("../../image/App/hadoop_black.png");
+  background-size: 100% 100%;
+}
+
+.Sider .HadoopClusterClick{
+  background: #12b9d2;
+  color: white;
+}
+.Sider .HadoopClusterClick .Col1{
+  font-size: 12px;
+  line-height: 12px;
+  background: url("../../image/App/hadoop.png");
+  background-size: 100% 100%;
+}
+
+.Sider .SparkEngine .Col1{
+  font-size: 12px;
+  line-height: 12px;
+  background: url("../../image/App/interaction_spark_black.png");
+  background-size: 100% 100%;
+}
+
+.Sider .SparkEngineClick{
+  background: #12b9d2;
+  color: white;
+}
+.Sider .SparkEngineClick .Col1{
+  font-size: 12px;
+  line-height: 12px;
+  background: url("../../image/App/interaction_spark.png");
+   background-size: 100% 100%;
+}
+
+.Sider .ExecutionEngine .Col1{
+  font-size: 12px;
+  line-height: 12px;
+  background: url("../../image/App/interaction_spark_black.png");
+   background-size: 100% 100%;
+}
+
+.Sider .ExecutionEngineClick{
+  background: #12b9d2;
+  color: white;
+}
+.Sider .ExecutionEngineClick .Col1{
+  font-size: 12px;
+  line-height: 12px;
+  background: url("../../image/App/interaction_spark.png");
+   background-size: 100% 100%;
+}
+
+#components-layout-demo-side .logo {
+  height: 32px;
+  background: #d8dfe7;
+  border-radius: 6px;
+  margin: 16px;
+}
+
+:global(#ResourceList .ant-layout-sider){
+  background: #d8dfe7;
+}
+.MenuHost{
+  background: #EAEFF3;
+  height: 100%;
+  padding:50px 0;
+}
+#MenuStyle{
+  flex: 0;
+  width: 100%;
+}
+
+/*点击收缩图标样式*/
+.Sider  :global(.ant-layout-sider-trigger){
+  top:0;
+  background: #D8DFE7;
+}
+.Sider :global(.anticon-left):before{
+  width: 12px;
+  height: 14px;
+   background: url("../../image/App/icon.png") no-repeat;
+   background-size: 100% 100%;
+   content: "";
+   color: #d8dfe7;
+}
+.Sider :global(.anticon-right):before {
+  width: 12px;
+  height: 14px;
+   background: url("../../image/App/icon_black.png") no-repeat;
+  background-size: 100% 100%;
+   content: "";
+   color: #d8dfe7;
+}
+
+
+
+
+ .Sider{
+  align-items: stretch;
+  background: #e9f0f3;
+   height: 100%;
+}
+
+
+:global(#resourceSlider .ant-layout-sider-children){
+   height: 100%;
+ }
+
+.Sider  :global(.ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected){
+   background: #12b9d2;
+  height: 100%;
+}
+
+.Sider  :global(.ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected){
+  background: #12b9d2;
+  height: 42px;
+}
+
+
+/*未选中hover*/
+.Sider  :global(.ant-menu-item-active):hover{
+  color: inherit;
+   /* color: #fff;*/
+}
+/*选中hover*/
+:global(#resourceSlider)  .Sider  :global(.ant-menu-item-selected):hover{
+  color: white;
+}

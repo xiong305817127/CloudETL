@@ -1,53 +1,26 @@
 package com.idatrix.resource.catalog.service.Impl;
 
-import static com.idatrix.resource.common.utils.ResourceTools.FormatType.DB;
-import static com.idatrix.resource.common.utils.ResourceTools.FormatType.SERVICE_INTERFACE;
-import static com.idatrix.resource.common.utils.ResourceTools.ResourceStatus.PUB_SUCCESS;
-import static com.idatrix.resource.subscribe.utils.SubscribeStatusEnum.FAILED;
-import static com.idatrix.resource.subscribe.utils.SubscribeStatusEnum.SUCCESS;
-
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.idatrix.resource.catalog.dao.CatalogNodeDAO;
-import com.idatrix.resource.catalog.dao.DeptLimitedDAO;
-import com.idatrix.resource.catalog.dao.MonthStatisticsDAO;
-import com.idatrix.resource.catalog.dao.ResourceConfigDAO;
-import com.idatrix.resource.catalog.dao.ResourceStatisticsDAO;
+import com.google.common.collect.Lists;
+import com.idatrix.resource.catalog.dao.*;
 import com.idatrix.resource.catalog.es.bean.EsResultBean;
 import com.idatrix.resource.catalog.es.bean.EsResultBean.HitsBean;
 import com.idatrix.resource.catalog.es.bean.EsResultBean.HitsBean.HighlightBean;
 import com.idatrix.resource.catalog.es.utils.ElasticsearchUtil;
-import com.idatrix.resource.catalog.po.CatalogNodePO;
-import com.idatrix.resource.catalog.po.DeptLimitedPO;
-import com.idatrix.resource.catalog.po.MonthStatisticsPO;
-import com.idatrix.resource.catalog.po.ResourceConfigPO;
-import com.idatrix.resource.catalog.po.ResourceStatisticsPO;
+import com.idatrix.resource.catalog.po.*;
 import com.idatrix.resource.catalog.service.IOverviewService;
 import com.idatrix.resource.catalog.vo.MonthStatisticsVO;
 import com.idatrix.resource.catalog.vo.ResourceConfigVO;
 import com.idatrix.resource.catalog.vo.ResourceOverviewVO;
 import com.idatrix.resource.catalog.vo.ResourceStatisticsVO;
 import com.idatrix.resource.catalog.vo.request.ResourceCatalogSearchVO;
-import com.idatrix.resource.common.utils.CommonUtils;
-import com.idatrix.resource.common.utils.DateTools;
-import com.idatrix.resource.common.utils.LibInfo;
-import com.idatrix.resource.common.utils.ResourceTools;
-import com.idatrix.resource.common.utils.ResultPager;
+import com.idatrix.resource.common.utils.*;
 import com.idatrix.resource.subscribe.dao.SubscribeDAO;
 import com.idatrix.resource.subscribe.po.SubscribePO;
 import com.idatrix.unisecurity.api.domain.Organization;
 import com.idatrix.unisecurity.api.domain.User;
 import com.idatrix.unisecurity.api.service.UserService;
-import com.idatrix.unisecurity.sso.client.UserHolder;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,6 +30,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static com.idatrix.resource.common.utils.ResourceTools.FormatType.SERVICE_INTERFACE;
+import static com.idatrix.resource.common.utils.ResourceTools.ResourceStatus.PUB_SUCCESS;
+import static com.idatrix.resource.subscribe.utils.SubscribeStatusEnum.FAILED;
+import static com.idatrix.resource.subscribe.utils.SubscribeStatusEnum.SUCCESS;
 
 /**
  * Created by Robin Wing on 2018-5-29.
@@ -107,12 +89,15 @@ public class OverviewServiceImpl implements IOverviewService {
     @Autowired
     private DeptLimitedDAO deptLimitedDAO;
 
+    @Autowired
+    private UserUtils userUtils;
+
     @Value("${is_use_full_text_search}")
     private Boolean isUseFullTextSearch;
 
     @Override
-    public MonthStatisticsVO getOverall() {
-        MonthStatisticsPO msPO = monthStatisticsDAO.getAllCount();
+    public MonthStatisticsVO getOverall(Long rentId) {
+        MonthStatisticsPO msPO = monthStatisticsDAO.getAllCountByRendId(rentId);
 
         MonthStatisticsVO rsVO = new MonthStatisticsVO();
         String name = "all";
@@ -135,9 +120,9 @@ public class OverviewServiceImpl implements IOverviewService {
     }
 
     @Override
-    public List<ResourceStatisticsVO> getLatestResourceInfo(Long num) {
+    public List<ResourceStatisticsVO> getLatestResourceInfo(Long rentId, Long num) {
         List<ResourceStatisticsPO> rsPoList = new ArrayList<ResourceStatisticsPO>();
-        rsPoList = resourceStatisticsDAO.getLatest(num);
+        rsPoList = resourceStatisticsDAO.getLatestByRentId(rentId, num);
         return transferResourceStatisticsPoToVo(rsPoList);
     }
 
@@ -173,10 +158,10 @@ public class OverviewServiceImpl implements IOverviewService {
     }
 
     @Override
-    public List<MonthStatisticsVO> getMonthlyTotalAmount(int months) {
+    public List<MonthStatisticsVO> getMonthlyTotalAmount(Long rentId, int months) {
 
         List<MonthStatisticsVO> targetList = new ArrayList<MonthStatisticsVO>();
-        List<MonthStatisticsPO> statisticslist = monthStatisticsDAO.getMonthlyTotalAmount(months);
+        List<MonthStatisticsPO> statisticslist = monthStatisticsDAO.getMonthlyTotalAmountByRentId(rentId, months);
 
         List<String> monthList = CommonUtils.getRecentMonthStr(months);
         for (String month : monthList) {
@@ -184,7 +169,7 @@ public class OverviewServiceImpl implements IOverviewService {
             boolean ownFlag = false;
             MonthStatisticsVO mvo = new MonthStatisticsVO();
             mvo.setMonthName(CommonUtils.formatMonthStr(month));
-            if (statisticslist != null && statisticslist.size() > 0) {
+            if (CollectionUtils.isNotEmpty(statisticslist)) {
                 for (MonthStatisticsPO model : statisticslist) {
                     if (StringUtils.equals(model.getMonth(), month)) {
                         ownFlag = true;
@@ -291,13 +276,13 @@ public class OverviewServiceImpl implements IOverviewService {
                 high.add(PATTERN.matcher(content.get(i)).replaceAll(""));
             }
             vo.setHighlight(high);
+
         }
     }
 
     @Override
     public ResultPager<ResourceOverviewVO> getLibResourcesByCondition(String resourceStatus,
-            Map<String, String> conditionMap,
-            Integer pageNum, Integer pageSize) {
+            Map<String, String> conditionMap, Integer pageNum, Integer pageSize)throws Exception {
         pageNum = null == pageNum ? 1 : pageNum;
         pageSize = null == pageSize ? 10 : pageSize;
 
@@ -309,9 +294,9 @@ public class OverviewServiceImpl implements IOverviewService {
             libValue = LibInfo.getLibValue(libName);
         }
 
-        List<CatalogNodePO> catalogNodeList = catalogNodeDAO.getCatalogByParentId(0L);  //父节点为0的基础库
+        List<CatalogNodePO> catalogNodeList = catalogNodeDAO.getCatalogByParentId(Long.valueOf(conditionMap.get("rentId")), 0L);  //父节点为0的基础库
         if (catalogNodeList == null && catalogNodeList.size() <= 0) {
-            throw new RuntimeException(LibInfo.getLibNameZH(libName) + "没有配置");
+            throw new Exception(LibInfo.getLibNameZH(libName) + "没有配置");
         }
         Long catalogId = null;
         for (CatalogNodePO cnPO : catalogNodeList) {
@@ -320,7 +305,7 @@ public class OverviewServiceImpl implements IOverviewService {
             }
         }
         if (catalogId == null) {
-            throw new RuntimeException(LibInfo.getLibNameZH(libName) + "没有配置");
+            throw new Exception(LibInfo.getLibNameZH(libName) + "没有配置");
         }
         conditionMap.put("catalogId", catalogId.toString());
         PageHelper.startPage(pageNum, pageSize);
@@ -339,14 +324,46 @@ public class OverviewServiceImpl implements IOverviewService {
         return transferRCPoToOverviewVO("lastest", rcPoList);
     }
 
-    /*返回订阅标志Flag-0表示没有订阅权限，1表示可以订阅，2，表示已经订阅*/
-    private int getSubscribeFlag(ResourceConfigPO rcPO) {
+
+    /**
+     * 根据用户和资源ID判断是否有订阅权限
+     * @param user
+     * @param resourceId
+     * @return 订阅标志Flag-0表示没有订阅权限，1表示可以订阅，2，表示已经订阅
+     */
+    public int getSubscribeFlagByUserAndResourceId(String user, Long resourceId){
+        int flag = 1;
+        if(StringUtils.isNotEmpty(user)) {
+            User userInfo = userService.findByUserName(user);
+            if(userInfo!=null) {
+                ResourceConfigPO rcPO = resourceConfigDAO.getConfigById(resourceId);
+                flag = getSubscribeFlag(userInfo.getUsername(), userInfo.getId(), rcPO);
+            }
+        }
+        return flag;
+    }
+
+
+
+    /**
+     *  根据当前用户信息和资源信息判断是否有订阅权限
+     * @param user  当前用户信息
+     * @param userId  当前用户信息
+     * @param rcPO     资源信息
+     * @return 订阅标志Flag-0表示没有订阅权限，1表示可以订阅，2，表示已经订阅
+     */
+    private int getSubscribeFlag(String user, Long userId, ResourceConfigPO rcPO) {
+
         int flag = 0;  //0表示没有订阅权限
-        Long resourceId = rcPO.getId();
+        if(StringUtils.isEmpty(user)||userId.equals(0L)){
+            flag = 1;
+            return flag;
+        }
 
         //发布用户即为当前用户时候，不可以订阅，因为没意义
+        Long resourceId = rcPO.getId();
         String creatUser = rcPO.getCreator();
-        String user = (String) UserHolder.getUser().getProperty("username");
+//        String user = (String)ssoUser.getProperty("username");
         if(StringUtils.equalsIgnoreCase(creatUser, user)){
             return flag;
         }
@@ -371,10 +388,24 @@ public class OverviewServiceImpl implements IOverviewService {
             resourceCreaterDeptId = Long.valueOf(depts[depts.length - 1]);
         }
 
-        Long userId = Long.valueOf(UserHolder.getUser().getId());
+
+        String deptResourceProvide = rcPO.getDeptNameIds();
+        Long deptProvide = 0L;
+        if(deptResourceProvide.indexOf(",")>0){
+            List<String> deptList = Lists.newArrayList(deptResourceProvide.split(","));
+            deptProvide = Long.valueOf(deptList.get(deptList.size()-1));
+        }
+
+
+//        Long userId = Long.valueOf(ssoUser.getId());
         Organization organization = userService.getUserOrganizationByUserId(userId);
         Long deptId = organization.getId();
-        if (deptId.equals(resourceCreaterDeptId)) {
+        /*之前是对比 用户当前所在 和 资源创建者所在用户部门*/
+//        if (deptId.equals(resourceCreaterDeptId)) {
+//            return flag;
+//        }
+
+        if(deptId.equals(deptProvide)){
             return flag;
         }
 
@@ -390,10 +421,11 @@ public class OverviewServiceImpl implements IOverviewService {
             List<DeptLimitedPO> detpPoList = deptLimitedDAO.getByResourceId(resourceId);
             if (detpPoList != null && detpPoList.size() > 0) {
                 for (DeptLimitedPO deptPo : detpPoList) {
-                    if (deptPo.getDeptId() == deptId) {
+                    if (deptPo.getDeptId().equals(deptId)) {
                         deptFlag = true;
                         break;
                     }
+
                 }
             }
             if (!deptFlag) {
@@ -404,24 +436,24 @@ public class OverviewServiceImpl implements IOverviewService {
         /*根据用户审批历史限制是否可以继续审批资源*/
         flag = 1; //进行到这里表示用户可以订阅
 
-        List<SubscribePO> sPoList = subscribeDAO.getByResourceIdAndProposer(resourceId, user);
-        if (sPoList != null && sPoList.size() > 0) {
-            for (SubscribePO subPO : sPoList) {
-                String status = subPO.getStatus();
-                if (StringUtils.equals(status, SUCCESS.getStatus())) {
-                    Date nowTime = new Date();
-                    Date endTime = subPO.getEndDate();
-                    if (endTime.after(nowTime)) {
-                        flag = 2;
-                    }
-                } else if (StringUtils.equals(status, FAILED.getStatus())) {
-                    //订阅状态为失败的时候 ，可以直接重新订阅
-                } else {
-                    //草稿状态时候，如果有相同直接返回
-                    flag = 2;
-                }
-            }
-        }
+//        List<SubscribePO> sPoList = subscribeDAO.getByResourceIdAndProposer(resourceId, user);
+//        if (CollectionUtils.isNotEmpty(sPoList)) {
+//            for (SubscribePO subPO : sPoList) {
+//                String status = subPO.getStatus();
+//                if (StringUtils.equals(status, SUCCESS.getStatus())) {
+//                    Date nowTime = new Date();
+//                    Date endTime = subPO.getEndDate();
+//                    if (endTime.after(nowTime)) {
+//                        flag = 2;
+//                    }
+//                } else if (StringUtils.equals(status, FAILED.getStatus())) {
+//                    //订阅状态为失败的时候 ，可以直接重新订阅
+//                } else {
+//                    //草稿状态时候，如果有相同直接返回
+//                    flag = 2;
+//                }
+//            }
+//        }
         return flag;
     }
 
@@ -438,7 +470,9 @@ public class OverviewServiceImpl implements IOverviewService {
             rcOverviewVO.setResourceName(rcPO.getName());
 
             //获取用户是否能够继续订阅
-            rcOverviewVO.setSubscribeFlag(getSubscribeFlag(rcPO));
+            int flag = getSubscribeFlag(userUtils.getCurrentUserName(),
+                    Long.valueOf(userUtils.getCurrentUserId()), rcPO);
+            rcOverviewVO.setSubscribeFlag(flag);
 
             if (StringUtils.isNotEmpty(libType)) {
                 rcOverviewVO.setLibType(libType);
@@ -476,7 +510,6 @@ public class OverviewServiceImpl implements IOverviewService {
                 }
                 rcOverviewVO.setUpdateTime(updateTime);
             }
-
             rcOvervieweList.add(rcOverviewVO);
         }
         return rcOvervieweList;

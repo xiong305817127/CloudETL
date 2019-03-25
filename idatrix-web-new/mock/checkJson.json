@@ -1,0 +1,7 @@
+{
+	"code":30,
+	"data":[
+		{"status":"待注册审批","checkStatus":"退回修改","checker":"李XX","checkTime":"yyyy-mm-dd hh:MM:ss","checkAction":"不同意","advice":"XXXXXXXxxxxxx"},
+		{"status":"待注册审批","checkStatus":"已注册","checker":"李XX","checkTime":"yyyy-mm-dd hh:MM:ss","checkAction":"同意","advice":"XXXXXXXxxxxxx"}
+	]
+}

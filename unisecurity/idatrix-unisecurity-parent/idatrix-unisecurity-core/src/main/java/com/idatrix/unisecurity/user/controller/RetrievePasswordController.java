@@ -7,6 +7,7 @@ import com.idatrix.unisecurity.common.enums.ResultEnum;
 import com.idatrix.unisecurity.common.exception.SecurityException;
 import com.idatrix.unisecurity.common.utils.Constants;
 import com.idatrix.unisecurity.common.utils.EmailUtil;
+import com.idatrix.unisecurity.common.utils.EncryptUtil;
 import com.idatrix.unisecurity.common.utils.ResultVoUtils;
 import com.idatrix.unisecurity.common.vo.ResultVo;
 import com.idatrix.unisecurity.core.jedis.JedisClient;
@@ -137,7 +138,14 @@ public class RetrievePasswordController {
 
     // 生成邮件ID，保证不重复
     private int generateEmailId() {
-        if (!jedisClient.exists(emailProperties.getEmailLogIdKey())) {
+        int maxId = maiLogMapper.getMaxId();
+        if (maxId == 0) {
+            return 1;
+        } else {
+            maxId += 1;
+            return maxId;
+        }
+        /*if (!jedisClient.exists(emailProperties.getEmailLogIdKey())) {
             // redis中没有id，先判断数据库中是否有值
             Integer maxId = maiLogMapper.getMaxId();
             if (maxId == null || maxId == 0) {
@@ -147,7 +155,7 @@ public class RetrievePasswordController {
                 jedisClient.set(emailProperties.getEmailLogIdKey(), maxId + "");
             }
         }
-        return jedisClient.incr(emailProperties.getEmailLogIdKey()).intValue();
+        return jedisClient.incr(emailProperties.getEmailLogIdKey()).intValue();*/
     }
 
     /**
@@ -214,24 +222,24 @@ public class RetrievePasswordController {
                                                    @NotBlank(message = "新密码是不能为空的") String newPassword,
                                                    @NotBlank(message = "确认密码是不能为空的") String confirmPassword) throws Exception {
         logger.debug("retrievePasswordController 重置密码 start");
-        logger.debug("params : newPassword =" + newPassword + ",username =" + username + ",email=" + email +
-                ",confirmPassword = " + confirmPassword);
+        logger.debug("username：{}, newPassword：{}, email：{}, confirmPassword：{}", username, newPassword, email, confirmPassword);
         UUser user = userService.getUserByUsername(username);
         if (user == null) {
-            logger.debug("用户不存在!");
-            throw new SecurityException(ResultEnum.PARAM_ERROR.getCode(), "用户不存在！！！");
+            throw new SecurityException(ResultEnum.PARAM_ERROR.getCode(), "用户不存在");
         }
 
         // 新密码与确认密码校验
         if (!newPassword.equals(confirmPassword)) {
-            logger.debug("新密码与确认密码不一致!");
-            throw new SecurityException(ResultEnum.PARAM_ERROR.getCode(), "新密码与确认密码不一致！！！");
+            throw new SecurityException(ResultEnum.PARAM_ERROR.getCode(), "新密码与确认密码不一致");
         }
+
+        // 先对密码解密，采用可解密的加密
+        newPassword = EncryptUtil.getInstance().strDec(newPassword, username, email, null);
 
         // 旧密码
         String oldPsw = user.getPswd();
         // 新密码与旧密码校验
-        if (newPassword.equals(user.getPswd())) {
+        if (newPassword.equals(UserManager.md5Pswd(newPassword))) {
             logger.debug("新密码与旧密码相同！！！");
             throw new SecurityException(ResultEnum.PARAM_ERROR.getCode(), "新密码与源密码不能相同！！！");
         }

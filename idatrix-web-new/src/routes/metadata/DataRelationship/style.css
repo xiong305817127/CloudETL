@@ -1,0 +1,71 @@
+.DataRelationshipManagement{
+  position: relative;
+  background-color: #fff;
+  padding: 20px 10px;
+}
+
+.xuanzebumen{
+/*  position: absolute;
+  left:1000px;
+  top:30px;
+*/}
+
+.search{
+  height: 38px;
+  width: 60px;
+  border: 0px;
+  background-color: #fff;
+  border-radius: 0 5px 5px 0;
+}
+
+.DataRelationshipManagement{
+   /*  width: 140%; 
+   height: 44rem; */
+    overflow-y: scroll;
+    overflow-x: scroll;
+  /*   margin-top: 30%; */
+}
+.DataRelationshipManagementStyle{
+    height: 37rem;
+    width: 15%;
+    position: absolute;
+    overflow-y: scroll;
+    overflow-x: scroll;
+   /*  margin-top: 14%; */
+}
+
+.DataRelationshipManagement :global(.ant-input-group-addon){
+  padding:0px;
+}
+
+.DataRelationshipManagement :global(.ant-input-group){
+  width: 600px !important;
+  /*left: 400px !important;*/
+  top: 0 !important;
+  margin-left: 50px;
+  margin-bottom: 30px;
+}
+
+.DataRelationshipManagement :global(.ant-input-group){
+  /*left:20%;*/
+}
+
+.DataRelationshipManagement :global(.ant-input-group > .ant-input-affix-wrapper:not(:last-child) .ant-input){
+  height: 40px;
+  padding-left: 40px;
+}
+
+.DataRelationshipManagement :global(.ant-input-prefix) {
+  font-size: 21px;
+}
+.BoxP{
+  float: left;
+  margin-right: 22px;
+}
+.GetFil{
+     float: right;
+    width: 86%;
+    outline: coral;
+ }
+ #drag:hover{cursor:Move}   
+     

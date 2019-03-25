@@ -1,3 +1,4 @@
+import com.alibaba.fastjson.JSONObject;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,11 +77,18 @@ public class RestTemplateTest {
         }
     }
 
-    /*@Test
-    public void test3() {
-        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:spring/applicationContext-*.xml");
-        UserInfoSyncService userInfoSyncService = (UserInfoSyncService) applicationContext.getBean("userInfoSyncService");
-        System.out.println("aaaaaaaaaaaaaa");
-    }*/
-
+    @Test
+    public void test4() {
+        RestTemplate restTemplate = applicationContext.getBean(RestTemplate.class);
+        JSONObject json = new JSONObject();
+        json.put("firstname", "韩立");
+        json.put("lastname", "韩立");
+        json.put("username", "hanli");
+        json.put("password", "a123456");
+        json.put("active", 1);
+        json.put("email", "123456@qq.com");
+        JSONObject responseJson = restTemplate.postForEntity("http://192.168.19.61:8099/bi/abUser/save", json, JSONObject.class).getBody();
+        Integer code = (Integer) responseJson.get("code");
+        System.out.println(code);
+    }
 }

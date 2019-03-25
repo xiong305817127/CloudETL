@@ -1,6 +1,5 @@
 package com.ys.idatrix.metacube.metamanage.service.impl;
 
-import com.alibaba.dubbo.config.annotation.Reference;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Preconditions;
@@ -12,21 +11,25 @@ import com.idatrix.es.api.dto.req.index.MappingDto;
 import com.idatrix.es.api.dto.req.index.NewIndexDto;
 import com.idatrix.es.api.dto.resp.RespResult;
 import com.idatrix.es.api.enums.FieldType;
-import com.idatrix.es.api.service.IIndexManageService;
+import com.idatrix.unisecurity.api.domain.Organization;
+import com.idatrix.unisecurity.api.service.OrganizationService;
 import com.ys.idatrix.metacube.api.beans.PageResultBean;
 import com.ys.idatrix.metacube.common.enums.EsAnalyzerEnum;
 import com.ys.idatrix.metacube.common.enums.EsFieldTypeEnum;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
 import com.ys.idatrix.metacube.common.utils.UserUtils;
 import com.ys.idatrix.metacube.common.utils.XStringUtils;
+import com.ys.idatrix.metacube.dubbo.consumer.EsConsumer;
 import com.ys.idatrix.metacube.metamanage.domain.*;
 import com.ys.idatrix.metacube.metamanage.mapper.*;
 import com.ys.idatrix.metacube.metamanage.service.EsIndexService;
 import com.ys.idatrix.metacube.metamanage.service.MetadataService;
 import com.ys.idatrix.metacube.metamanage.service.TagService;
-import com.ys.idatrix.metacube.metamanage.service.ThemeService;
 import com.ys.idatrix.metacube.metamanage.vo.request.EsIndexVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo;
+import com.ys.idatrix.metacube.metamanage.vo.request.SchemaSearchVO;
+import com.ys.idatrix.metacube.metamanage.vo.response.SchemaVO;
+import com.ys.idatrix.metacube.sysmanage.service.ThemeService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -76,17 +79,16 @@ public class EsIndexServiceImpl implements EsIndexService {
     @Autowired
     private MetadataService metadataService;
 
-    @Reference
-    private IIndexManageService indexManageService;
+    @Autowired(required = false)
+    private OrganizationService organizationService;
+
+    @Autowired
+    private EsConsumer esConsumer;
 
     @Override
     public PageResultBean<EsMetadataPO> search(MetadataSearchVo searchVo) {
 
         Preconditions.checkNotNull(searchVo, "请求参数为空");
-
-        if (searchVo.getRenterId() == null) {
-            searchVo.setRenterId(UserUtils.getRenterId());
-        }
 
         // 分页
         PageHelper.startPage(searchVo.getPageNum(), searchVo.getPageSize());
@@ -102,17 +104,47 @@ public class EsIndexServiceImpl implements EsIndexService {
 
 
     @Override
+    public List<SchemaVO> queryEsSchema(SchemaSearchVO searchVO, Long schemaId) {
+        List<McSchemaPO> schemaList = mcSchemaMapper.listByPage(searchVO);
+        List<SchemaVO> schemaRespList = null;
+        if (CollectionUtils.isNotEmpty(schemaList)) {
+            schemaRespList = schemaList.stream().filter(vo -> {
+                try {
+                    if (null != schemaId) {
+                        if (vo.getId().equals(schemaId)) {
+                            return true;
+                        }
+                    }
+                    return !checkExistsIndex(vo.getId(), vo.getName(), false);
+                } catch (Exception e) {
+                    return false;
+                }
+            }).map(vo -> {
+                SchemaVO schemaVO = new SchemaVO();
+                schemaVO.setSchemaId(vo.getId());
+                schemaVO.setSchemaName(vo.getName());
+                schemaVO.setDeptName(getDeptNamesByCode(vo.getOrgCode()));
+                return schemaVO;
+            }).collect(Collectors.toList());
+        }
+
+        return schemaRespList;
+
+    }
+
+
+    @Override
     public EsIndexVO queryEsDetail(Long metaId) {
 
         //查询基本信息
         EsMetadataPO esMetadataPO = esMetadataMapper.selectByPrimaryKey(metaId);
-
         //查询字段信息
         List<EsFieldPO> esFieldPOList = esFieldMapper.queryFieldsByIndexId(metaId);
 
         EsIndexVO esIndexVO = new EsIndexVO();
         BeanUtils.copyProperties(esMetadataPO, esIndexVO);
 
+        esIndexVO.setDatabaseType(8);
         esIndexVO.setFieldPOList(esFieldPOList);
 
         metadataService.wrapMetadataBaseVO(esIndexVO);
@@ -147,7 +179,7 @@ public class EsIndexServiceImpl implements EsIndexService {
 
         //es 物理是否存在
         if (!isDrafted) {
-            RespResult<Boolean> result = indexManageService.hasExistsIndex(schemaName);
+            RespResult<Boolean> result = esConsumer.hasExistsIndex(schemaName);
             if (result.isSuccess()) {
                 if (result.getData()) {
                     throw new MetaDataException("ES索引库中已存在该索引");
@@ -164,46 +196,26 @@ public class EsIndexServiceImpl implements EsIndexService {
 
     @Transactional(rollbackFor = {RuntimeException.class, SQLException.class})
     @Override
-    public boolean saveOrCreatedIndex(EsIndexVO esIndexVO, boolean isDrafted) {
+    public boolean saveIndexDraftedOrCreated(EsIndexVO esIndexVO, boolean isUpdated, boolean isDrafted) {
 
-        checkExistsIndex(esIndexVO.getSchemaId(), esIndexVO.getSchemaName(), isDrafted);
-
-        validatedBaseAndField(esIndexVO);
-
-        esIndexVO.setSchemaName(getSchemaName(esIndexVO.getSchemaId()));
-
-        wrapPrepIndexFields(esIndexVO, true);
-
-        if (isDrafted) {
-            esIndexVO.setStatus(0);
-            processSaveToDB(esIndexVO, false, false);
-        } else {
-            esIndexVO.setStatus(1);
-            processSaveToDB(esIndexVO, true, false);
-        }
-
-        return true;
-
-    }
-
-
-    @Transactional(rollbackFor = {RuntimeException.class, SQLException.class})
-    @Override
-    public boolean updateIndex(EsIndexVO esIndexVO) {
-
-        if (null == esIndexVO.getId()) {
-            throw new MetaDataException("修改记录主键标识空值");
+        if (!isUpdated) {
+            checkExistsIndex(esIndexVO.getSchemaId(), esIndexVO.getSchemaName(), isDrafted);
         }
 
         validatedBaseAndField(esIndexVO);
 
         esIndexVO.setSchemaName(getSchemaName(esIndexVO.getSchemaId()));
 
-        wrapPrepIndexFields(esIndexVO, false);
+        wrapPrepIndexFields(esIndexVO, isUpdated, isDrafted);
 
-        processSaveToDB(esIndexVO, true, true);
+        if (!isUpdated) {
+            esIndexVO.setStatus(isDrafted ? 0 : 1);
+        }
+
+        processSaveToDB(esIndexVO, isUpdated, isDrafted);
 
         return true;
+
     }
 
 
@@ -215,9 +227,17 @@ public class EsIndexServiceImpl implements EsIndexService {
         for (Long id : ids) {
 
             EsMetadataPO metadata = esMetadataMapper.selectByPrimaryKey(id);
+            int maxVersion = metadata.getMaxVersion();
             String indexName = getSchemaName(metadata.getSchemaId());
+            List<String> indices = Lists.newArrayList();
+            for (int i = 1; i <= maxVersion; i++) {
+                String indexFullName = indexName + "_" + i;
+                if(esConsumer.hasExistsIndex(indexFullName).getData()) {
+                    indices.add(indexName + "_" + i);
+                }
+            }
 
-            RespResult<Boolean> result = indexManageService.deleteIndex(Lists.newArrayList(indexName));
+            RespResult<Boolean> result = esConsumer.deleteIndex(indices);
             if (!result.isSuccess()) {
                 throw new MetaDataException(result.getMsg());
             }
@@ -247,7 +267,7 @@ public class EsIndexServiceImpl implements EsIndexService {
         EsMetadataPO metadata = esMetadataMapper.selectByPrimaryKey(id);
         String indexName = getSchemaName(metadata.getSchemaId());
 
-        RespResult<Boolean> result = indexManageService.openOrStopIndex(indexName, isOpen);
+        RespResult<Boolean> result = esConsumer.openOrStopIndex(indexName, isOpen);
         if (!result.isSuccess()) {
             throw new MetaDataException(result.getMsg());
         } else {
@@ -261,10 +281,15 @@ public class EsIndexServiceImpl implements EsIndexService {
 
 
     @Override
-    public List<Map<Long, Integer>> queryVersionsByMetaId(Long id) {
+    public List<Map<Long, Integer>> querySwitchVersionsByMetaId(Long id) {
+        EsMetadataPO metadata = esMetadataMapper.selectByPrimaryKey(id);
         List<EsSnapshotMetadata> metadataList = esSnapshotMetadataMapper.getSnapshotMetadataByMetaId(id);
         List<Map<Long, Integer>> snapshotVersions = Lists.newArrayList();
         for (EsSnapshotMetadata snapshotMetadata : metadataList) {
+            //历史版本切换，过滤当前的版本
+            if (metadata.getVersion().equals(snapshotMetadata.getVersion())) {
+                continue;
+            }
             Map<Long, Integer> snapshotMetaMap = Maps.newHashMap();
             snapshotMetaMap.put(snapshotMetadata.getId(), snapshotMetadata.getVersion());
             snapshotVersions.add(snapshotMetaMap);
@@ -298,11 +323,12 @@ public class EsIndexServiceImpl implements EsIndexService {
         BeanUtils.copyProperties(snapshotMetadata, switchMetadata);
         switchMetadata.setMaxLocation(metadata.getMaxLocation());
         switchMetadata.setMaxVersion(metadata.getMaxVersion());
+        switchMetadata.setId(id);
         esMetadataMapper.updateByPrimaryKeySelective(switchMetadata);
 
         String oldIndexName = indexName + "_" + metadata.getVersion();
         String newIndexName = indexName + "_" + targetVersion;
-        RespResult<Boolean> result = indexManageService.switchIndexByVersion(indexName, oldIndexName, newIndexName);
+        RespResult<Boolean> result = esConsumer.switchIndexByVersion(indexName, oldIndexName, newIndexName);
         if (!result.isSuccess()) {
             throw new MetaDataException(result.getMsg());
         } else {
@@ -313,14 +339,125 @@ public class EsIndexServiceImpl implements EsIndexService {
     }
 
 
+    @Override
+    public EsMetadataPO findById(Long id) {
+        EsMetadataPO esMetadataPO = esMetadataMapper.selectByPrimaryKey(id);
+        return esMetadataPO;
+    }
+
+
+    /**
+     * 根据页面操作，分别获新增、删除、修改/不变的字段
+     *
+     * @param esIndexVO
+     * @param hasUpdated
+     * @param isDrafted
+     */
+    private void wrapPrepIndexFields(EsIndexVO esIndexVO, boolean hasUpdated, boolean isDrafted) {
+        List<EsFieldPO> fieldPOList = esIndexVO.getFieldPOList();
+
+        if (!hasUpdated) {
+            for (int i = 1; i <= fieldPOList.size(); i++) {
+                EsFieldPO fieldPO = fieldPOList.get(i - 1);
+                fieldPO.setLocation(i);
+                fieldPO.fillCreateInfo(fieldPO, esIndexVO.getCreator());
+            }
+
+            esIndexVO.setVersion(1);
+            esIndexVO.setMaxVersion(1);
+            esIndexVO.setMaxLocation(fieldPOList.size());
+        } else {
+            //判断表基本信息是否变更
+            EsMetadataPO metadata = new EsMetadataPO();
+            BeanUtils.copyProperties(esIndexVO, metadata);
+            EsMetadataPO oldMetadata = esMetadataMapper.selectByPrimaryKey(esIndexVO.getId());
+            if (!metadata.equals(oldMetadata)) {
+                esIndexVO.setHasChangeBase(true);
+            }
+
+            //当前版本之前所有的字段、位置值
+            List<EsFieldPO> oldFieldPOList = esFieldMapper.queryFieldsByIndexId(esIndexVO.getId());
+            Map<Long, Integer> fieldLocationMap = oldFieldPOList.stream().collect(Collectors.toMap((key -> key.getId()), (value -> value.getLocation())));
+
+            //最终的索引字段数据-创建索引用
+            List<EsFieldPO> newFieldPOList = Lists.newArrayList();
+
+            //获取最大location值
+            Integer maxLocation = esMetadataMapper.findMaxLocation(esIndexVO.getId());
+            if (null == maxLocation) {
+                maxLocation = 0;
+            }
+
+            //未变更记录
+            List<EsFieldPO> normalFields = fieldPOList.stream().filter(field -> field.getStatus().equals(0)).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(normalFields)) {
+                normalFields.forEach(field -> {
+                    field.setLocation(fieldLocationMap.get(field.getId()));
+                    field.setId(null);
+                });
+                newFieldPOList.addAll(normalFields);
+            }
+
+            //待修改记录
+            List<EsFieldPO> upFields = fieldPOList.stream().filter(field -> field.getStatus().equals(2)).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(upFields)) {
+                upFields.forEach(field -> {
+                    field.setLocation(fieldLocationMap.get(field.getId()));
+                    field.setId(null);
+                });
+                newFieldPOList.addAll(upFields);
+                esIndexVO.setUpdateCnt(upFields.size());
+            }
+
+            //待新增记录
+            List<EsFieldPO> addFields = fieldPOList.stream().filter(field -> field.getStatus().equals(1)).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(addFields)) {
+                for (EsFieldPO newField : addFields) {
+                    maxLocation++;
+                    newField.setLocation(maxLocation);
+                }
+                newFieldPOList.addAll(addFields);
+                esIndexVO.setAddCnt(addFields.size());
+            }
+
+            //设置用户、时间
+            newFieldPOList.forEach(field -> {
+                field.setId(null);
+                field.fillCreateInfo(field, esIndexVO.getModifier());
+            });
+
+            if (!isDrafted) {
+                boolean noUpgrade = (oldMetadata.getStatus().equals(0) && oldMetadata.getMaxVersion().equals(1));
+                if (noUpgrade) {
+                    esIndexVO.setVersion(1);
+                    esIndexVO.setMaxVersion(oldMetadata.getMaxVersion());
+                } else {
+                    esIndexVO.setVersion(oldMetadata.getMaxVersion() + 1);
+                    esIndexVO.setMaxVersion(oldMetadata.getMaxVersion() + 1);
+                }
+                esIndexVO.setStatus(1);
+            }
+            esIndexVO.setMaxLocation(maxLocation);
+            esIndexVO.setFieldPOList(newFieldPOList);
+        }
+    }
+
+
+    /**
+     * 执行保存草稿、生效 与数据库交换
+     *
+     * @param esIndexVO
+     * @param isUpdated
+     * @param isDrafted
+     */
     @Transactional(rollbackFor = {RuntimeException.class, SQLException.class})
-    public void processSaveToDB(EsIndexVO esIndexVO, boolean hasSnapshot, boolean hasUpdated) {
+    public void processSaveToDB(EsIndexVO esIndexVO, boolean isUpdated, boolean isDrafted) {
 
         EsMetadataPO metadata = new EsMetadataPO();
         BeanUtils.copyProperties(esIndexVO, metadata);
 
         EsMetadataPO oldMetadata = null;
-        if (hasUpdated) {
+        if (isUpdated) {
 
             oldMetadata = esMetadataMapper.selectByPrimaryKey(metadata.getId());
 
@@ -329,7 +466,7 @@ public class EsIndexServiceImpl implements EsIndexService {
             //主表-修改
             esMetadataMapper.updateByPrimaryKeySelective(metadata);
 
-            //修改字段表:先删-在新增
+            //修改字段表:先删除->再新增
             esFieldMapper.deleteByIndexId(metadata.getId());
 
             metadata.setCreator(oldMetadata.getCreator());
@@ -349,23 +486,24 @@ public class EsIndexServiceImpl implements EsIndexService {
         //主题新增使用数
         themeService.increaseProgressively(metadata.getThemeId());
 
-        //字段-保存-始终新增
+        //字段表->保存->始终新增
         List<EsFieldPO> fields = esIndexVO.getFieldPOList();
         for (EsFieldPO field : fields) {
             field.setIndexId(metadata.getId());
         }
         esFieldMapper.batchInsert(fields);
 
-        //快照数据
-        if (hasSnapshot) {
+        //快照数据(非草稿则需要创建快照和物理索引)
+        if (!isDrafted) {
 
-            //快照-主表
+            //是否可升级
+            boolean canUpgrade = true;
             StringBuilder changeDetail = new StringBuilder();
             if (esIndexVO.getVersion().equals(1)) {
                 changeDetail.append("创建索引");
+                canUpgrade = false;
             } else {
-
-                if (esIndexVO.getHasChangeBase()) {
+                if (Boolean.TRUE.equals(esIndexVO.getHasChangeBase())) {
                     changeDetail.append("变更基本信息");
                 }
 
@@ -382,15 +520,13 @@ public class EsIndexServiceImpl implements EsIndexService {
                 }
             }
 
+            //主表->快照
             EsSnapshotMetadata snapshotMetadata = new EsSnapshotMetadata();
             BeanUtils.copyProperties(metadata, snapshotMetadata);
-            snapshotMetadata.setId(null)
-                    .setMetaId(metadata.getId())
-                    .setDetails(changeDetail.toString())
-                    .setVersion(metadata.getVersion());
+            snapshotMetadata.setId(null).setMetaId(metadata.getId()).setDetails(changeDetail.toString()).setVersion(metadata.getVersion());
             esSnapshotMetadataMapper.insertSelective(snapshotMetadata);
 
-            //快照-字段表
+            //字段表->快照
             List<EsSnapshotFieldPO> snapshotFields = Lists.newArrayList();
             for (EsFieldPO field : fields) {
                 EsSnapshotFieldPO snapshotField = new EsSnapshotFieldPO();
@@ -403,16 +539,18 @@ public class EsIndexServiceImpl implements EsIndexService {
             //创建索引
             createIndex(esIndexVO);
 
-            //修改，索引自动升级切换
-            if (hasUpdated) {
-                String schemaName = getSchemaName(metadata.getSchemaId());
-                String oldIndexName = schemaName + "_" + oldMetadata.getVersion();
-                String newIndexName = schemaName + "_" + esIndexVO.getVersion();
-                RespResult<Boolean> result = indexManageService.switchIndexByVersion(schemaName, oldIndexName, newIndexName);
-                if (!result.isSuccess()) {
-                    throw new MetaDataException(result.getMsg());
-                } else {
-                    log.info("索引:{} 由版本[{}] -> [{}] 升级成功", schemaName, oldMetadata.getVersion(), esIndexVO.getVersion());
+            //修改 -> 索引自动升级切换
+            if (isUpdated) {
+                if (canUpgrade) {
+                    String schemaName = getSchemaName(metadata.getSchemaId());
+                    String oldIndexName = schemaName + "_" + oldMetadata.getVersion();
+                    String newIndexName = schemaName + "_" + esIndexVO.getVersion();
+                    RespResult<Boolean> result = esConsumer.switchIndexByVersion(schemaName, oldIndexName, newIndexName);
+                    if (!result.isSuccess()) {
+                        throw new MetaDataException(result.getMsg());
+                    } else {
+                        log.info("索引:{} 由版本[{}] -> [{}] 升级成功", schemaName, oldMetadata.getVersion(), esIndexVO.getVersion());
+                    }
                 }
             }
         }
@@ -427,7 +565,7 @@ public class EsIndexServiceImpl implements EsIndexService {
     private void validatedBaseAndField(EsIndexVO esIndexVO) {
 
         //索引中文描述验证
-        int cnt = esMetadataMapper.queryCntBySelectiveParam(esIndexVO.getIdentification(), null, esIndexVO.getRenterId());
+        int cnt = esMetadataMapper.queryCntBySelectiveParam(esIndexVO.getIdentification(), esIndexVO.getId(), esIndexVO.getRenterId());
         if (cnt > 0) {
             throw new MetaDataException("租户下已存在该中文描述的索引，请重新录入");
         }
@@ -439,8 +577,7 @@ public class EsIndexServiceImpl implements EsIndexService {
         }
 
         //过滤得到非删除的字段集合
-        fieldPOList = fieldPOList.stream().filter(field -> !field.getOpFlag().equals(-1)).collect(Collectors.toList());
-
+        fieldPOList = fieldPOList.stream().filter(field -> !field.getStatus().equals(3)).collect(Collectors.toList());
 
         //字段名集合
         List<String> fieldNames = fieldPOList.stream().map(field -> field.getFieldName().toLowerCase()).collect(Collectors.toList());
@@ -450,7 +587,7 @@ public class EsIndexServiceImpl implements EsIndexService {
 
             String fieldName = esFieldPO.getFieldName();
             String fieldType = esFieldPO.getFieldType();
-            Integer opFlag = esFieldPO.getOpFlag();
+            Integer opFlag = esFieldPO.getStatus();
 
             if (!StringUtils.endsWithIgnoreCase(EsFieldTypeEnum.Text.name(), fieldType)) {
                 if (StringUtils.isNotBlank(esFieldPO.getAnalyzer())) {
@@ -537,8 +674,8 @@ public class EsIndexServiceImpl implements EsIndexService {
                     .setAnalyzer(field.getAnalyzer())
                     .setSearchAnalyzer(searchAnalyzer)
                     .setCanStore(field.getCanStore())
-                    .setCanSource(field.getCanSource())
-                    .setCanSearch(field.getCanAll());
+                    .setIncludeSource(field.getCanSource())
+                    .setIncludeAll(field.getCanAll());
 
             fieldDtoList.add(fieldDto);
 
@@ -552,96 +689,6 @@ public class EsIndexServiceImpl implements EsIndexService {
 
 
     /**
-     * 根据页面操作，分别获新增、删除、修改/不变的字段
-     *
-     * @param esIndexVO
-     * @param isNew
-     */
-    private void wrapPrepIndexFields(EsIndexVO esIndexVO, boolean isNew) {
-
-        List<EsFieldPO> fieldPOList = esIndexVO.getFieldPOList();
-
-        if (isNew) {
-            for (int i = 1; i <= fieldPOList.size(); i++) {
-                EsFieldPO fieldPO = fieldPOList.get(i - 1);
-                fieldPO.setLocation(i);
-                fieldPO.fillCreateInfo(fieldPO, esIndexVO.getCreator());
-            }
-
-            esIndexVO.setVersion(1);
-            esIndexVO.setMaxVersion(1);
-            esIndexVO.setMaxLocation(fieldPOList.size());
-        } else {
-            //判断表基本信息是否变更
-            EsMetadataPO metadata = new EsMetadataPO();
-            BeanUtils.copyProperties(esIndexVO, metadata);
-            EsMetadataPO oldMetadata = esMetadataMapper.selectByPrimaryKey(esIndexVO.getId());
-            if (!metadata.equals(oldMetadata)) {
-                esIndexVO.setHasChangeBase(true);
-            }
-
-            //当前版本之前所有的字段、位置值
-            List<EsFieldPO> oldFieldPOList = esFieldMapper.queryFieldsByIndexId(esIndexVO.getId());
-            Map<Long, Integer> fieldLocationMap = oldFieldPOList.stream().collect(Collectors.toMap((key -> key.getId()), (value -> value.getLocation())));
-
-            //最终的索引字段数据-创建索引用
-            List<EsFieldPO> newFieldPOList = Lists.newArrayList();
-
-            //获取最大location值
-            Integer maxLocation = esMetadataMapper.findMaxLocation(esIndexVO.getId());
-            if (null == maxLocation) {
-                maxLocation = 0;
-            }
-
-            //未变更记录
-            List<EsFieldPO> normalFields = fieldPOList.stream().filter(field -> field.getOpFlag().equals(0)).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(normalFields)) {
-                normalFields.forEach(field -> {
-                    field.setLocation(fieldLocationMap.get(field.getId()));
-                    field.setId(null);
-                });
-                newFieldPOList.addAll(normalFields);
-            }
-
-            //待修改记录
-            List<EsFieldPO> upFields = fieldPOList.stream().filter(field -> field.getOpFlag().equals(2)).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(upFields)) {
-                upFields.forEach(field -> {
-                    field.setLocation(fieldLocationMap.get(field.getId()));
-                    field.setId(null);
-                });
-                newFieldPOList.addAll(upFields);
-                esIndexVO.setUpdateCnt(upFields.size());
-            }
-
-            //待新增记录
-            List<EsFieldPO> addFields = fieldPOList.stream().filter(field -> field.getOpFlag().equals(1)).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(addFields)) {
-                for (EsFieldPO newField : addFields) {
-                    maxLocation++;
-                    newField.setLocation(maxLocation);
-                }
-                newFieldPOList.addAll(addFields);
-                esIndexVO.setAddCnt(addFields.size());
-            }
-
-            //设置用户、时间
-            newFieldPOList.forEach(field -> {
-                field.setId(null);
-                field.fillCreateInfo(field, esIndexVO.getModifier());
-            });
-
-            esIndexVO.setStatus(1);
-            esIndexVO.setMaxLocation(maxLocation);
-            esIndexVO.setVersion(oldMetadata.getMaxVersion() + 1);
-            esIndexVO.setMaxVersion(oldMetadata.getMaxVersion() + 1);
-            esIndexVO.setFieldPOList(newFieldPOList);
-        }
-
-    }
-
-
-    /**
      * 创建ES索引
      *
      * @param esIndexVO
@@ -650,7 +697,7 @@ public class EsIndexServiceImpl implements EsIndexService {
     private boolean createIndex(EsIndexVO esIndexVO) {
 
         NewIndexDto newIndexDto = wrapNewIndexDto(esIndexVO);
-        RespResult<Boolean> result = indexManageService.createIndex(newIndexDto);
+        RespResult<Boolean> result = esConsumer.createIndex(newIndexDto);
         if (result.isSuccess()) {
             if (result.getData()) {
                 log.info("索引:{},版本:{} 创建成功", esIndexVO.getSchemaName(), esIndexVO.getVersion());
@@ -681,10 +728,32 @@ public class EsIndexServiceImpl implements EsIndexService {
     }
 
 
-    @Override
-    public EsMetadataPO findById(Long id) {
-        EsMetadataPO esMetadataPO = esMetadataMapper.selectByPrimaryKey(id);
-        return esMetadataPO;
+    /**
+     * 根据部门code获取部门名称
+     *
+     * @param deptCode
+     * @return
+     */
+    private String getDeptNamesByCode(String deptCode) {
+        List<String> deptNames = Lists.newArrayList();
+        try {
+            for (String code : deptCode.split(",")) {
+                Organization organization = organizationService.findByCode(code);
+                if (null != organization) {
+                    deptNames.add(organization.getDeptName());
+                }
+            }
+        } catch (Exception e) {
+            log.error("根据deptCode:{} 获取部门名称异常:{}", deptCode, e.getMessage());
+        }
+
+        if (CollectionUtils.isNotEmpty(deptNames)) {
+            return StringUtils.join(deptNames, ",");
+        } else {
+            return null;
+        }
+
     }
+
 
 }

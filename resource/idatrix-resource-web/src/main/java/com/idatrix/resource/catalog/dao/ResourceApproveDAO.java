@@ -40,4 +40,8 @@ public interface ResourceApproveDAO {
 
     List<StatisticsPO> getStatisticsByStatusAndNums(@Param("num")int num ,
                                                     @Param("status")String status);
+
+    /**************************多租户隔离增加的接口**************************/
+
+
 }

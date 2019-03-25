@@ -4,7 +4,9 @@ import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.ys.idatrix.graph.service.api.DeleteResult;
 import com.ys.idatrix.graph.service.api.NodeService;
+import com.ys.idatrix.graph.service.api.RelationshipService;
 import com.ys.idatrix.graph.service.api.def.DatabaseType;
+import com.ys.idatrix.graph.service.api.dto.edge.FkRelationshipDto;
 import com.ys.idatrix.graph.service.api.dto.node.TableNodeDto;
 import com.ys.idatrix.graph.service.api.dto.node.ViewNodeDto;
 import com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum;
@@ -39,6 +41,9 @@ public class GraphSyncServiceImpl implements GraphSyncService {
     private NodeService nodeService;
 
     @Autowired
+    private RelationshipService relationshipService;
+
+    @Autowired
     private McDatabaseService databaseService;
 
     @Autowired
@@ -50,26 +55,7 @@ public class GraphSyncServiceImpl implements GraphSyncService {
 
     @Override
     public void graphSaveTableNode(Long id) {
-        // 表信息信息
-        Metadata table = metadataService.findById(id);
-        // 模式信息
-        McSchemaPO schema = schemaService.findById(table.getSchemaId());
-        // 数据库信息
-        McDatabasePO database = databaseService.getDatabaseById(schema.getDbId());
-        // 封装信息
-        TableNodeDto dto = new TableNodeDto();
-        dto.setRenterId(UserUtils.getRenterId());
-        dto.setDatabaseId(database.getId());
-        dto.setServerId(database.getServerId());
-        dto.setSchemaId(schema.getId());
-        dto.setSchemaName(schema.getName());
-        dto.setTableId(table.getId());
-        dto.setTableName(table.getName());
-        if(table.getDatabaseType() == DatabaseTypeEnum.MYSQL.getCode()) {
-            dto.setDatabaseType(DatabaseType.MySQL);
-        } else if(table.getDatabaseType() == DatabaseTypeEnum.ORACLE.getCode()) {
-            dto.setDatabaseType(DatabaseType.Oracle);
-        }
+        TableNodeDto dto = getTableNodeDto(id);
         // 创建表节点
         nodeService.createTableNode(dto);
     }
@@ -78,6 +64,19 @@ public class GraphSyncServiceImpl implements GraphSyncService {
     public void graphDeleteTableNode(Long id) {
         // 1为表
         deleteById(id, 1);
+    }
+
+    @Override
+    public Long saveFkRlat(List<FkRelationshipDto> list) {
+        FkRelationshipDto[] args = new FkRelationshipDto[list.size()];
+        list.toArray(args);
+        Long result = relationshipService.saveFkRlat(args);
+        return result;
+    }
+
+    @Override
+    public void deleteFkRlat(Long tableId, String fkName) {
+        relationshipService.deleteFkRlat(tableId, fkName);
     }
 
     @Override
@@ -133,6 +132,30 @@ public class GraphSyncServiceImpl implements GraphSyncService {
         } catch (Exception e) {
             throw new MetaDataException("删除数据同步到数据地图失败，信息：", e.getMessage());
         }
+    }
+
+    public TableNodeDto getTableNodeDto(Long id) {
+        // 表信息信息
+        Metadata table = metadataService.findById(id);
+        // 模式信息
+        McSchemaPO schema = schemaService.findById(table.getSchemaId());
+        // 数据库信息
+        McDatabasePO database = databaseService.getDatabaseById(schema.getDbId());
+        // 封装信息
+        TableNodeDto dto = new TableNodeDto();
+        dto.setRenterId(UserUtils.getRenterId());
+        dto.setDatabaseId(database.getId());
+        dto.setServerId(database.getServerId());
+        dto.setSchemaId(schema.getId());
+        dto.setSchemaName(schema.getName());
+        dto.setTableId(table.getId());
+        dto.setTableName(table.getName());
+        if(table.getDatabaseType() == DatabaseTypeEnum.MYSQL.getCode()) {
+            dto.setDatabaseType(DatabaseType.MySQL);
+        } else if(table.getDatabaseType() == DatabaseTypeEnum.ORACLE.getCode()) {
+            dto.setDatabaseType(DatabaseType.Oracle);
+        }
+        return dto;
     }
 
 }

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.idatrix.resource.datareport.dao.ResourceImportStatisticsDAO">
+  <resultMap id="BaseResultMap" type="com.idatrix.resource.datareport.po.ResourceImportStatisticsPO">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="resource_id" jdbcType="BIGINT" property="resourceId" />
+    <result column="meta_id" jdbcType="BIGINT" property="metaId" />
+    <result column="last_count_time" jdbcType="TIMESTAMP" property="lastCountTime" />
+    <result column="total_record" jdbcType="BIGINT" property="totalRecord" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="updater" jdbcType="VARCHAR" property="updater" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, resource_id, meta_id, last_count_time, total_record, creator, create_time, updater, 
+    update_time
+  </sql>
+
+
+
+    <select id="getAllImportStatitics" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_resource_import
+    </select>
+
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from rc_resource_import
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from rc_resource_import
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.idatrix.resource.datareport.po.ResourceImportStatisticsPO" useGeneratedKeys="true">
+    insert into rc_resource_import (resource_id, meta_id, last_count_time, 
+      total_record, creator, create_time, 
+      updater, update_time)
+    values (#{resourceId,jdbcType=BIGINT}, #{metaId,jdbcType=BIGINT}, #{lastCountTime,jdbcType=TIMESTAMP}, 
+      #{totalRecord,jdbcType=BIGINT}, #{creator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{updater,jdbcType=VARCHAR}, #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.idatrix.resource.datareport.po.ResourceImportStatisticsPO" useGeneratedKeys="true">
+    insert into rc_resource_import
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="resourceId != null">
+        resource_id,
+      </if>
+      <if test="metaId != null">
+        meta_id,
+      </if>
+      <if test="lastCountTime != null">
+        last_count_time,
+      </if>
+      <if test="totalRecord != null">
+        total_record,
+      </if>
+      <if test="creator != null">
+        creator,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updater != null">
+        updater,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="resourceId != null">
+        #{resourceId,jdbcType=BIGINT},
+      </if>
+      <if test="metaId != null">
+        #{metaId,jdbcType=BIGINT},
+      </if>
+      <if test="lastCountTime != null">
+        #{lastCountTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="totalRecord != null">
+        #{totalRecord,jdbcType=BIGINT},
+      </if>
+      <if test="creator != null">
+        #{creator,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updater != null">
+        #{updater,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.idatrix.resource.datareport.po.ResourceImportStatisticsPO">
+    update rc_resource_import
+    <set>
+      <if test="resourceId != null">
+        resource_id = #{resourceId,jdbcType=BIGINT},
+      </if>
+      <if test="metaId != null">
+        meta_id = #{metaId,jdbcType=BIGINT},
+      </if>
+      <if test="lastCountTime != null">
+        last_count_time = #{lastCountTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="totalRecord != null">
+        total_record = #{totalRecord,jdbcType=BIGINT},
+      </if>
+      <if test="creator != null">
+        creator = #{creator,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updater != null">
+        updater = #{updater,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.idatrix.resource.datareport.po.ResourceImportStatisticsPO">
+    update rc_resource_import
+    set resource_id = #{resourceId,jdbcType=BIGINT},
+      meta_id = #{metaId,jdbcType=BIGINT},
+      last_count_time = #{lastCountTime,jdbcType=TIMESTAMP},
+      total_record = #{totalRecord,jdbcType=BIGINT},
+      creator = #{creator,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      updater = #{updater,jdbcType=VARCHAR},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

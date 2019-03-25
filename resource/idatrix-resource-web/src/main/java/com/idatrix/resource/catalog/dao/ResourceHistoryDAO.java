@@ -17,8 +17,6 @@ public interface ResourceHistoryDAO {
 
     public ResourceHistoryPO getHistoryById(Long id);
 
-    public List<ResourceHistoryPO> getAllResourceHistory();
-
     public List<ResourceHistoryPO> getHistoryByResourceId(Long resourceId);
 
 }

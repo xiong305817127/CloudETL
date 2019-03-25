@@ -29,18 +29,21 @@
     where id = #{id,jdbcType=BIGINT}
   </delete>
   <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.ys.idatrix.metacube.metamanage.domain.McMdHiveFieldPO" useGeneratedKeys="true">
-    insert into mc_md_hive_field (is_external_table, `location`, fields_terminated, 
+    insert into mc_md_hive_field (id, is_external_table, `location`, fields_terminated,
       lines_terminated, null_defined, store_format, 
       creator, create_time, modifier, 
       modify_time)
-    values (#{isExternalTable,jdbcType=BIT}, #{location,jdbcType=VARCHAR}, #{fieldsTerminated,jdbcType=VARCHAR}, 
+    values (#{id,jdbcType=BIGINT},#{isExternalTable,jdbcType=BIT}, #{location,jdbcType=VARCHAR}, #{fieldsTerminated,jdbcType=VARCHAR},
       #{linesTerminated,jdbcType=VARCHAR}, #{nullDefined,jdbcType=VARCHAR}, #{storeFormat,jdbcType=VARCHAR}, 
       #{creator,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifier,jdbcType=VARCHAR}, 
       #{modifyTime,jdbcType=TIMESTAMP})
   </insert>
-  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.ys.idatrix.metacube.metamanage.domain.McMdHiveFieldPO" useGeneratedKeys="true">
+  <insert id="insertSelective"  parameterType="com.ys.idatrix.metacube.metamanage.domain.McMdHiveFieldPO" >
     insert into mc_md_hive_field
     <trim prefix="(" suffix=")" suffixOverrides=",">
+        <if test="id != null">
+            id,
+        </if>
       <if test="isExternalTable != null">
         is_external_table,
       </if>
@@ -73,7 +76,10 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="isExternalTable != null">
+        <if test="id != null">
+            #{id,jdbcType=BIGINT},
+        </if>
+        <if test="isExternalTable != null">
         #{isExternalTable,jdbcType=BIT},
       </if>
       <if test="location != null">

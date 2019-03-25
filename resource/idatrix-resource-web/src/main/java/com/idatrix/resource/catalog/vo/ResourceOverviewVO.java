@@ -2,11 +2,14 @@ package com.idatrix.resource.catalog.vo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import lombok.Data;
+
 import java.util.List;
 
 /**
  * Created by Robin Wing on 2018-6-7.
  */
+@Data
 public class ResourceOverviewVO {
 
     /*资源ID（自动增加）*/
@@ -67,147 +70,5 @@ public class ResourceOverviewVO {
     @JsonInclude(Include.NON_NULL)
     private List<String> highlight;
 
-    public String getApproverName() {
-        return approverName;
-    }
 
-    public void setApproverName(String approverName) {
-        this.approverName = approverName;
-    }
-
-    public int getSubscribeFlag() {
-        return subscribeFlag;
-    }
-
-    public void setSubscribeFlag(int subscribeFlag) {
-        this.subscribeFlag = subscribeFlag;
-    }
-
-    public String getApproveAction() {
-        return approveAction;
-    }
-
-    public void setApproveAction(String approveAction) {
-        this.approveAction = approveAction;
-    }
-
-    public String getApproveTime() {
-        return approveTime;
-    }
-
-    public void setApproveTime(String approveTime) {
-        this.approveTime = approveTime;
-    }
-
-    public String getApproveSuggestion() {
-        return approveSuggestion;
-    }
-
-    public void setApproveSuggestion(String approveSuggestion) {
-        this.approveSuggestion = approveSuggestion;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public String getCatalogCode() {
-        return catalogCode;
-    }
-
-    public void setCatalogCode(String catalogCode) {
-        this.catalogCode = catalogCode;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getLibType() {
-        return libType;
-    }
-
-    public void setLibType(String libType) {
-        this.libType = libType;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getCatalogName() {
-        return catalogName;
-    }
-
-    public void setCatalogName(String catalogName) {
-        this.catalogName = catalogName;
-    }
-
-    public String getResourceCode() {
-        return resourceCode;
-    }
-
-    public void setResourceCode(String resourceCode) {
-        this.resourceCode = resourceCode;
-    }
-
-    public String getResourceName() {
-        return resourceName;
-    }
-
-    public void setResourceName(String resourceName) {
-        this.resourceName = resourceName;
-    }
-
-    public String getDeptName() {
-        return deptName;
-    }
-
-    public void setDeptName(String deptName) {
-        this.deptName = deptName;
-    }
-
-    public String getDeptCode() {
-        return deptCode;
-    }
-
-    public void setDeptCode(String deptCode) {
-        this.deptCode = deptCode;
-    }
-
-    public Long getDataCount() {
-        return dataCount;
-    }
-
-    public void setDataCount(Long dataCount) {
-        this.dataCount = dataCount;
-    }
-
-    public String getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(String updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public List<String> getHighlight() {
-        return highlight;
-    }
-
-    public void setHighlight(List<String> highlight) {
-        this.highlight = highlight;
-    }
 }

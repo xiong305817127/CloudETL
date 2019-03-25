@@ -436,7 +436,7 @@ public class CloudDatabaseRepository {
 	public Map<String,PaginationDto<FileRepositoryDto>> getPaginationInfoMap(String owner , String group, Integer pageNo ,Integer pageSize,String search ,boolean isMap) throws Exception{
 		
 		Map<String,PaginationDto<FileRepositoryDto>> result =  Maps.newHashMap() ;
-		if( CloudSession.isRenterPrivilege()) {
+		if( CloudSession.isPrivilegeEnable()) {
 			//当前登录者是租户,获取 owner用户下的 group组 下的信息
 			if(isMap) {
 				if(Utils.isEmpty(owner)  && CloudSession.isSuperPrivilege() ) {
@@ -505,7 +505,7 @@ public class CloudDatabaseRepository {
 	 */
 	public Map<String,List<Object>> getRepositoryInfoMap( String owner,String group ) throws Exception {
 		Map<String,List<Object>> result =  Maps.newHashMap() ;
-		if( CloudSession.isRenterPrivilege()) {
+		if( CloudSession.isPrivilegeEnable()) {
 			//当前登录者是租户,获取 owner用户下的 group组 下的信息
 			if(Utils.isEmpty(owner) && CloudSession.isSuperPrivilege() ) {
 				//获取所有的用户
@@ -539,7 +539,7 @@ public class CloudDatabaseRepository {
 	public  Map<String,List<String>> getNamesMap( String owner, String  group  ) throws Exception {
 		
 		 Map<String,List<String>> result =  Maps.newHashMap() ;
-		 if( CloudSession.isRenterPrivilege()) {
+		 if( CloudSession.isPrivilegeEnable()) {
 			 //当前登录者是租户,获取 owner用户下的 group组 下的信息
 			 if(Utils.isEmpty(owner) && CloudSession.isSuperPrivilege()) {
 				 //获取所有的用户

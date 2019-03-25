@@ -57,7 +57,7 @@ public class TokenManager {
 	}
 
 	static {
-		//每隔1分种，执行1次
+		// 每隔1分种，执行1次
 		timer.schedule(new TimerTask() {
 
 			@Override

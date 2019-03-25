@@ -16,9 +16,9 @@ import com.ys.idatrix.metacube.metamanage.mapper.ApprovalProcessMapper;
 import com.ys.idatrix.metacube.metamanage.mapper.McDatabaseMapper;
 import com.ys.idatrix.metacube.metamanage.mapper.McSchemaMapper;
 import com.ys.idatrix.metacube.metamanage.mapper.MetadataMapper;
-import com.ys.idatrix.metacube.metamanage.service.AuthorityService;
+import com.ys.idatrix.metacube.authorize.service.AuthorityService;
 import com.ys.idatrix.metacube.metamanage.service.McSchemaService;
-import com.ys.idatrix.metacube.metamanage.service.ResourceAuthService;
+import com.ys.idatrix.metacube.authorize.service.ResourceAuthService;
 import com.ys.idatrix.metacube.metamanage.service.TableColumnService;
 import com.ys.idatrix.metacube.metamanage.vo.request.ApprovalProcessVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo;
@@ -156,9 +156,11 @@ public class MetadataServiceProvideImpl implements MetadataServiceProvide {
             List<Metadata> ascriptionDeptTableList = metadataMapper.searchList(vo);
             metadataPropertyCopy(ascriptionDeptTableList, tableResult);
 
-            vo.setResourceType(2); // 视图
-            List<Metadata> ascriptionDeptViewList = metadataMapper.searchList(vo);
-            metadataPropertyCopy(ascriptionDeptViewList, viewResult);
+            if (ActionTypeEnum.WRITE != actionType) {
+                vo.setResourceType(2); // 视图
+                List<Metadata> ascriptionDeptViewList = metadataMapper.searchList(vo);
+                metadataPropertyCopy(ascriptionDeptViewList, viewResult);
+            }
 
             // 用户授权数据
             // 授权的表
@@ -166,10 +168,12 @@ public class MetadataServiceProvideImpl implements MetadataServiceProvide {
                     authorityService.getAuthorizedResource(username, module, actionType, ImmutableList.of(database.getType()), ImmutableList.of(1));
             addTableOrView(tableResourceList, tableResult, schemaId);
 
-            // 授权的视图
-            List<ApprovalProcessVO> viewResourceList =
-                    authorityService.getAuthorizedResource(username, module, actionType, ImmutableList.of(database.getType()), ImmutableList.of(2));
-            addTableOrView(viewResourceList, viewResult, schemaId);
+            if (ActionTypeEnum.WRITE != actionType) {
+                // 授权的视图
+                List<ApprovalProcessVO> viewResourceList =
+                        authorityService.getAuthorizedResource(username, module, actionType, ImmutableList.of(database.getType()), ImmutableList.of(2));
+                addTableOrView(viewResourceList, viewResult, schemaId);
+            }
 
             TableViewDTO dto = new TableViewDTO();
             dto.setTableList(new ArrayList<>(tableResult));
@@ -207,22 +211,54 @@ public class MetadataServiceProvideImpl implements MetadataServiceProvide {
     }
 
     @Override
-    public ResultBean<MetadataDTO> findHDFSId(String folderPath)  {
-        List<Metadata> dataList = metadataMapper.getAllHDFSFolderInfo(null, null, null);
+    public ResultBean<MetadataDTO> findByMetadataId(Long metaId) {
+        try {
+            Metadata metadata = metadataMapper.findById(metaId);
+            MetadataDTO dto = new MetadataDTO();
+            dto.setMetaId(Integer.parseInt(metadata.getId() + ""));
+            dto.setMetaName(metadata.getName());
+            dto.setStatus(metadata.getResourceType());
+            return ResultBean.ok(dto);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return ResultBean.error(e.getMessage());
+        }
+    }
+
+    @Override
+    public ResultBean<MetadataDTO> findHDFSId(String folderPath) {
+        List<Metadata> dataList = metadataMapper.getAllHDFSFolderInfo(null, null, null, null);
         if (CollectionUtils.isEmpty(dataList)) {
             return ResultBean.ok("HDFS当前数据为空");
         }
+
         MetadataDTO dataDTO = null;
-        for (Metadata data : dataList) {
-            if (StringUtils.equals(folderPath, data.getIdentification())) {
-                dataDTO = new MetadataDTO();
-                dataDTO.setMetaId(data.getId().intValue());
-                dataDTO.setSchemaId(data.getSchemaId().intValue());
-                dataDTO.setMetaName(data.getName());
-                return ResultBean.ok(dataDTO);
-            }
+        Metadata data = getMaxMatchLen(dataList, folderPath);
+        if(data!=null){
+            dataDTO =  new MetadataDTO();
+            dataDTO.setMetaId(data.getId().intValue());
+            dataDTO.setSchemaId(data.getSchemaId().intValue());
+            dataDTO.setSchemaName(data.getName());
+            dataDTO.setMetaName(data.getIdentification());
+            return ResultBean.ok(dataDTO);
         }
         return ResultBean.ok(dataDTO);
+    }
+
+    private Metadata getMaxMatchLen(List<Metadata> dataList, String value) {
+
+        Metadata maxMatch = null;
+        for (Metadata data : dataList) {
+            if(StringUtils.isEmpty(data.getIdentification())){
+                continue;
+            }
+            if (value.startsWith(data.getIdentification())) {
+                if (maxMatch == null || data.getIdentification().length() > maxMatch.getIdentification().length()) {
+                    maxMatch = data;
+                }
+            }
+        }
+        return maxMatch;
     }
 
     /**
@@ -236,18 +272,18 @@ public class MetadataServiceProvideImpl implements MetadataServiceProvide {
     public ResultBean<List<String>> findHDFSFolderByUser(String username, ActionTypeEnum mod) {
 
         //用户创建
-        List<Metadata> dataList = metadataMapper.getAllHDFSFolderInfo(username, null, null);
+        List<Metadata> dataList = metadataMapper.getAllHDFSFolderInfo(username, null, null, null);
         if (CollectionUtils.isEmpty(dataList)) {
             return ResultBean.error("HDFS列表为空");
         }
         //所属组织
         Organization org = securityConsumer.getAscriptionDeptByUserName(username);
-        if(org!=null){
+        if (org != null) {
             String orgCode = org.getDeptCode();
-            if(StringUtils.isNotEmpty(orgCode)){
+            if (StringUtils.isNotEmpty(orgCode)) {
                 //所属组织查询
-                List<Metadata> orgHdfsList = metadataMapper.getAllHDFSFolderInfo(null, orgCode,  null);
-                if(CollectionUtils.isNotEmpty(orgHdfsList)){
+                List<Metadata> orgHdfsList = metadataMapper.getAllHDFSFolderInfo(null, orgCode, null, null);
+                if (CollectionUtils.isNotEmpty(orgHdfsList)) {
                     dataList.addAll(orgHdfsList);
                 }
 
@@ -259,7 +295,7 @@ public class MetadataServiceProvideImpl implements MetadataServiceProvide {
                         Long resourceId = authMetadataVO.getResourceId();
                         Metadata metadata = metadataMapper.findById(resourceId);
                         McSchemaPO schemaPO = mcSchemaMapper.findById(metadata.getSchemaId());
-                        metadata.setIdentification(schemaPO.getName()+metadata.getIdentification());
+                        metadata.setIdentification(schemaPO.getName() + metadata.getIdentification());
                         dataList.add(metadata);
                     }
                 }
@@ -267,9 +303,9 @@ public class MetadataServiceProvideImpl implements MetadataServiceProvide {
         }
 
         List<String> folderList = new ArrayList<>();
-        if(CollectionUtils.isNotEmpty(dataList)){
-            for(Metadata data:dataList){
-                if(CollectionUtils.isEmpty(folderList) || !folderList.contains(data.getIdentification())){
+        if (CollectionUtils.isNotEmpty(dataList)) {
+            for (Metadata data : dataList) {
+                if (CollectionUtils.isEmpty(folderList) || !folderList.contains(data.getIdentification())) {
                     folderList.add(data.getIdentification());
                 }
             }
@@ -282,8 +318,10 @@ public class MetadataServiceProvideImpl implements MetadataServiceProvide {
         List<TableColumn> columnList = columnService.getTableColumnListByTableId(metadataId);
         for (TableColumn column : columnList) {
             MetaFieldDTO field = new MetaFieldDTO();
+            field.setId(column.getId());
             field.setColumnName(column.getColumnName());
             field.setDataType(column.getColumnType());
+            field.setLength(column.getTypeLength());
             field.setTypePrecision(column.getTypePrecision());
             field.setIsPk(column.getIsPk());
             field.setLocation(column.getLocation());

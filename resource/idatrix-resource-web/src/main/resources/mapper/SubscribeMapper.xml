@@ -17,13 +17,12 @@
     <result column="approver" property="approver" jdbcType="VARCHAR"/>
     <result column="approver_name" property="approverName" jdbcType="VARCHAR"/>
     <result column="suggestion" property="suggestion" jdbcType="VARCHAR"/>
-    <result column="approve_time" property="approveTime" javaType="java.util.Date"
-      jdbcType="TIMESTAMP"/>
+    <result column="approve_time" property="approveTime" javaType="java.util.Date"   jdbcType="TIMESTAMP"/>
     <result column="service_url" property="serviceUrl" jdbcType="VARCHAR"/>
     <result column="sub_key" property="subKey" jdbcType="VARCHAR"/>
+    <result column="rent_id" property="rentId" jdbcType="BIGINT"/>
     <result column="creator" property="creator" jdbcType="VARCHAR"/>
-    <result column="create_time" property="createTime" javaType="java.util.Date"
-      jdbcType="TIMESTAMP"/>
+    <result column="create_time" property="createTime" javaType="java.util.Date"    jdbcType="TIMESTAMP"/>
     <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
     <result column="modify_time" property="modifyTime" javaType="java.util.Date"
       jdbcType="TIMESTAMP"/>
@@ -39,7 +38,7 @@
     id, seq, sub_no, resource_id, dept_id, dept_name, subscribe_user_name,
     subscribe_reason, end_date, share_method, status,
     approver, approver_name, suggestion, approve_time,
-    service_url, sub_key, creator, create_time,
+    service_url, sub_key, rent_id, creator, create_time,
     modifier, modify_time
   </sql>
 
@@ -116,6 +115,9 @@
     <if test="code!=null">
       and rr.code like '${code}%'
     </if>
+    <if test="rentId!=null">
+      and rr.rent_id=#{rentId}
+    </if>
     <if test="name!=null">
       AND MATCH (rr.`name`, rr.dept_name) AGAINST ('*${name}*' IN BOOLEAN MODE)
     </if>
@@ -168,23 +170,23 @@
     where id = #{id}
   </delete>
 
-  <insert id="insert" parameterType="com.idatrix.resource.subscribe.po.SubscribeDbioPO"
+  <insert id="insert" parameterType="com.idatrix.resource.subscribe.po.SubscribePO"
     useGeneratedKeys="true" keyProperty="id">
     insert into rc_subscribe (
     id, seq, sub_no, resource_id, dept_id, dept_name, subscribe_user_name,
     subscribe_reason, end_date, share_method, status,
     approver, approver_name, suggestion, approve_time,
-    service_url, sub_key, creator, create_time,
+    service_url, sub_key, rent_id, creator, create_time,
     modifier, modify_time)
     values (#{id}, #{seq}, #{subNo},
     #{resourceId},#{deptId},#{deptName},#{subscribeUserName},#{subscribeReason},
     #{endDate}, #{shareMethod},#{status},#{approver},#{approverName},
-    #{suggestion},#{approveTime}, #{serviceUrl}, #{subKey},
+    #{suggestion},#{approveTime}, #{serviceUrl}, #{subKey}, #{rentId},
     #{creator}, #{createTime}, #{modifier}, #{modifyTime})
   </insert>
 
 
-  <update id="updateById" parameterType="com.idatrix.resource.subscribe.po.SubscribeDbioPO">
+  <update id="updateById" parameterType="com.idatrix.resource.subscribe.po.SubscribePO">
     update rc_subscribe
     set id = #{id}, seq=#{seq}, sub_no=#{subNo}, resource_id = #{resourceId},
     dept_id = #{deptId}, dept_name = #{deptName},
@@ -193,9 +195,28 @@
     share_method = #{shareMethod}, status = #{status},
     approver = #{approver}, approver_name = #{approverName},
     suggestion = #{suggestion}, approve_time = #{approveTime},
-    service_url = #{serviceUrl}, sub_key = #{subKey},
+    service_url = #{serviceUrl}, sub_key = #{subKey},  rent_id=#{rentId},
     creator = #{creator}, create_time = #{createTime}, modifier = #{modifier},
     modify_time = #{modifyTime}
     where id = #{id}
   </update>
+
+
+  <select id="getDetpSubscribeMaxMetaId" resultType="java.lang.Long">
+    SELECT
+    max( rst.dest_meta_id )
+    FROM
+    rc_subscribe rs
+    LEFT JOIN rc_sub_task rst ON rs.sub_no = rst.sub_task_id
+    WHERE 1=1
+      <if test="srcMetaId!=null">
+        and rst.src_meta_id= #{srcMetaId}
+      </if>
+      <if test="deptId!=null">
+        and rs.dept_id = #{deptId}
+      </if>
+      <if test="resourceId!=null">
+        and rs.resource_id = #{resourceId}
+      </if>
+    </select>
 </mapper>

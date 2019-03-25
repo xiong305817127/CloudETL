@@ -19,37 +19,21 @@ public class SqlExecReqDto implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 存储系统类型
+     * 数据库链接方式：schema_id,detail
      */
-    private String type;
+    private SchemaModeEnum schemaModeEnum;
 
     /**
-     * ip地址
+     * 模式链接详细。与 schemaId 二选一
+     *
+     * schemaModeEnum=detail 获取数据库链接
      */
-    private String ip;
+    private SchemaDetailsDto schemaDetails;
 
     /**
-     * 端口
-     */
-    private String port;
-
-    /**
-     * 用户名
-     */
-    private String username;
-
-    /**
-     * 密码
-     */
-    private String password;
-
-    /**
-     * 模式名称
-     */
-    private String schemaName;
-
-    /**
-     * 模式id -> 数据分析IDE、服务开放对外调用必须传
+     * 模式id。 与 dbLinkDto 二选一
+     *
+     * schemaModeEnum=id 获取数据库链接
      */
     private Long schemaId;
 
@@ -57,7 +41,7 @@ public class SqlExecReqDto implements Serializable {
      * 是否需要验证权限-command中的表
      * 需要验证权限的操作 schemaId 必须不为空
      */
-    private boolean needPermission;
+    private boolean needPermission = false;
 
     /**
      * sql语句

@@ -1,0 +1,51 @@
+.worktools {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.worktools .headercolor {
+  background: #EAEFF3;
+  height: 50px;
+  line-height: 50px;
+}
+.worktools .headercolor .symbol {
+  background: url("../../../../image/design/control.png") no-repeat center;
+}
+.worktools .resselect {
+  height: 40px;
+  line-height: 40px;
+  background: #DBE2E8;
+}
+.worktools .resselect .type {
+  width: 50px;
+  text-align: center;
+}
+.worktools .divMenu::-webkit-scrollbar {
+  display: none;
+}
+.worktools .divMenu {
+  height: calc(100% - 90px);
+  overflow: scroll;
+}
+.worktools .divMenu .menuStyle {
+  display: flex;
+  flex-wrap: wrap;
+  background: #EAEFF3;
+}
+.worktools .divMenu .menuStyle .liStyle {
+  height: 60px;
+  box-sizing: border-box;
+  width: 33.3%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.worktools .divMenu .menuStyle .liStyle :global img {
+  height: 32px;
+  width: 32px;
+  margin-bottom: 6px;
+}
+.worktools .divMenu .menuStyle .liStyle :global div {
+  font-size: 12px;
+}

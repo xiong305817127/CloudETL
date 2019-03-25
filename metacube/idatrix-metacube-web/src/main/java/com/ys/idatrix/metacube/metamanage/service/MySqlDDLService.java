@@ -36,4 +36,7 @@ public interface MySqlDDLService {
 
     // 将操作生效到数据库中
     void goToDatabase(Metadata metadata, List<String> commands);
+
+    // 将操作生效到数据库中
+    void goToDatabase(String user, Metadata metadata, List<String> commands);
 }

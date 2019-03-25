@@ -1,5 +1,11 @@
 package com.idatrix.resource.servicelog.vo;
 
+
+import com.idatrix.resource.common.utils.DateTools;
+import com.idatrix.resource.servicelog.po.ServiceLogPO;
+import lombok.Data;
+
+@Data
 public class ServiceLogVO {
 
     /*主键*/
@@ -26,80 +32,18 @@ public class ServiceLogVO {
     /*是否成功：0失败，1成功*/
     private Integer isSuccess;
 
-    public Long getId() {
-        return id;
+    public ServiceLogVO(){super();}
+
+    public ServiceLogVO(ServiceLogPO slPO){
+        this.id = slPO.getId();
+        this.serviceName = slPO.getServiceName();
+        this.serviceCode = slPO.getServiceCode();
+        this.callerDeptName = slPO.getCallerDeptName();
+        this.callTime = DateTools.formatDate(slPO.getCreateTime(), "yyyy年MM月dd日HH时mm分ss秒");
+        this.serviceType = slPO.getServiceType();
+        this.execTime = slPO.getExecTime().toString();
+        this.isSuccess = slPO.getIsSuccess();
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    public String getServiceType() {
-        return serviceType;
-    }
-
-    public void setServiceType(String serviceType) {
-        this.serviceType = serviceType;
-    }
-
-    public String getServiceCode() {
-        return serviceCode;
-    }
-
-    public void setServiceCode(String serviceCode) {
-        this.serviceCode = serviceCode;
-    }
-
-    public String getCallerDeptName() {
-        return callerDeptName;
-    }
-
-    public void setCallerDeptName(String callerDeptName) {
-        this.callerDeptName = callerDeptName;
-    }
-
-    public String getCallTime() {
-        return callTime;
-    }
-
-    public void setCallTime(String callTime) {
-        this.callTime = callTime;
-    }
-
-    public String getExecTime() {
-        return execTime;
-    }
-
-    public void setExecTime(String execTime) {
-        this.execTime = execTime;
-    }
-
-    public Integer getIsSuccess() {
-        return isSuccess;
-    }
-
-    public void setIsSuccess(Integer isSuccess) {
-        this.isSuccess = isSuccess;
-    }
-
-    @Override
-    public String toString() {
-        return "ServiceLogPO{" +
-                "id=" + id +
-                ", serviceName='" + serviceName + '\'' +
-                ", serviceType='" + serviceType + '\'' +
-                ", serviceCode='" + serviceCode + '\'' +
-                ", callerDeptName=" + callerDeptName +
-                ", execTime=" + execTime +
-                ", isSuccess=" + isSuccess +
-                '}';
-    }
 }

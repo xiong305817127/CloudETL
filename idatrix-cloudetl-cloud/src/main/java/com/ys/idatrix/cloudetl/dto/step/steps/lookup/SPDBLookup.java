@@ -261,7 +261,7 @@ public class SPDBLookup implements StepParameter, StepDataRelationshipParser, Re
 		DatabaseLookupMeta databaseLookupMeta = (DatabaseLookupMeta) stepMetaInterface;
 
 		DatabaseMeta databaseMeta = databaseLookupMeta.getDatabaseMeta();
-		to.setConnection(databaseMeta == null ? "" : databaseMeta.getName());
+		to.setConnection(databaseMeta == null ? "" : databaseMeta.getDisplayName());
 		
 		// 获取扩展信息
 		to.setDatabaseId( getToAttributeLong(stepMeta, "table.databaseId" ) );
@@ -315,7 +315,7 @@ public class SPDBLookup implements StepParameter, StepDataRelationshipParser, Re
 		DatabaseLookupMeta databaseLookupMeta = (DatabaseLookupMeta) stepMetaInterface;
 		SPDBLookup jto = (SPDBLookup) po;
 
-		DatabaseMeta d = DatabaseMeta.findDatabase(databases, jto.getConnection());
+		DatabaseMeta d = DatabaseMeta.findDatabase(databases,  jto.getSchemaId()!=null?Long.toString(jto.getSchemaId()):null);
 		if( d != null) {
 			transMeta.addOrReplaceDatabase(d);
 			databaseLookupMeta.setDatabaseMeta(d);

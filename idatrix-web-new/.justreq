@@ -1,0 +1,19 @@
+{
+   "host": "10.0.0.84", // 深圳测试服
+   "port": 80,
+  "cacheTime": "20m",
+  "cachePath": ".jr/cache/",
+  "substitutePath": "mock/",
+  "jrPort": 8060,
+  "proxyTimeout": "300s",
+  "rules": [
+    {
+      "href": ".+",
+      "keepFresh": true
+    },
+    {
+      "href": "^/dist/(.*)$",
+      "subs": "../dist/$1"
+    }
+  ]
+}

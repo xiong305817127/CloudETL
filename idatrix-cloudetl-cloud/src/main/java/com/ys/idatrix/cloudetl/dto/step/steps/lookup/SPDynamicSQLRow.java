@@ -169,7 +169,7 @@ public class SPDynamicSQLRow implements StepParameter, StepDataRelationshipParse
 		ds.setQueryonlyonchange(input.isQueryOnlyOnChange());
 
 		if (input.getDatabaseMeta() != null) {
-			ds.setConnection(input.getDatabaseMeta().getName());
+			ds.setConnection(input.getDatabaseMeta().getDisplayName());
 		}
 		
 		ds.setDatabaseId( getToAttributeLong(stepMeta, "table.databaseId" ) );
@@ -195,7 +195,7 @@ public class SPDynamicSQLRow implements StepParameter, StepDataRelationshipParse
 		input.setVariableReplace(ds.isReplacevars());
 		input.setQueryOnlyOnChange(ds.isQueryonlyonchange());
 		
-		DatabaseMeta d = DatabaseMeta.findDatabase(databases, ds.getConnection());
+		DatabaseMeta d = DatabaseMeta.findDatabase(databases, ds.getSchemaId()!= null? Long.toString(ds.getSchemaId()): null);
 		if( d != null) {
 			transMeta.addOrReplaceDatabase(d);
 			input.setDatabaseMeta(d);

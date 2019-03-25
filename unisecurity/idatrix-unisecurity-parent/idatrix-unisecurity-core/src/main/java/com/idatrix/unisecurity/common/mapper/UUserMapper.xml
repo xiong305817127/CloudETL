@@ -73,7 +73,7 @@
     </select>
 
     <select id="selectAll" resultMap="BaseResultMap">
-        SELECT * FROM idatrix_unisecurity_user
+        SELECT * FROM idatrix_unisecurity_user WHERE status = 1
     </select>
 
     <!-- 用户权限分配的分页查询 -->

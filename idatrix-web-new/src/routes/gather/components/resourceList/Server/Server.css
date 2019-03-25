@@ -1,0 +1,61 @@
+.divTabs{
+    width: 100%;
+	  height: 550px;
+	  margin-top:15px;
+    border: 1px #ccc solid;
+    border-radius: 10px;
+    padding-top: 20px;
+}
+.HostServer{
+	width:40%;
+    margin-right: 59rem;
+    margin-top: 2rem;
+}
+.footServer{
+    margin-right: 10px;
+}
+.CneterServer{
+    margin-right: 20px;
+    width: 20%;
+}
+.RowElement{
+    height: 45px;
+    width: 100%;
+    border: 1px solid #ccc;
+    line-height: 40px;
+    border-radius: 10px;
+    margin-top: 15px;
+}
+.serverElm{
+    margin-left: 20px;
+}
+.serverElm:global(.ant-col-12){
+    width: 35%;
+}
+ .DataNone :global(.ant-tabs-nav-wrap){
+     display: none;
+}
+.CneterSub{
+   margin-right: 20px;
+}
+.footSub{
+    margin-top:20%;
+}
+.footSubtwo{
+    margin-top:7%;
+}
+.divTabs :global(.ant-tabs-bar){
+        border-bottom: 1px;
+}
+.divbords:global(.ant-col-4){
+    width: 13.5%;
+}
+.ServerCenter .BottomRow{
+  position: absolute;
+  bottom: 20px;
+  left: 50px;
+  width: 200px;
+}
+.ServerCenter{
+   position: relative;
+}

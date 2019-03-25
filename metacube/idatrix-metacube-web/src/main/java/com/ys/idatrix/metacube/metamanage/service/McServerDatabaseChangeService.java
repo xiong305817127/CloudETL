@@ -18,5 +18,5 @@ public interface McServerDatabaseChangeService {
      */
     McServerDatabaseChangePO generateChangePO(Integer type, Long fkId, String operator);
 
-    PageResultBean<List<McServerDatabaseChangePO>> list(ChangeSearchVO searchVO);
+    PageResultBean<McServerDatabaseChangePO> list(ChangeSearchVO searchVO);
 }

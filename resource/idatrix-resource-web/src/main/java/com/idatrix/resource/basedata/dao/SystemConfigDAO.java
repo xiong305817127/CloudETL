@@ -25,4 +25,7 @@ public interface SystemConfigDAO {
     /*根据租户信息查询： rentInfo实际上为 "rentId+" 如 ”123+" */
     SystemConfigPO getAdaptByRentId(@Param(value="rentInfo") String rentInfo);
 
+    /*根据租户信息查询： */
+    SystemConfigPO getSysConfigByRentId(Long rentId);
+
 }

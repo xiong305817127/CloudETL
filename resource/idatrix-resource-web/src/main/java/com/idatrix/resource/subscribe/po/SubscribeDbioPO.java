@@ -1,10 +1,13 @@
 package com.idatrix.resource.subscribe.po;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
- * Created by Administrator on 2018/7/16.
+ * 订阅数据库类输入输出定义表
  */
+@Data
 public class SubscribeDbioPO {
 
     /*主键*/
@@ -31,67 +34,20 @@ public class SubscribeDbioPO {
     /*修改时间*/
     private Date modifyTime;
 
-    public Long getId() {
-        return id;
+    /*数据脱敏方式:(mask/cut)掩码/截取(唯一标识符不能够脱敏、
+    只有字符串数据才能脱敏只有param_type是input类型才有效)*/
+    private String dataMaskingType;
+
+    /*数据开始位置,默认为0*/
+    private int dataStartIndex;
+
+    /*处理数据长度，默认为1*/
+    private int dataLength;
+
+    public SubscribeDbioPO(){
+        super();
+        dataStartIndex = 0;
+        dataLength = 1;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getSubscribeId() {
-        return subscribeId;
-    }
-
-    public void setSubscribeId(Long subscribeId) {
-        this.subscribeId = subscribeId;
-    }
-
-    public String getParamType() {
-        return paramType;
-    }
-
-    public void setParamType(String paramType) {
-        this.paramType = paramType;
-    }
-
-    public Long getColumnId() {
-        return columnId;
-    }
-
-    public void setColumnId(Long columnId) {
-        this.columnId = columnId;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier;
-    }
-
-    public Date getModifyTime() {
-        return modifyTime;
-    }
-
-    public void setModifyTime(Date modifyTime) {
-        this.modifyTime = modifyTime;
-    }
 }

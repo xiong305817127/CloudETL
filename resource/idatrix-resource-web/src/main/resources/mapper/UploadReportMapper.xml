@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.report.dao.UploadReportDAO">
+
+    <resultMap id="ListResultMap"
+            type="com.idatrix.resource.report.vo.response.DataReportVO">
+        <result column="dept_name" property="deptName"/>
+        <result column="dept_code" property="deptCode"/>
+        <result column="import_task_id" property="taskName"/>
+        <result column="import_time" property="createTime"/>
+    </resultMap>
+
+    <resultMap id="CountResultMap"
+            type="com.idatrix.resource.report.vo.response.DataReportCountVO">
+        <result column="dept_name" property="deptName"/>
+        <result column="dept_code" property="deptCode"/>
+        <result column="import_task_id" property="taskName"/>
+        <result column="count" property="count"/>
+    </resultMap>
+
+    <select id="countByNumberOfTasks"
+            parameterType="com.idatrix.resource.report.vo.request.BaseSearchVO"
+            resultMap="CountResultMap">
+        SELECT
+        r.dept_name,
+        r.dept_code,
+        up.import_task_id,
+        COUNT(*) AS count
+        FROM
+        rc_data_upload up
+        INNER JOIN rc_resource r ON up.resource_id = r.id
+        <where>
+            up.import_count > 0
+            <if test="renterId != null ">
+                AND up.rent_id = #{renterId}
+            </if>
+            <if test="startTime != null ">
+                AND up.import_time <![CDATA[ >= ]]> #{startTime}
+            </if>
+            <if test="endTime != null ">
+                AND up.import_time <![CDATA[ < ]]> #{endTime}
+            </if>
+        </where>
+        GROUP BY
+        r.dept_code
+        ORDER BY count DESC
+        LIMIT #{topK}
+    </select>
+
+    <select id="countByTheAmountOfData"
+            parameterType="com.idatrix.resource.report.vo.request.BaseSearchVO"
+            resultMap="CountResultMap">
+        SELECT
+        r.dept_name,
+        r.dept_code,
+        up.import_task_id,
+        up.import_count AS count
+        FROM
+        rc_data_upload up
+        INNER JOIN rc_resource r ON up.resource_id = r.id
+        <where>
+            up.import_count > 0
+            <if test="renterId != null ">
+                AND up.rent_id = #{renterId}
+            </if>
+            <if test="startTime != null ">
+                AND up.import_time <![CDATA[ >= ]]> #{startTime}
+            </if>
+            <if test="endTime != null ">
+                AND up.import_time <![CDATA[ < ]]> #{endTime}
+            </if>
+        </where>
+        ORDER BY
+        up.import_count DESC
+        LIMIT #{topK}
+    </select>
+
+    <select id="list"
+            parameterType="com.idatrix.resource.report.vo.request.DataReportSearchVO"
+            resultMap="ListResultMap">
+        SELECT
+        r.dept_name,
+        r.dept_code,
+        up.import_task_id,
+        up.import_time
+        FROM
+        rc_data_upload up
+        INNER JOIN rc_resource r ON up.resource_id = r.id
+        <where>
+            up.import_count > 0
+            <if test="renterId != null ">
+                AND up.rent_id = #{renterId}
+            </if>
+            <if test="startTime != null ">
+                AND up.import_time <![CDATA[ >= ]]> #{startTime}
+            </if>
+            <if test="endTime != null ">
+                AND up.import_time <![CDATA[ < ]]> #{endTime}
+            </if>
+            <if test="deptCode != null">
+                AND r.dept_code = #{deptCode}
+            </if>
+        </where>
+        ORDER BY
+        up.import_time DESC
+    </select>
+</mapper>

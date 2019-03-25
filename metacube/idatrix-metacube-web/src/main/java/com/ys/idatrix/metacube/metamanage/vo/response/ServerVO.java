@@ -26,8 +26,11 @@ public class ServerVO {
     @ApiModelProperty("服务器主机名")
     private String hostname;
 
-    @ApiModelProperty("所属组织 组织编码")
+    @ApiModelProperty("组织编码")
     private String orgCode;
+
+    @ApiModelProperty("组织名称")
+    private String orgName;
 
     @ApiModelProperty("位置信息")
     private String location;

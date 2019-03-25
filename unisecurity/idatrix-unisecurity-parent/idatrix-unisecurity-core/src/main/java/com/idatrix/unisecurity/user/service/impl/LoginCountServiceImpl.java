@@ -1,12 +1,12 @@
 package com.idatrix.unisecurity.user.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.idatrix.unisecurity.common.dao.LoginCountMapper;
 import com.idatrix.unisecurity.common.domain.LoginCount;
+import com.idatrix.unisecurity.common.vo.PageResultVo;
 import com.idatrix.unisecurity.user.service.LoginCountService;
-import com.idatrix.unisecurity.user.vo.ActiveUserCountVO;
-import com.idatrix.unisecurity.user.vo.DeptLoginInfoVO;
-import com.idatrix.unisecurity.user.vo.DeptUserLoginCountVO;
-import com.idatrix.unisecurity.user.vo.UserLoginCountVO;
+import com.idatrix.unisecurity.user.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +27,7 @@ public class LoginCountServiceImpl implements LoginCountService {
     @Override
     public List<UserLoginCountVO> getLoginUserCountMonthlyStatistics(Long renterId, Integer year) {
         List<UserLoginCountVO> result = new ArrayList<>();
-        // 获取某个租户下某年的登录用户数量月度统计
+        // 获取某个租户下某年的登录用户次数月度统计
         List<UserLoginCountVO> voList = loginCountMapper.findLoginUserCountMonthlyStatistics(renterId, year);
         // 拼接出没有的月份
         Map<Integer, UserLoginCountVO> voMap =
@@ -59,13 +59,22 @@ public class LoginCountServiceImpl implements LoginCountService {
 
     @Override
     public DeptLoginInfoVO getDeptLoginInfo(Long renterId) {
-        // 本月登录用户数排行 TOP 10
+        // 本月登录用户次数排行 TOP 10
         List<DeptUserLoginCountVO> monthLoginUserRankingList = loginCountMapper.findMonthLoginUserRankingList(renterId);
-        // 登录用户数总排行 TOP 10
+        // 登录用户次数总排行 TOP 10
         List<DeptUserLoginCountVO> sumLoginUserCountRankingList = loginCountMapper.findSumLoginUserCountRankingList(renterId);
         // 封装参数返回
         DeptLoginInfoVO vo = new DeptLoginInfoVO(monthLoginUserRankingList, sumLoginUserCountRankingList);
         return vo;
+    }
+
+    @Override
+    public PageResultVo<LoginDetailsInfoVO> searchLoginDetailsInfo(LoginSearchVO search) {
+        PageHelper.startPage(search.getPage(), search.getSize());
+        List<LoginDetailsInfoVO> list = loginCountMapper.searchLoginDetailsInfo(search);
+        PageInfo<LoginDetailsInfoVO> pageInfo = new PageInfo<>();
+        PageResultVo result = new PageResultVo(pageInfo.getTotal(), list);
+        return result;
     }
 
     @Override

@@ -1,75 +1,95 @@
 package com.idatrix.resource.common.utils;
 
-public class Result {
-	private String message;
-	private int code;
-	private Object data;
-	private boolean flag;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
-	public static Result ok(Object data) {
-		Result r = new Result();
-		r.setCode(200);
-		r.setFlag(true);
-		r.setData(data);
-		return r;
-	}
+@ApiModel
+public class Result<T> {
 
-	public static Result error(int errorCode, String errorMsg) {
-		Result r = new Result();
-		r.setCode(errorCode);
-		r.setMessage(errorMsg);
-		r.setFlag(false);
-		return r;
-	}
+    @ApiModelProperty(value = "处理信息")
+    private String msg;
 
-	public String getMessage() {
-		return message;
-	}
+    @ApiModelProperty(value = "返回编码")
+    private String code;
 
-	public void setMessage(String message) {
-		this.message = message;
-	}
+    @ApiModelProperty(value = "数据内容")
+    private T data;
 
-	public int getCode() {
-		return code;
-	}
+    @ApiModelProperty(value = "成功标志")
+    private boolean flag;
 
-	public void setCode(int code) {
-		this.code = code;
-	}
+    public Result(String message, String code, T data, boolean flag) {
+        super();
+        this.msg = message;
+        this.code = code;
+        this.data = data;
+        this.flag = flag;
+    }
 
-	public Object getData() {
-		return data;
-	}
+    public Result(T data) {
+        super();
+        this.msg = null;
+        this.code = "200";
+        this.data = data;
+        this.flag = true;
+    }
 
-	public void setData(Object data) {
-		this.data = data;
-	}
+    public static<T> Result ok(T data) {
+        return new Result(null, "200", data, true);
+    }
 
-	public boolean isFlag() {
-		return flag;
-	}
+    public static Result error(String errorCode, String errorMsg) {
+        return new Result(errorMsg, errorCode, null, false);
+    }
 
-	public void setFlag(boolean flag) {
-		this.flag = flag;
-	}
+    public static Result error(String errorMsg) {
+        return error("6000000", errorMsg);
+    }
 
-	public Result(String message, int code, Object data, boolean flag) {
-		super();
-		this.message = message;
-		this.code = code;
-		this.data = data;
-		this.flag = flag;
-	}
+    public String getMsg() {
+        return msg;
+    }
 
-	public Result() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
 
-	@Override
-	public String toString() {
-		return "Result [message=" + message + ", code=" + code + ", data=" + data + ", flag=" + flag + "]";
-	}
+    public String getCode() {
+        return code;
+    }
 
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public void setData(T data) {
+        this.data = data;
+    }
+
+    public boolean isFlag() {
+        return flag;
+    }
+
+    public void setFlag(boolean flag) {
+        this.flag = flag;
+    }
+
+
+    public Result() {
+        super();
+    }
+
+    @Override
+    public String toString() {
+        return "Result{" +
+                "msg='" + msg + '\'' +
+                ", code='" + code + '\'' +
+                ", data=" + data +
+                ", flag=" + flag +
+                '}';
+    }
 }

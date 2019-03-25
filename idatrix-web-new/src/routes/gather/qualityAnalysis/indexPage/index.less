@@ -1,0 +1,105 @@
+@topPartHeight:300px;
+@lineColor:#C2C2C2;
+
+@borderColor:#EAEFF3;
+//字体蓝色
+@fontColor:#3DB5F4;
+//柱状蓝色
+@barColor:#448AD0;
+
+.indexPage{
+	padding: 10px;
+
+	.pageHeader{
+		background: @borderColor;
+		height: 30px;
+		line-height: 30px;
+		padding-left: 10px;
+	}
+
+	//上半部分
+	.part{
+		border: 1px solid @borderColor;
+		box-sizing: border-box;
+		padding: 0px;
+
+		//上半部分左边
+		.upContent{
+			height: @topPartHeight;
+			padding: 5px;
+
+			.chartView{
+				height: calc(~"@{topPartHeight} - 42px");
+			}
+		}
+
+		//上半部分右边
+		.upRightContent{
+			height: @topPartHeight;
+			padding: 5px;
+			.top{
+				height: 90px;
+				align-items: center;
+				display: flex;
+				
+				:global{
+					.ant-col-8{
+						height: 60px;
+						display: flex;
+						flex-direction: column;
+						align-items: center;
+						justify-content: center;
+						border-right:1px solid @borderColor; 
+
+						span:last-child{
+							color: @fontColor;
+							font-size: 30px;
+						}
+					}
+					.ant-col-8:last-child{
+						border-right:none;
+					}
+				}
+
+			}
+			.bottom{
+				height:calc(~"@{topPartHeight} - 100px");
+
+				.chartView{
+					width:90%
+				}
+			}
+		}
+	}
+
+	.downPart{
+		margin-top: 10px;
+		padding:10px 15px 15px 15px;
+		border: 1px solid @borderColor;
+
+		.chartItem{
+			border: 1px solid @borderColor;
+		}
+
+		:global{
+			.ant-tabs-nav-scroll{
+				text-align: center;
+			}
+			.ant-tabs-content{
+				display: none;
+			}
+		}
+
+		.pieItem{
+			width: 1210px;
+
+			.item{
+				width: 600px;
+				margin-right: 10px;
+			}
+			.item:last-child{
+				margin-right:0;
+			}
+		}
+	}
+}

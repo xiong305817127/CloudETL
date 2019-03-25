@@ -65,6 +65,7 @@ public class DbController extends BaseAction {
 	@RequestMapping(method=RequestMethod.GET, value="/getDbList")
 	@ApiOperation(value = "获取数据库连接列表(测试数据库状态,需要等待)")
 	@ApiResponses({ @ApiResponse(code = 200, response = DbBriefDto[].class, message = "成功" ) })
+	@Deprecated
 	public @ResponseBody Object getDbList( @RequestParam(required=false) String owner ,
 										   @RequestParam(required=false) Boolean isRead ,
 										   @RequestParam(required=false,defaultValue="false")boolean isMap) throws Exception {

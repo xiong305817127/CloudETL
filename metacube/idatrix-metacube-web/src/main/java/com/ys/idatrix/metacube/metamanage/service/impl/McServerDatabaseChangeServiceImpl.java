@@ -42,7 +42,7 @@ public class McServerDatabaseChangeServiceImpl implements McServerDatabaseChange
     }
 
     @Override
-    public PageResultBean<List<McServerDatabaseChangePO>> list(ChangeSearchVO searchVO) {
+    public PageResultBean<McServerDatabaseChangePO> list(ChangeSearchVO searchVO) {
         PageHelper.startPage(searchVO.getPageNum(), searchVO.getPageSize());
         List<McServerDatabaseChangePO> changePOList = changeMapper.search(searchVO);
         PageInfo<McServerDatabaseChangePO> info = new PageInfo<>(changePOList);

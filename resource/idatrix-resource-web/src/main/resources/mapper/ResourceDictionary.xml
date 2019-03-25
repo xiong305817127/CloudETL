@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.idatrix.resource.basedata.dao.DictionaryDAO">
+    <resultMap id="BaseResultMap"
+               type="com.idatrix.resource.basedata.po.DictionaryPO">
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="code" property="code" jdbcType="VARCHAR" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="type" property="type" jdbcType="VARCHAR" />
+        <result column="type_parent_id" property="typeParentId" jdbcType="VARCHAR" />
+        <result column="use_count" property="useCount" jdbcType="BIGINT" />
+        <result column="rent_id" property="rentId" jdbcType="BIGINT" />
+        <result column="creator" property="creator" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+        <result column="modifier" property="modifier" jdbcType="VARCHAR" />
+        <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, code, name, type, type_parent_id, use_count,
+        rent_id, creator, create_time, modifier, modify_time
+    </sql>
+
+    <select id="getById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_dict
+        where id=#{id}
+        GROUP BY convert(name using gbk) ASC
+    </select>
+
+
+    <select id="getSameDict" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_dict
+        where type=#{type}
+            and (name=#{name} AND code=#{code})
+            and type_parent_id=#{typeParentId}
+            and rent_id=#{rentId}
+    </select>
+
+    <select id="getSameCodeOrNameDict" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_dict
+        where type=#{type}
+        and (name=#{name} OR code=#{code})
+        and type_parent_id=#{typeParentId}
+        and rent_id=#{rentId}
+    </select>
+
+
+    <select id="getByRentIdAndType" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_dict
+        where rent_id=#{rentId} and type=#{type}
+        GROUP BY convert(name using gbk) ASC
+    </select>
+
+    <select id="getByTypeAndCode" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from rc_dict
+        where rent_id=#{rentId} and type=#{type}
+        and code=#{code}
+        limit 1
+    </select>
+
+    <select id="getByParentTypeId" resultMap="BaseResultMap"
+            parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List" />
+        from rc_dict
+        where type_parent_id = #{parentTypeId}
+        GROUP BY convert(name using gbk) ASC
+    </select>
+
+    <delete id="deleteByParentTypeId" parameterType="java.lang.Long">
+        delete from rc_dict
+        where type_parent_id = #{parentTypeId}
+    </delete>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        delete from rc_dict
+        where id = #{id}
+    </delete>
+
+    <insert id="insert" parameterType="com.idatrix.resource.basedata.po.DictionaryPO" useGeneratedKeys="true" keyProperty="id">
+        insert into rc_dict ( code, name,
+        type, type_parent_id, use_count, rent_id,
+        creator, create_time,
+        modifier, modify_time)
+        values ( #{code}, #{name}, #{type},#{typeParentId}, #{useCount},
+        #{rentId}, #{creator}, #{createTime}, #{modifier}, #{modifyTime})
+    </insert>
+
+    <update id="updateById" parameterType="com.idatrix.resource.basedata.po.DictionaryPO">
+        update rc_dict
+        set id = #{id},
+        code = #{code},
+        name = #{name},
+        type = #{type},
+        type_parent_id = #{typeParentId},
+        use_count = #{useCount},
+        rent_id = #{rentId},
+        creator = #{creator},
+        create_time = #{createTime},
+        modifier = #{modifier},
+        modify_time = #{modifyTime}
+        where id = #{id}
+    </update>
+</mapper>

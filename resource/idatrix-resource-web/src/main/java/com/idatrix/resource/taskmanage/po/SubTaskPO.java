@@ -1,10 +1,13 @@
 package com.idatrix.resource.taskmanage.po;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
  *  交换任务表
  */
+@Data
 public class SubTaskPO {
 
     /*主键, 和rc_subscribe主键一致*/
@@ -34,6 +37,9 @@ public class SubTaskPO {
     /*入库数据总量*/
     private Long importCount;
 
+    /*租户ID，用于租户隔离*/
+    private Long rentId;
+
     /*订阅数据截止时间*/
     private Date endTime;
 
@@ -45,115 +51,4 @@ public class SubTaskPO {
 
     private Date modifyTime;
 
-    public Date getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
-    }
-
-    public Long getSrcMetaId() {
-        return srcMetaId;
-    }
-
-    public void setSrcMetaId(Long srcMetaId) {
-        this.srcMetaId = srcMetaId;
-    }
-
-    public Long getDestMetaId() {
-        return destMetaId;
-    }
-
-    public void setDestMetaId(Long destMetaId) {
-        this.destMetaId = destMetaId;
-    }
-
-    public String getEtlSubscribeId() {
-        return etlSubscribeId;
-    }
-
-    public void setEtlSubscribeId(String etlSubscribeId) {
-        this.etlSubscribeId = etlSubscribeId;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getSubTaskId() {
-        return subTaskId;
-    }
-
-    public void setSubTaskId(String subTaskId) {
-        this.subTaskId = subTaskId;
-    }
-
-    public String getTaskType() {
-        return taskType;
-    }
-
-    public void setTaskType(String taskType) {
-        this.taskType = taskType;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Date getLastRunTime() {
-        return lastRunTime;
-    }
-
-    public void setLastRunTime(Date lastRunTime) {
-        this.lastRunTime = lastRunTime;
-    }
-
-    public Long getImportCount() {
-        return importCount;
-    }
-
-    public void setImportCount(Long importCount) {
-        this.importCount = importCount;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier;
-    }
-
-    public Date getModifyTime() {
-        return modifyTime;
-    }
-
-    public void setModifyTime(Date modifyTime) {
-        this.modifyTime = modifyTime;
-    }
 }

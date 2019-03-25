@@ -102,7 +102,7 @@ public class SourceServiceServiceImpl implements ISourceServiceService {
 		return sb.toString();
 	}
 
-	public String saveOrUpdateSourceService(String user, SourceServiceVO sourceServiceVO) {
+	public String saveOrUpdateSourceService(Long rentId, String user, SourceServiceVO sourceServiceVO) {
 		SourceServicePO sourceServicePO = new SourceServicePO();
 
 		//保存之前需要对各项进行非空、长度等方面的校验
@@ -117,7 +117,8 @@ public class SourceServiceServiceImpl implements ISourceServiceService {
 			sourceServicePO.setServiceType(sourceServiceVO.getServiceType());
 			sourceServicePO.setRemark(sourceServiceVO.getRemark());
 			sourceServicePO.setUrl(sourceServiceVO.getUrl());
-			sourceServicePO.setStatus(CommonConstants.STATUS_Y);
+            sourceServicePO.setStatus(CommonConstants.STATUS_Y);
+			sourceServicePO.setRentId(rentId);
 
 			//如果源服务类型为RESTful类型的话，则不需要填写Url和Wsdl；反之，如果是SOAP类型的话，则这两个字段必填
 			if (sourceServiceVO.getServiceType().equals(CommonConstants.SERVICE_TYPE_SOAP)
@@ -175,8 +176,9 @@ public class SourceServiceServiceImpl implements ISourceServiceService {
 		sourceServiceDAO.deleteByIds(idList);
 	}
 
-	public List<SourceServiceVO> getAllSourceService() {
-		List<SourceServicePO> list =  sourceServiceDAO.getAllSourceService();
+	@Override
+	public List<SourceServiceVO> getAllSourceService(Long rentId) {
+		List<SourceServicePO> list =  sourceServiceDAO.getAllSourceService(rentId);
 
 		List<SourceServiceVO> resultList = new ArrayList<SourceServiceVO>();
 

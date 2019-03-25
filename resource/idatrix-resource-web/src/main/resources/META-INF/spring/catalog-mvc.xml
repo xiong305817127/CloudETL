@@ -10,11 +10,13 @@
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<!-- 使用默认的注解映射 -->
-	<mvc:annotation-driven />
-
 	<!-- 自动扫描controller包中的控制器 -->
+    <context:component-scan base-package="com.idatrix.resource.common.config" />
 	<context:component-scan base-package="com.idatrix.resource.*.controller" />
+
+    <!-- 使用默认的注解映射 -->
+    <mvc:annotation-driven />
+    <mvc:default-servlet-handler />
 
 	<!-- 视图解析路径配置 -->
 	<bean
@@ -24,16 +26,6 @@
 		<property name="contentType" value="text/html" />
 		<property name="prefix" value="/WEB-INF/jsp/" />
 		<property name="suffix" value=".jsp" />
-	</bean>
-
-	<!-- Json转换器配置 -->
-	<bean id="mappingJackson2HttpMessageConverter"
-		class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
-		<property name="supportedMediaTypes">
-			<list>
-				<value>text/html;charset=UTF-8</value>
-			</list>
-		</property>
 	</bean>
 
     <bean id="formHttpMessageConverter"

@@ -8,7 +8,6 @@
 	  		<param name="ConversionPattern" value="[%d{dd/MM/yy hh:mm:ss:sss}] %5p %c{2}: %m%n" /> 	  
 	  	</layout>  	
 	  </appender>
-	  
     <!-- =============================================================================== -->
     <!-- 可配置多个appender来对应不同的输出：如文件输出、sql输出、控制台输出、邮件输出等 -->
     <!--    [控制台STDOUT]  -->

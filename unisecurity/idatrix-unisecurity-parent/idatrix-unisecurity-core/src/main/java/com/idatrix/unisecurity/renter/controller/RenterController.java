@@ -60,6 +60,8 @@ public class RenterController {
         }
         // 参数校验成功
         Integer count = renterService.addRenter(uRenter);
+        // 新增租户后，通知元数据注册或修改平台数据库信息
+        renterService.registerOrUpdatePlatformDatabaseInfo(uRenter.getId());
         return ResultVoUtils.ok(count);
     }
 
@@ -67,6 +69,8 @@ public class RenterController {
     @ApiOperation(value = "修改租户信息", notes = "")
     public ResultVo updateRenter(URenter uRenter) throws Exception {
         renterService.updateByPrimaryKeySelective(uRenter);
+        // 修改租户后，通知元数据注册或修改平台数据库信息
+        renterService.registerOrUpdatePlatformDatabaseInfo(uRenter.getId());
         return ResultVoUtils.ok("修改租户成功");
     }
 

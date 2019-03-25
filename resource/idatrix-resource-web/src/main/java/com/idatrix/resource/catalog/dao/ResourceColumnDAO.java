@@ -18,7 +18,5 @@ public interface ResourceColumnDAO {
 
     ResourceColumnPO getColumnById(Long id);
 
-    List<ResourceColumnPO> getAllResourceColumn();
-
     List<ResourceColumnPO> getColumnByResourceId(Long resourceId);
 }

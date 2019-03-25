@@ -12,6 +12,7 @@
         <result column="url" property="url" jdbcType="VARCHAR" />
         <result column="wsdl" property="wsdl" jdbcType="BLOB"  typeHandler="org.apache.ibatis.type.BlobTypeHandler"/>
         <result column="status" property="status" jdbcType="VARCHAR" />
+        <result column="rent_id" property="rentId" jdbcType="BIGINT" />
         <result column="creator" property="creator" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
         <result column="modifier" property="modifier" jdbcType="VARCHAR" />
@@ -19,14 +20,15 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, provider_id, provider_name, service_name, service_type, service_code, remark, url, wsdl, status, creator, create_time,
-        modifier, modify_time
+        id, provider_id, provider_name, service_name, service_type, service_code, remark, url,
+        wsdl, status, rent_id, creator, create_time, modifier, modify_time
     </sql>
 
     <select id="getAllSourceService" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List" />
         from rc_source_service WHERE status = 'Y'
+        AND rent_id=#{rentId}
     </select>
 
     <select id="getSourceServiceById" resultMap="BaseResultMap" parameterType="java.lang.Long">
@@ -63,10 +65,10 @@
             useGeneratedKeys="true" keyProperty="id">
         insert into rc_source_service (
         provider_id, provider_name, service_name, service_type, service_code, remark,
-        url, wsdl, status, creator, create_time, modifier, modify_time)
+        url, wsdl, status, rent_id, creator, create_time, modifier, modify_time)
         values (#{providerId}, #{providerName}, #{serviceName}, #{serviceType}, #{serviceCode},
         #{remark}, #{url}, #{wsdl,typeHandler=org.apache.ibatis.type.BlobTypeHandler},
-        #{status}, #{creator}, #{createTime}, #{modifier}, #{modifyTime})
+        #{status}, #{rentId}, #{creator}, #{createTime}, #{modifier}, #{modifyTime})
     </insert>
 
 
@@ -82,6 +84,7 @@
         url = #{url},
         wsdl = #{wsdl,typeHandler=org.apache.ibatis.type.BlobTypeHandler},
         status = #{status},
+        rent_id =#{rentId},
         modifier = #{modifier},
         modify_time = #{modifyTime}
         where id = #{id}
@@ -100,6 +103,9 @@
         </if>
         <if test="serviceType!=null">
             and service_type = #{serviceType}
+        </if>
+        <if test="rentId!=null">
+            and rent_id = #{rentId}
         </if>
         <if test="providerName!=null">
             and provider_name like '%${providerName}%'

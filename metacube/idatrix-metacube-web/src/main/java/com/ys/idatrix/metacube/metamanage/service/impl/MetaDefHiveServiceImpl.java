@@ -1,48 +1,26 @@
 package com.ys.idatrix.metacube.metamanage.service.impl;
 
-import static com.ys.idatrix.db.api.hive.dto.StoredType.PARQUET;
-import static com.ys.idatrix.db.api.hive.dto.StoredType.SEQUENCEFILE;
-import static com.ys.idatrix.db.api.hive.dto.StoredType.TEXTFILE;
-import static com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum.HIVE;
-import static com.ys.idatrix.metacube.common.enums.DataStatusEnum.DELETE;
-import static com.ys.idatrix.metacube.common.enums.DataStatusEnum.DRAFT;
-import static com.ys.idatrix.metacube.common.enums.DataStatusEnum.VALID;
-import static com.ys.idatrix.metacube.common.enums.TableColumnStatusEnum.CHANGE;
-import static com.ys.idatrix.metacube.common.enums.TableColumnStatusEnum.CREATE;
-import static com.ys.idatrix.metacube.common.enums.TableColumnStatusEnum.SAME;
-
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.ys.idatrix.db.api.common.RespResult;
 import com.ys.idatrix.db.api.hive.dto.HiveColumn;
 import com.ys.idatrix.db.api.hive.dto.HiveDataType;
 import com.ys.idatrix.db.api.hive.dto.HiveTable;
 import com.ys.idatrix.db.api.hive.dto.StoredType;
 import com.ys.idatrix.db.api.hive.service.HiveService;
+import com.ys.idatrix.db.api.sql.dto.SqlExecRespDto;
 import com.ys.idatrix.graph.service.api.def.DatabaseType;
 import com.ys.idatrix.metacube.api.beans.PageResultBean;
+import com.ys.idatrix.metacube.common.enums.TableColumnStatusEnum;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
-import com.ys.idatrix.metacube.metamanage.domain.McMdHiveFieldPO;
-import com.ys.idatrix.metacube.metamanage.domain.McSnapshotMdHiveFieldPO;
-import com.ys.idatrix.metacube.metamanage.domain.Metadata;
-import com.ys.idatrix.metacube.metamanage.domain.SnapshotMetadata;
-import com.ys.idatrix.metacube.metamanage.domain.SnapshotTableColumn;
-import com.ys.idatrix.metacube.metamanage.domain.TableColumn;
-import com.ys.idatrix.metacube.metamanage.mapper.McMdHiveFieldMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.McSnapshotMdHiveFieldMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.MetadataMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.SnapshotMetadataMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.SnapshotTableColumnMapper;
-import com.ys.idatrix.metacube.metamanage.mapper.TableColumnMapper;
+import com.ys.idatrix.metacube.metamanage.domain.*;
+import com.ys.idatrix.metacube.metamanage.mapper.*;
 import com.ys.idatrix.metacube.metamanage.service.IMetaDefBaseService;
 import com.ys.idatrix.metacube.metamanage.service.IMetaDefHiveService;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetaDefHiveVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo;
 import com.ys.idatrix.metacube.metamanage.vo.response.MetaDefOverviewVO;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -50,6 +28,15 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.ys.idatrix.db.api.hive.dto.StoredType.*;
+import static com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum.HIVE;
+import static com.ys.idatrix.metacube.common.enums.DataStatusEnum.DELETE;
+import static com.ys.idatrix.metacube.common.enums.DataStatusEnum.*;
+import static com.ys.idatrix.metacube.common.enums.TableColumnStatusEnum.*;
 
 /**
  * 元数据定义-Hive表格
@@ -120,6 +107,25 @@ public class MetaDefHiveServiceImpl implements IMetaDefHiveService {
         return overviewList;
     }
 
+    private Boolean verifyColumn(List<TableColumn> columnList){
+        Collection nameSet = new HashSet();
+        Collection zhNameSet = new HashSet();
+        Collection sizeList = new ArrayList();
+        if(CollectionUtils.isNotEmpty(columnList)){
+            columnList.stream().forEach( e -> {
+                if(!e.getStatus().equals(3)) {
+                    nameSet.add(e.getColumnName());
+                    zhNameSet.add(e.getDescription());
+                    sizeList.add(e.getColumnName());
+                }
+            });
+            if(sizeList.size()!=nameSet.size() || sizeList.size()!=zhNameSet.size()){
+                return false;
+            }
+        }
+        return true;
+    }
+
     private boolean verifyConfigParam(Long rentId, MetaDefHiveVO baseVO){
 
         if(StringUtils.isEmpty(baseVO.getName()) ||
@@ -127,25 +133,31 @@ public class MetaDefHiveServiceImpl implements IMetaDefHiveService {
             throw new MetaDataException("表名或者表中文名称没有配置");
         }
 
+        if(!verifyColumn(baseVO.getColumnList())){
+            throw new MetaDataException("表数据中存在相同的字段名称");
+        }
+
         //数据检验:1.同一个节点下面不能名字相同的配置，不同节点下名字相同没关系。2.中文必须唯一。
         Long id = baseVO.getId();
         if(id==null||id.equals(0L)){
             List<Metadata> sameNameDataList = metadataMapper.queryMetaData(baseVO.getSchemaId(), baseVO.getName(), null);
-            if(CollectionUtils.isNotEmpty(sameNameDataList)){
+            List<Metadata> existList = sameNameDataList.stream().filter(p->p.getStatus()!=2).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(existList)){
                 throw new MetaDataException("同一模式下存在相同表名");
             }
             List<Metadata> sameDictList = metadataMapper.queryMetaData(baseVO.getSchemaId(), null, baseVO.getIdentification());
-            if(CollectionUtils.isNotEmpty(sameDictList)){
+            List<Metadata> existSameDictList =sameDictList.stream().filter(p->p.getStatus()!=2).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(existSameDictList)){
                 throw new MetaDataException("配置的表中文名称已经存在，请修改");
             }
         }else{
             List<Metadata> sameNameDataList = metadataMapper.queryMetaData(baseVO.getSchemaId(), baseVO.getName(), null);
-            if(CollectionUtils.isNotEmpty(sameNameDataList)){
-
-                if(sameNameDataList.size()>1){
+            List<Metadata> existSameNameDataList =sameNameDataList.stream().filter(p->p.getStatus()!=2).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(existSameNameDataList)){
+                if(existSameNameDataList.size()>1){
                     throw new MetaDataException("同一模式下存在相同表名");
                 }else{
-                    Metadata sameMetaData = sameNameDataList.get(0);
+                    Metadata sameMetaData = existSameNameDataList.get(0);
                     if(!sameMetaData.getId().equals(id)){
                         throw new MetaDataException("同一模式下存在相同表名");
                     }
@@ -153,12 +165,13 @@ public class MetaDefHiveServiceImpl implements IMetaDefHiveService {
             }
 
             List<Metadata> sameDictList = metadataMapper.queryMetaData(baseVO.getSchemaId(), null, baseVO.getIdentification());
-            if(CollectionUtils.isNotEmpty(sameDictList)){
+            List<Metadata> existSameDictList =sameDictList.stream().filter(p->p.getStatus()!=2).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(existSameDictList)){
 
                 if(sameDictList.size()>1){
                     throw new MetaDataException("配置的表中文名称已经存在，请修改");
                 }else{
-                    Metadata sameMetaData = sameDictList.get(0);
+                    Metadata sameMetaData = existSameDictList.get(0);
                     if(!sameMetaData.getId().equals(id)){
                         throw new MetaDataException("配置的表中文名称已经存在，请修改");
                     }
@@ -197,6 +210,7 @@ public class MetaDefHiveServiceImpl implements IMetaDefHiveService {
                 if(status==null || status.equals(SAME.getValue())){
                     continue;
                 }else if(status.equals(CREATE.getValue())){
+                    column.setTableId(column.getTableId());
                     column.setCreator(user);
                     column.setModifier(user);
                     column.setCreateTime(new Date());
@@ -210,18 +224,21 @@ public class MetaDefHiveServiceImpl implements IMetaDefHiveService {
                 }else if(status.equals(CHANGE.getValue())){
                     TableColumn tableInfo = tableColumnMapper.selectByPrimaryKey(column.getId());
                     if(tableInfo!=null){
-                        column.setCreator(tableInfo.getCreator());
-                        column.setCreateTime(tableInfo.getCreateTime());
+
+                        BeanUtils.copyProperties(column, tableInfo);
+                        column.setModifier(user);
+                        column.setModifyTime(new Date());
                         tableColumnMapper.updateByPrimaryKeySelective(column);
                     }
 
-                }else if(status.equals(DELETE.getValue())){
+                }else if(status.equals(TableColumnStatusEnum.DELETE.getValue())){
                     TableColumn tableInfo = tableColumnMapper.selectByPrimaryKey(column.getId());
                     if(tableInfo!=null){
+                        tableInfo.setStatus(column.getStatus());
                         tableInfo.setIsDeleted(true);
-                        tableInfo.setCreator(tableInfo.getCreator());
-                        tableInfo.setCreateTime(tableInfo.getCreateTime());
-                        tableColumnMapper.updateByPrimaryKeySelective(column);
+                        tableInfo.setModifier(user);
+                        tableInfo.setModifyTime(new Date());
+                        tableColumnMapper.updateByPrimaryKeySelective(tableInfo);
                     }
                     //tableColumnMapper.delete(column.getId());
                 }
@@ -247,18 +264,19 @@ public class MetaDefHiveServiceImpl implements IMetaDefHiveService {
             mainData.setCreateTime(new Date());
             mainData.setRenterId(rentId);
             mainData.setVersion(1);
+
         }else{
             mainData = metadataMapper.selectByPrimaryKey(id);
             if(execFlag){
                 int version = mainData.getVersion();
                 mainData.setVersion(version+1);
             }
+            BeanUtils.copyProperties(baseVO, mainData);
         }
-        BeanUtils.copyProperties(baseVO, mainData);
         mainData.setModifier(user);
         mainData.setModifyTime(new Date());
         int status = DRAFT.getValue();
-        if(!execFlag){
+        if(execFlag){
             status = VALID.getValue();
         }
         mainData.setStatus(status);
@@ -274,16 +292,22 @@ public class MetaDefHiveServiceImpl implements IMetaDefHiveService {
         if(id==null||id.equals(0L)){
             hiveField = new McMdHiveFieldPO(user);
         }else{
-            mcMdHiveFieldMapper.selectByPrimaryKey(id);
+            hiveField = mcMdHiveFieldMapper.selectByPrimaryKey(id);
         }
-        BeanUtils.copyProperties(baseVO, hiveField);
-        hiveField.setId(id);
+        hiveField.setFieldsTerminated(baseVO.getFieldsTerminated());
+        hiveField.setLinesTerminated(baseVO.getLinesTerminated());
+        hiveField.setLocation(baseVO.getLocation());
+        hiveField.setIsExternalTable(baseVO.getIsExternalTable());
+        hiveField.setNullDefined(baseVO.getNullDefined());
+        hiveField.setStoreFormat(baseVO.getStoreFormat());
+//        BeanUtils.copyProperties(baseVO, hiveField);
+        hiveField.setId(mainData.getId());
         hiveField.setModifier(user);
         hiveField.setModifyTime(new Date());
         if(id==null||id.equals(0L)){
-            mcMdHiveFieldMapper.updateByPrimaryKeySelective(hiveField);
-        }else{
             mcMdHiveFieldMapper.insertSelective(hiveField);
+        }else{
+            mcMdHiveFieldMapper.updateByPrimaryKeySelective(hiveField);
         }
 
         List<TableColumn> filedTotalList = new ArrayList<>();
@@ -292,15 +316,13 @@ public class MetaDefHiveServiceImpl implements IMetaDefHiveService {
         List<TableColumn> partitionList = baseVO.getColumnList();
         if(CollectionUtils.isNotEmpty(partitionList)){
             int partitionLen = partitionList.size();
+            int partitionIndexAuto = 1;
             for(int index=0; index<partitionLen; index++){
                 TableColumn column = partitionList.get(index);
-                Integer partitionIndex = column.getIndexPartition();
-                if(partitionIndex==null || partitionIndex.equals(0)){
-                    column.setIndexPartition(index);
-                }else{
-                    column.setIndexPartition(partitionIndex);
+                column.setTableId(mainData.getId());
+                if(column.getIsPartition()&&!column.getStatus().equals(3)) {
+                    column.setIndexPartition(partitionIndexAuto++);  //重新分区排序
                 }
-                column.setIsPartition(true);
                 filedTotalList.add(column);
             }
         }
@@ -330,7 +352,7 @@ public class MetaDefHiveServiceImpl implements IMetaDefHiveService {
         //TODO:缺少AVRO支持，需要在dbProxy里面增加，Hive格式支持
         Map<String, StoredType> typeMap = new HashMap<>();
         typeMap.put("SEQUENCEFILE",SEQUENCEFILE);
-        typeMap.put("TEXFILE",TEXTFILE);
+        typeMap.put("TEXTFILE",TEXTFILE);
         typeMap.put("PARQUET",PARQUET);
         typeMap.put("AVRO",PARQUET);
 
@@ -338,8 +360,11 @@ public class MetaDefHiveServiceImpl implements IMetaDefHiveService {
         HiveTable hiveTable = new HiveTable(baseVO.getName(), baseVO.getDatabaseName(), baseVO.getRemark());
         List<TableColumn>  filedList = baseVO.getColumnList();
         boolean fieldFlag = false;
-        if(CollectionUtils.isNotEmpty(filedList)){
+        if(CollectionUtils.isNotEmpty(filedList) ){
             for(TableColumn pro : filedList) {
+                if(pro.getStatus().equals(TableColumnStatusEnum.DELETE.getValue())){
+                    continue;
+                }
                 HiveColumn col = new HiveColumn(pro.getColumnName(),
                         HiveDataType.valueOf(pro.getColumnType().toUpperCase()), pro.getDescription());
                 if (pro.getIsPartition()) {
@@ -356,16 +381,32 @@ public class MetaDefHiveServiceImpl implements IMetaDefHiveService {
 
         //Hive 目前只支持新建
         Long id = baseVO.getId();
-        if (id==null||id.equals(0L)) {
-//            hiveTable.setFieldsTerminated(baseVO.getFieldsTerminated().charAt(0));
-//            hiveTable.setLinesTerminated(baseVO.getLinesTerminated().charAt(0));
-//            hiveTable.setStoredType(typeMap.get(baseVO.getStoreFormat()));
-//            log.info("元数据创建Hive表格-user:{},hiveTable:{}", user, JSON.toJSONString(hiveTable));
-//            SqlExecuteResult sr = hiveService.createTable(user, hiveTable);
-//            log.info("元数据创建Hive返回-{}",sr.toString());
-//            if(!sr.isSuccess()){
-//                throw new MetaDataException("Hive创建表格失败 "+sr.getMessage());
-//            }
+        int status = 0;
+        if(id!=null && !id.equals(0L)){
+            Metadata mainData = metadataMapper.selectByPrimaryKey(id);
+            if(mainData!=null){
+                status = mainData.getStatus();
+            }
+        }
+
+        if (status==DRAFT.getValue()) {
+            if(StringUtils.isNotEmpty(baseVO.getFieldsTerminated())){
+                char[] fields = baseVO.getFieldsTerminated().toCharArray();
+                hiveTable.setFieldsTerminated(fields[0]);
+            }
+            if(StringUtils.isNotEmpty(baseVO.getLinesTerminated())) {
+                char[] lines = baseVO.getLinesTerminated().toCharArray();
+                hiveTable.setLinesTerminated(lines[0]);
+            }
+            if(StringUtils.isNotEmpty(baseVO.getStoreFormat())){
+                hiveTable.setStoredType(typeMap.get(baseVO.getStoreFormat()));
+            }
+            log.info("元数据创建Hive表格-user:{},hiveTable:{}", user, JSON.toJSONString(hiveTable));
+            RespResult<SqlExecRespDto> sr = hiveService.createTable(user, hiveTable);
+            log.info("元数据创建Hive返回-{}",sr.toString());
+            if(!sr.isSuccess()){
+                throw new MetaDataException("Hive创建表格失败 "+sr.getMsg());
+            }
         } else {
             //暂时元数据未提供修改 HIVE 操作
             log.warn("HIVE 暂时不提供表修改操作");
@@ -474,15 +515,20 @@ public class MetaDefHiveServiceImpl implements IMetaDefHiveService {
 
         MetaDefHiveVO hiveVO = new MetaDefHiveVO();
         BeanUtils.copyProperties(data, hiveVO);
-        BeanUtils.copyProperties(fieldPO, hiveVO);
+
+        hiveVO.setFieldsTerminated(fieldPO.getFieldsTerminated());
+        hiveVO.setLinesTerminated(fieldPO.getLinesTerminated());
+        hiveVO.setLocation(fieldPO.getLocation());
+        hiveVO.setIsExternalTable(fieldPO.getIsExternalTable());
+        hiveVO.setNullDefined(fieldPO.getNullDefined());
+        hiveVO.setStoreFormat(fieldPO.getStoreFormat());
 
         List<TableColumn> fieldList = new ArrayList<>();
         for(TableColumn column: columnList){
-            if(column.getIsPartition()){
-                fieldList.add(column);
-            }else{
-                fieldList.add(column);
+            if(column.getStatus().equals(3)){
+                continue;
             }
+            fieldList.add(column);
         }
         if(CollectionUtils.isNotEmpty(columnList)){
             hiveVO.setColumnList(fieldList);

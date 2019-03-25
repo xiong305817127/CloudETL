@@ -7,6 +7,8 @@ package com.ys.idatrix.cloudetl.reference.metacube;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.pentaho.di.core.Const;
@@ -83,7 +85,7 @@ public class MetaCubeDatabase extends MetaCubeBase {
 		}
 	}
 	
-	private DatabaseTypeEnum adjustDatabaseType(String dbType) {
+	private static DatabaseTypeEnum adjustDatabaseType(String dbType) {
 		if( Utils.isEmpty(dbType) ) {
 			return null ;
 		}
@@ -136,7 +138,7 @@ public class MetaCubeDatabase extends MetaCubeBase {
 				String type = adjustDatabaseType(info.getDatabaseType());
 					
 				MetaCubeDbDatabaseDto mddd = new MetaCubeDbDatabaseDto();
-				mddd.setName(generateConnectionName(type, info.getIp(), info.getPort()+""));
+				mddd.setName(generateConnectionDisplayName(type, info.getIp(), info.getPort(),null));
 				mddd.setDatabaseId(info.getDatabaseId());
 				mddd.setIp(info.getIp());
 				mddd.setPort(info.getPort());
@@ -152,7 +154,7 @@ public class MetaCubeDatabase extends MetaCubeBase {
 								mdsd.setPassword(sc.getPassword());
 								mdsd.setServiceName(sc.getServiceName());
 								
-								mdsd.setName(generateConnectionName(type, info.getIp(), info.getPort()+""));
+								mdsd.setName(generateConnectionDisplayName(type, info.getIp(), info.getPort(),sc.getSchemaName()));
 								mdsd.setDatabaseId(info.getDatabaseId());
 								mdsd.setDatabaseType(type);
 								mdsd.setIp(info.getIp());
@@ -166,6 +168,12 @@ public class MetaCubeDatabase extends MetaCubeBase {
 			}
 		}
 		return dbMetaList;
+	}
+	
+	public List<MetaCubeDbSchemaDto> getMetacubeDbSchemas(String owner ,  Long databaseId ,  String connectionName , Boolean isRead){
+		String[] ds = analysisDisplayName(connectionName) ;
+		ds =  ds==null ? new String[] {null,null,"0"} : ds ;
+		return getMetacubeDbSchemas(owner, databaseId, ds[1], Integer.valueOf(ds[2]), ds[0] , isRead);
 	}
 	
 	public List<MetaCubeDbSchemaDto> getMetacubeDbSchemas(String owner , Long databaseId , String ip, Integer port, String databaseType, Boolean isRead) {
@@ -186,7 +194,7 @@ public class MetaCubeDatabase extends MetaCubeBase {
 								mdsd.setPassword(sc.getPassword());
 								mdsd.setServiceName(sc.getServiceName());
 								
-								mdsd.setName(generateConnectionName(databaseType, ip, port+"" ));
+								mdsd.setName(generateConnectionDisplayName(databaseType, ip, port,sc.getSchemaName() ));
 								mdsd.setDatabaseId(databaseId);
 								mdsd.setDatabaseType(databaseType);
 								mdsd.setIp(ip);
@@ -224,7 +232,7 @@ public class MetaCubeDatabase extends MetaCubeBase {
 					mdsd.setPassword(schema.getPassword());
 					mdsd.setServiceName(schema.getServiceName());
 					
-					mdsd.setName(generateConnectionName(databaseType, schema.getIp(), schema.getPort()+"" ));
+					mdsd.setName(generateConnectionDisplayName(databaseType, schema.getIp(), schema.getPort(),schema.getSchemaName() ));
 					mdsd.setDatabaseId(schema.getDatabaseId());
 					mdsd.setDatabaseType(databaseType);
 					mdsd.setIp(schema.getIp());
@@ -250,7 +258,10 @@ public class MetaCubeDatabase extends MetaCubeBase {
 				if( schemaList == null || schemaList.size() == 0) {
 					schemaList = getMetacubeDbSchemas(owner, db.getDatabaseId(), db.getIp(), db.getPort(), db.getType(),isRead);
 				}
-				result.addAll( db.getSchemaList().stream().map(s -> {
+				if(schemaList == null ) {
+					return  ;
+				}
+				result.addAll( schemaList.stream().map(s -> {
 					return parseDatabaseMeta(owner , s);
 					}).collect(Collectors.toList()) 
 					);
@@ -332,7 +343,8 @@ public class MetaCubeDatabase extends MetaCubeBase {
 					fieldsDto.setFieldType(f.getDataType());
 					fieldsDto.setFieldLength(f.getLength());
 					fieldsDto.setIsPk(f.getIsPk());
-
+					fieldsDto.setId(f.getId()+"");
+					fieldsDto.setFieldPrecision(f.getTypePrecision());
 					result.add(fieldsDto);
 					
 				});
@@ -352,7 +364,7 @@ public class MetaCubeDatabase extends MetaCubeBase {
 	 * @return
 	 * @throws Exception
 	 */
-	public DatabaseMeta parseDatabaseMeta(String owner , MetaCubeDbSchemaDto schemaDto) {
+	private DatabaseMeta parseDatabaseMeta(String owner , MetaCubeDbSchemaDto schemaDto) {
 		if( schemaDto == null) {
 			return null;
 		}
@@ -369,18 +381,17 @@ public class MetaCubeDatabase extends MetaCubeBase {
 			CloudLogger.getInstance(owner).error(this ,"数据库插件类型错误,未知的类型:" + type );
 			return null ;
 		}
-		
-		String connectionName = generateConnectionName(type, schemaDto.getIp(), schemaDto.getPort()+"" );
-		
 		try {
 			DatabaseInterface databaseInterface = (DatabaseInterface) PluginRegistry.getInstance().loadClass(plugin);
 	
 			databaseInterface.setPluginId(type);
 	
 			databaseMeta.setDatabaseInterface(databaseInterface);
-			databaseMeta.setObjectId(new StringObjectId(connectionName));
+			databaseMeta.setObjectId(new StringObjectId(generateConnectionDisplayName(type, schemaDto.getIp(), schemaDto.getPort() ,schemaDto.getSchemaName())));
 	
-			databaseMeta.setName(connectionName);
+			databaseMeta.setName(schemaDto.getSchemaId().toString());
+			databaseMeta.setDisplayName(generateConnectionDisplayName(type, schemaDto.getIp(), schemaDto.getPort() ,null ));
+			
 			databaseMeta.setDatabaseType(type);
 			databaseMeta.setAccessType(0); //Native
 			databaseMeta.setDBName( Const.NVL(schemaDto.getServiceName(), schemaDto.getSchemaName()) );
@@ -445,18 +456,35 @@ public class MetaCubeDatabase extends MetaCubeBase {
 		return (Long) dbMeta.getAttributes().get(ATRRIBUTE_METACUBE_SCHEMA_ID);
 	}
 	
-	private String generateConnectionName(String type , String ip , String port ) {
-		return type+"["+ip+":"+port+"]";
+	private static String generateConnectionDisplayName(String type , String ip , Integer port ,String schema) {
+		DatabaseTypeEnum adjustType = adjustDatabaseType(type) ;
+		type =adjustType != null?adjustType.getName(): "UNKNOW";
+		if( Utils.isEmpty( schema) ) {
+			return type+"["+ip+":"+port+"]";
+		}else {
+			return type+"["+ip+":"+port+"/"+schema+"]";
+		}
+		
 	}
 
-	public String[] analysisName(String name) {
+	private static String[] analysisDisplayName(String name) {
 		if(Utils.isEmpty(name)) {
 			return null ;
 		}
-		String[] res = new String[3];
-		res[0] = name.replaceAll("(?<=^.*)\\[.*", "");
-		res[1] = name.replaceAll(".*\\[(?=[\\d|\\.]*)", "").replaceAll("(?<=^[\\d|\\.]*):.*", "") ;
-		res[2] = name.replaceAll(".*\\[[\\d|\\.]*:(?=[\\d]*)", "").replaceAll("(?<=^\\d*)[/|\\]].*", "") ;
+		
+		String regex = "(.*)\\[(.*):(\\d+)/?(\\w*)\\]";
+		Pattern pattern = Pattern.compile(regex);  
+		Matcher matcher = pattern.matcher(name);  
+		matcher.matches();
+		String[] res = new String[matcher.groupCount()];
+		if (matcher.groupCount() >= 3 ) {  
+			res[0] = matcher.group(1) ;
+			res[1] =  matcher.group(2) ;
+			res[2] =  matcher.group(3) ;
+			if( matcher.groupCount() == 4 ) {
+				res[3] =  matcher.group(4) ;
+			}
+		}  
 		return res ;
 	}
 	

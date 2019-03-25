@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-	   xmlns:aop="http://www.springframework.org/schema/aop"
-	   xsi:schemaLocation="
-            http://www.springframework.org/schema/beans
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
             http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
             http://www.springframework.org/schema/context
-            http://www.springframework.org/schema/context/spring-context-4.0.xsd
-            http://www.springframework.org/schema/task
-            http://www.springframework.org/schema/task/spring-task-4.0.xsd">
+            http://www.springframework.org/schema/context/spring-context-4.0.xsd">
 
 	<bean
 			class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -24,7 +21,8 @@
 	<!--① 扫描Spring Bean -->
 	<context:component-scan base-package="com.idatrix.resource" >
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
-	</context:component-scan>
+        <context:exclude-filter type="regex" expression="com.idatrix.resource.common.config.*"/>
+    </context:component-scan>
 
 	<import resource="catalog-mybatis.xml"/>
 	<import resource="catalog-dubbo.xml"/>

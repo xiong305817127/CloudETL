@@ -26,7 +26,6 @@ import java.util.List;
 @Service("systemConfigService")
 public class SystemConfigServiceImpl implements ISystemConfigService {
 
-
     @Autowired
     private SystemConfigDAO systemConfigDAO;
 
@@ -37,13 +36,14 @@ public class SystemConfigServiceImpl implements ISystemConfigService {
     private UserUtils userUtils;
 
     @Override
-    public Long save(String user, SystemConfigVO systemConfigVO) throws Exception{
+    public Long save(Long rentId, String user, SystemConfigVO systemConfigVO) throws Exception{
 
         if(StringUtils.equals(systemConfigVO.getOriginFileRoot(), systemConfigVO.getFileRoot())){
             throw new Exception("上报文件目录和文件类型资源目录不能配置一样，请修改配置。");
         }
         Long configId = systemConfigVO.getId();
         SystemConfigPO scPO = tranforSystemConfigVoToPo(systemConfigVO);
+        scPO.setRentId(rentId);
         scPO.setModifier(user);
         scPO.setModifyTime(new Date());
         if(configId==null || configId==0){
@@ -64,28 +64,21 @@ public class SystemConfigServiceImpl implements ISystemConfigService {
     @Override
     public SystemConfigVO getSystemConfig(String user) {
 
-//        SystemConfigPO scPO = systemConfigDAO.getByCreatorName(user)
         SystemConfigPO scPO = getByUserName(user);
-        //SystemConfigPO scPO = systemConfigDAO.getLastestSysConfig();
         return tranforSystemConfigPoToVo(scPO);
+    }
+
+    @Override
+    public SystemConfigVO getSystemConfig(Long rentId) {
+        return tranforSystemConfigPoToVo(systemConfigDAO.getSysConfigByRentId(rentId));
     }
 
     private SystemConfigPO getByUserName(String user){
 
-        SystemConfigPO scPO = systemConfigDAO.getByCreatorName(user);
-        if(scPO==null){
-
-            //没有根据用户存储过，需要查找租户来查询信息
-            User userInfo = userService.findByUserName(user);
-            Long rentId = userInfo.getRenterId();
-            scPO = systemConfigDAO.getAdaptByRentId(rentId.toString()+"+");
-            if(scPO==null){
-                User rentUserInfo = userService.findRenterByRenterId(rentId);
-                if(rentUserInfo!=null){
-                    scPO = systemConfigDAO.getByCreatorName(rentUserInfo.getUsername());
-                }
-            }
-        }
+        //没有根据用户存储过，需要查找租户来查询信息
+        User userInfo = userService.findByUserName(user);
+        Long rentId = userInfo.getRenterId();
+        SystemConfigPO scPO = systemConfigDAO.getSysConfigByRentId(rentId);
         return scPO;
     }
 
@@ -96,29 +89,23 @@ public class SystemConfigServiceImpl implements ISystemConfigService {
 
     @Override
     public SystemConfigPO getSystemConfig() {
-
         String userName = userUtils.getCurrentUserName();
         return getByUserName(userName);
    }
-
-
 
     @Override
     public String getCenterUserName(Long rentId) throws Exception {
 
         String centerAdminName = null;
-
-        SystemConfigPO scPO = systemConfigDAO.getAdaptByRentId(rentId.toString()+"+");
+        SystemConfigPO scPO = systemConfigDAO.getSysConfigByRentId(rentId);
         Long centerAdminRole = scPO.getCenterAdminRole();
-        //Long centerAdminRole = getCenterAdminRoleId();
-
         if (centerAdminRole != null && centerAdminRole > 0) {
             List<User> userList = userService.findUserByRoleAndRenter(centerAdminRole.intValue(), rentId);
             if (userList != null && userList.size() > 0) {
                 User approveUser = userList.get(0);
                 centerAdminName = approveUser.getUsername();
             } else {
-                throw new RuntimeException("还未设置数据中心管理员，请先配置数据中心管理员再提交注册");
+                throw new Exception("还未设置数据中心管理员，请先配置数据中心管理员再提交注册");
             }
         }
         return centerAdminName;
@@ -172,16 +159,12 @@ public class SystemConfigServiceImpl implements ISystemConfigService {
         if(sysConfigPO!=null){
             Long deptAdminRol = sysConfigPO.getSubApproverRole();
             if(deptAdminRol!=null && deptAdminRol>0) {
-                //int deptId = (Integer) userSSOInfo.getProperty("deptId");
-                //int deptId = creatorInfo.getDeptId().intValue();
                 int deptIdValue =  deptId.intValue();
                 List<User> userList = userService.findUsersByDeptAndRole(deptIdValue, deptAdminRol.intValue());
                 if (userList != null && userList.size() > 0) {
                     approveUser = userList.get(0);
-//                    approve = approveUser.getUsername();
-//                    approveName = approveUser.getRealName();
                 } else {
-                    throw new RuntimeException("还未设置订阅管理员，请先配置订阅管理员再提交订阅");
+                    throw new Exception("还未设置订阅管理员，请先配置订阅管理员再提交订阅");
                 }
             }
         }
@@ -196,13 +179,11 @@ public class SystemConfigServiceImpl implements ISystemConfigService {
         if (sysConfigPO != null) {
             Long deptStaffRole = sysConfigPO.getDeptStaffRole();
             if (deptStaffRole != null && deptStaffRole > 0) {
-                List<User> userList = new ArrayList<User>();
-                userList = userService.findUsersByDeptAndRole(deptId, deptStaffRole.intValue());
+                List<User> userList = userService.findUsersByDeptAndRole(deptId, deptStaffRole.intValue());
                 if (userList != null && userList.size() > 0) {
                     approveUser = userList.get(0);
-                    //deptStaffName = approveUser.getUsername();
                 } else {
-                    throw new RuntimeException("还未设置部门填报人员信息，请先配置填报人员信息再提交注册");
+                    throw new Exception("还未设置部门填报人员信息，请先配置填报人员信息再提交注册");
                 }
             }
         } else {
@@ -219,16 +200,12 @@ public class SystemConfigServiceImpl implements ISystemConfigService {
         if(sysConfigPO!=null){
             Long deptAdminRol = sysConfigPO.getDeptAdminRole();
             if(deptAdminRol!=null && deptAdminRol>0) {
-//                int deptId = (Integer) userSSOInfo.getProperty("deptId");
                 int deptId = userUtils.getCurrentUserDeptId();
-                List<User> userList = new ArrayList<User>();
-                userList = userService.findUsersByDeptAndRole(deptId, deptAdminRol.intValue());
+                List<User> userList =userService.findUsersByDeptAndRole(deptId, deptAdminRol.intValue());
                 if (userList != null && userList.size() > 0) {
                     approveUser = userList.get(0);
-//                    approve = approveUser.getUsername();
-//                    approveName = approveUser.getRealName();
                 } else {
-                    throw new RuntimeException("还未设置部门管理员，请先配置部门管理员再提交注册");
+                    throw new Exception("还未设置部门管理员，请先配置部门管理员再提交注册");
                 }
             }
         }else{
@@ -246,17 +223,12 @@ public class SystemConfigServiceImpl implements ISystemConfigService {
         if(sysConfigPO!=null){
             Long deptAdminRol = sysConfigPO.getCenterAdminRole();
             if(deptAdminRol!=null && deptAdminRol>0) {
-//                int deptId = (Integer) userSSOInfo.getProperty("deptId");
                 int deptId = userUtils.getCurrentUserDeptId();
-                List<User> userList = new ArrayList<User>();
-                userList = userService.findUserByRoleAndRenter(deptAdminRol.intValue(), rentId);
-//                        userList = userService.findUsersByDeptAndRole(deptId, deptAdminRol.intValue());
+                List<User> userList = userService.findUserByRoleAndRenter(deptAdminRol.intValue(), rentId);
                 if (userList != null && userList.size() > 0) {
                     approveUser = userList.get(0);
-//                    nextApprove = approveUser.getUsername();
-//                    nextApproveName = approveUser.getRealName();
                 } else {
-                    throw new RuntimeException("还未设置数据中心目录管理员，请先配置再提交发布审核");
+                    throw new Exception("还未设置数据中心目录管理员，请先配置再提交发布审核");
                 }
             }
         }else{

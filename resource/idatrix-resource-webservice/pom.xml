@@ -21,13 +21,31 @@
     <druid.version>1.1.6</druid.version>
     <slf4j.version>1.7.7</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
-    <db.agent.api.version>1.2.22-SNAPSHOT</db.agent.api.version>
-    <db.proxy.api.version>1.2.22-SNAPSHOT</db.proxy.api.version>
-    <db.metacube.api.version>1.2.22-SNAPSHOT</db.metacube.api.version>
-      <netty.version>3.10.5.Final</netty.version>
+    <db.api.version>2.0.0-SNAPSHOT</db.api.version>
+    <db.metacube.api.version>2.0.0-SNAPSHOT</db.metacube.api.version>
+    <netty.version>3.10.5.Final</netty.version>
   </properties>
 
   <dependencies>
+      <dependency>
+          <groupId>com.idatrix.unisecurity</groupId>
+          <artifactId>idatrix-unisecurity-api</artifactId>
+          <version>2.0.0-SNAPSHOT</version>
+          <exclusions>
+              <exclusion>
+                  <artifactId>quartz</artifactId>
+                  <groupId>org.opensymphony.quartz</groupId>
+              </exclusion>
+              <exclusion>
+                  <artifactId>shiro-quartz</artifactId>
+                  <groupId>org.apache.shiro</groupId>
+              </exclusion>
+              <exclusion>
+                  <artifactId>mysql-connector-java</artifactId>
+                  <groupId>mysql</groupId>
+              </exclusion>
+          </exclusions>
+      </dependency>
       <dependency>
           <groupId>com.ys</groupId>
           <artifactId>idatrix-metacube-api</artifactId>
@@ -41,31 +59,8 @@
       </dependency>
     <dependency>
       <groupId>com.ys</groupId>
-      <artifactId>idatrix-db-proxy-api</artifactId>
-      <version>${db.proxy.api.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.cxf</groupId>
-          <artifactId>cxf-rt-frontend-jaxws</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.cxf</groupId>
-          <artifactId>cxf-rt-transports-http</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.cxf</groupId>
-          <artifactId>cxf-rt-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.cxf</groupId>
-          <artifactId>cxf-rt-frontend-simple</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.ys</groupId>
       <artifactId>idatrix-cloudetl-service-api</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>2.0.0-SNAPSHOT</version>
     </dependency>
     <!-- Servlet  -->
     <dependency>
@@ -226,7 +221,44 @@
           <version>${netty.version}</version>
       </dependency>
 
+      <dependency>
+          <!-- 使用Junit4, 因为Junit4可以使用注解方式来运行Junit -->
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>4.11</version>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>com.ys</groupId>
+          <artifactId>idatrix-db-api</artifactId>
+          <version>${db.api.version}</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+      <dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+          <version>3.8.1</version>
+      </dependency>
 
+      <dependency>
+          <groupId>com.alibaba</groupId>
+          <artifactId>fastjson</artifactId>
+          <version>1.2.39</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+      <dependency>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+          <version>1.7.25</version>
+      </dependency>
+
+      <!-- https://mvnrepository.com/artifact/org.springframework/spring-test -->
+      <dependency>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-test</artifactId>
+          <version>5.1.4.RELEASE</version>
+          <scope>test</scope>
+      </dependency>
   </dependencies>
 
   <build>

@@ -17,20 +17,6 @@
         <param-value>dev</param-value>
     </context-param>
 
-    <!-- 解决乱码 -->
-    <filter>
-        <filter-name>encodingFilter</filter-name>
-        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
-        <init-param>
-            <param-name>encoding</param-name>
-            <param-value>UTF-8</param-value>
-        </init-param>
-    </filter>
-    <filter-mapping>
-        <filter-name>encodingFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
     <!-- 防止spring内存溢出监听器 -->
     <listener>
         <listener-class>org.springframework.web.util.IntrospectorCleanupListener</listener-class>
@@ -96,14 +82,18 @@
     </filter-mapping> -->
     <!-- SSO Filter End -->
 
-    <!-- shiro filter -->
+    <!-- 解决乱码 -->
     <filter>
-        <filter-name>shiroFilter</filter-name>
-        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+        <filter-name>encodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
     </filter>
     <filter-mapping>
-        <filter-name>shiroFilter</filter-name>
-        <url-pattern>*.shtml</url-pattern>
+        <filter-name>encodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
     </filter-mapping>
 
     <!-- from 表单支持put请求 -->
@@ -114,6 +104,16 @@
     <filter-mapping>
         <filter-name>hiddenHttpMethodFilter</filter-name>
         <servlet-name>springMvc</servlet-name>
+    </filter-mapping>
+
+    <!-- shiro filter -->
+    <filter>
+        <filter-name>shiroFilter</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>shiroFilter</filter-name>
+        <url-pattern>*.shtml</url-pattern>
     </filter-mapping>
 
     <!-- spring mvc servlet -->

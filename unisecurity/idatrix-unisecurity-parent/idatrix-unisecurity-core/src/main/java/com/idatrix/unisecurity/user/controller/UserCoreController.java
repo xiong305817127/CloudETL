@@ -1,3 +1,4 @@
+/*
 package com.idatrix.unisecurity.user.controller;
 
 import com.idatrix.unisecurity.common.domain.UUser;
@@ -16,9 +17,11 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.Map;
 
+*/
 /**
  * 当前没有看到这个请求
- */
+ *//*
+
 @ApiIgnore
 @RequestMapping("/user")
 @RestController
@@ -35,13 +38,15 @@ public class UserCoreController {
         return resultMap;
     }
 
-    /**
+    */
+/**
      * 密码修改
      * @author oyr
      * @date 2018/9/6 9:55
      * @param [pswd, newPswd]
      * @return java.util.Map<java.lang.String,java.lang.Object>
-     */
+     *//*
+
     @RequestMapping(value = "/updatePswd", method = RequestMethod.POST)
     public Map<String, Object> updatePswd(String pswd, String newPswd) {
         Map resultMap = ResultVoUtils.resultMap();
@@ -73,13 +78,15 @@ public class UserCoreController {
         return resultMap;
     }
 
-    /**
+    */
+/**
      * 个人资料修改
      * @author oyr
      * @date 2018/9/6 9:55
      * @param [entity]
      * @return java.util.Map<java.lang.String,java.lang.Object>
-     */
+     *//*
+
     @RequestMapping(value = "/updateSelf", method = RequestMethod.POST)
     public Map<String, Object> updateSelf(UUser entity) {
         Map resultMap = ResultVoUtils.resultMap();
@@ -95,3 +102,4 @@ public class UserCoreController {
         return resultMap;
     }
 }
+*/

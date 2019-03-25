@@ -221,7 +221,7 @@ public class SPExecSql implements StepParameter, StepDataRelationshipParser {
 		}
 		jes.setArguments(arguments);
 
-		jes.setConnection(execSQLMeta.getDatabaseMeta() == null ? "" : execSQLMeta.getDatabaseMeta().getName());
+		jes.setConnection(execSQLMeta.getDatabaseMeta() == null ? "" : execSQLMeta.getDatabaseMeta().getDisplayName() );
 		jes.setDeleteField(execSQLMeta.getDeleteField());
 		jes.setExecutedEachInputRow(execSQLMeta.isExecutedEachInputRow());
 		jes.setInsertField(execSQLMeta.getInsertField());
@@ -260,7 +260,7 @@ public class SPExecSql implements StepParameter, StepDataRelationshipParser {
 			}
 		}
 
-		execSQLMeta.setDatabaseMeta(DatabaseMeta.findDatabase(databases, jes.getConnection()));
+		execSQLMeta.setDatabaseMeta(DatabaseMeta.findDatabase(databases, jes.getSchemaId()!= null? Long.toString(jes.getSchemaId()) : null  ));
 
 		execSQLMeta.setDeleteField(jes.getDeleteField());
 		execSQLMeta.setExecutedEachInputRow(jes.getExecutedEachInputRow());

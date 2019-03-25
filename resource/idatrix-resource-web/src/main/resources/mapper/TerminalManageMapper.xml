@@ -19,6 +19,7 @@
         <result column="hdfs_switch_root" property="hdfsSwitchRoot" jdbcType="VARCHAR" />
         <result column="sftp_port" property="sftpPort" jdbcType="VARCHAR" />
         <result column="sftp_username" property="sftpUsername" jdbcType="VARCHAR" />
+        <result column="rent_id" property="rentId" jdbcType="BIGINT" />
         <result column="creator" property="creator" jdbcType="VARCHAR" />
         <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
         <result column="modifier" property="modifier" jdbcType="VARCHAR" />
@@ -27,18 +28,18 @@
 
     <sql id="Base_Column_List">
         id, dept_id, dept_final_id, dept_code, dept_name, tm_name, tm_ip, tm_schema_id, tm_schema_name, tm_db_id, tm_db_name, tm_db_port, tm_db_type, sftp_switch_root,
-        hdfs_switch_root, sftp_port, sftp_username, creator, create_time, modifier, modify_time
+        hdfs_switch_root, sftp_port, sftp_username, rent_id, creator, create_time, modifier, modify_time
     </sql>
 
     <insert id="insertTerminalManageRecord" parameterType="com.idatrix.resource.terminalmanage.po.TerminalManagePO"
             useGeneratedKeys="true" keyProperty="id">
         insert into rc_tm (
         dept_id, dept_final_id, dept_code, dept_name, tm_name, tm_ip, tm_schema_id, tm_schema_name,
-        tm_db_id, tm_db_name, tm_db_port, tm_db_type, sftp_switch_root,
+        tm_db_id, tm_db_name, tm_db_port, tm_db_type, sftp_switch_root, rent_id,
         hdfs_switch_root, sftp_port, sftp_username, creator, create_time, modifier, modify_time)
-        values (#{deptId}, #{deptFinalId}, #{deptCode}, #{deptName}, #{tmName}, #{tmIP}, #{schemaId}, #{schemaName},
-        #{tmDBId}, #{tmDBName}, #{tmDBPort}, #{tmDBType},
-        #{sftpSwitchRoot}, #{hdfsSwitchRoot}, #{sftpPort}, #{sftpUsername},
+        values (#{deptId}, #{deptFinalId}, #{deptCode}, #{deptName}, #{tmName}, #{tmIP},
+         #{schemaId}, #{schemaName}, #{tmDBId}, #{tmDBName}, #{tmDBPort}, #{tmDBType},
+        #{sftpSwitchRoot}, #{rentId},  #{hdfsSwitchRoot}, #{sftpPort}, #{sftpUsername},
         #{creator}, #{createTime}, #{modifier},
         #{modifyTime})
     </insert>
@@ -57,9 +58,11 @@
         tm_db_id = #{tmDBId},
         tm_db_name = #{tmDBName},
         tm_db_port = #{tmDBPort},
+        tm_db_type = #{tmDBType},
         sftp_switch_root = #{sftpSwitchRoot},
         hdfs_switch_root = #{hdfsSwitchRoot},
         sftp_port = #{sftpPort},
+        rent_id=#{rentId},
         modifier = #{modifier},
         modify_time = #{modifyTime}
         where id = #{id}
@@ -107,8 +110,8 @@
         <if test="deptName!=null">
             and t.dept_name like '%${deptName}%'
         </if>
-        <if test="userName!=null">
-            and t.creator=#{userName}
+        <if test="rentId!=null">
+            and t.rent_id=#{rentId}
         </if>
         order by t.create_time desc
     </select>

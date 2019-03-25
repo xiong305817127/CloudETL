@@ -10,10 +10,13 @@ import com.idatrix.unisecurity.api.domain.User;
 public interface ISystemConfigService {
 
     /*存储系统配置*/
-    Long save(String user, SystemConfigVO systemConfigVO) throws Exception;
+    Long save(Long rentId, String user, SystemConfigVO systemConfigVO) throws Exception;
 
     /*获取当前用户系统配置*/
     SystemConfigVO getSystemConfig(String user);
+
+    /*获取当前用户系统配置*/
+    SystemConfigVO getSystemConfig(Long rentId);
 
     /*根据用户系统参数*/
     SystemConfigPO getSystemConfigByUser(String user);

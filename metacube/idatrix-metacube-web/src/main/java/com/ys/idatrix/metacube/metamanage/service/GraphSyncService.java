@@ -1,5 +1,10 @@
 package com.ys.idatrix.metacube.metamanage.service;
 
+import com.ys.idatrix.graph.service.api.dto.edge.FkRelationshipDto;
+import com.ys.idatrix.graph.service.api.dto.node.TableNodeDto;
+
+import java.util.List;
+
 /**
  * @ClassName GraphSyncService
  * @Description
@@ -16,6 +21,13 @@ public interface GraphSyncService {
     // 删除表节点
     void graphDeleteTableNode(Long id);
 
+    // 保存表外键关系
+    Long saveFkRlat(List<FkRelationshipDto> list);
+
+    // 删除表外键关系
+    void deleteFkRlat(Long tableId, String fkName);
+
+    TableNodeDto getTableNodeDto(Long id);
 
     // view
 
@@ -24,4 +36,5 @@ public interface GraphSyncService {
 
     // 删除数据地图的视图节点
     void graphDeleteViewNode(Long id);
+
 }

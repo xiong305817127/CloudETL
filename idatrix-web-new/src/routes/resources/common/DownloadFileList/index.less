@@ -1,0 +1,41 @@
+.downloadContent{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+
+	.pageHeader{
+		display: flex;
+		justify-content: center;
+		padding: 30px 0;
+		.pageInput{
+			width: 480px;
+
+			:global{
+				.ant-input-lg{
+					height: 40px;
+				}
+			};
+		}
+	}
+	.pageContent{
+		display: flex;
+		flex-direction: column;
+
+		.pageContentHeader{
+			height: 40px;
+			line-height: 40px;
+			background: #eee;
+			padding: 0 20px;
+
+			.timeSort{
+				text-align: right;
+				cursor: pointer;
+			}
+		}
+		.content{
+			.item{
+				height: 80px;
+			}
+		}
+	}
+}

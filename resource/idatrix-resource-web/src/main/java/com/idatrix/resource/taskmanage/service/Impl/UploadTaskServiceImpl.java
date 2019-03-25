@@ -12,6 +12,7 @@ import com.idatrix.resource.taskmanage.vo.DescribeInfoVO;
 import com.idatrix.resource.taskmanage.vo.RunnningTaskVO;
 import com.idatrix.resource.taskmanage.vo.TaskStatisticsVO;
 import com.idatrix.resource.taskmanage.vo.UploadTaskOverviewVO;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,14 +96,14 @@ public class UploadTaskServiceImpl implements IUploadTaskService {
     }
 
     @Override
-    public TaskStatisticsVO getTaskStatistics(Long num) {
+    public TaskStatisticsVO getTaskStatistics(Long rentId, Long num) {
 
         TaskStatisticsVO statisVO = new TaskStatisticsVO();
         //作业总数
-        Long allCount = dataUploadDAO.getTaskCount();
+        Long allCount = dataUploadDAO.getTaskCount(rentId);
         statisVO.setCount(allCount);
         //最近几个月数字
-        List<DescribeInfoVO> infoList = dataUploadDAO.getTaskInfoByMonth(num);
+        List<DescribeInfoVO> infoList = dataUploadDAO.getTaskInfoByMonth(rentId, num);
         List<DescribeInfoVO> finalInfoList = new ArrayList<DescribeInfoVO>();
         List<String> monthList = CommonUtils.getRecentMonthStr(num.intValue());
         for(String month :monthList){
@@ -131,20 +132,21 @@ public class UploadTaskServiceImpl implements IUploadTaskService {
     }
 
     @Override
-    public RunnningTaskVO getRunningTask(Long num) {
+    public RunnningTaskVO getRunningTask(Long rentId, Long num) {
 
         Map<String, String> conditionMap = new HashMap<String, String>();
         conditionMap.put("status", "IMPORTING");
+        conditionMap.put("rentId", rentId.toString());
         List<UploadTaskOverviewPO> overviewList = dataUploadDAO.queryOverview(conditionMap);
 
         RunnningTaskVO taskVO = new RunnningTaskVO();
-        if(overviewList==null || overviewList.size()==0){
+        if(CollectionUtils.isEmpty(overviewList)){
             taskVO.setCount(0L);
             taskVO.setTaskInfo(null);
         }else{
             taskVO.setCount(new Long(overviewList.size()));
             List<UploadTaskOverviewVO> soVOList = transferUploadTaskOverviewPoToVO(overviewList);
-            if(soVOList!=null) {
+            if(CollectionUtils.isNotEmpty(soVOList)){
                 taskVO.setTaskInfo(num < soVOList.size() ? soVOList.subList(0, num.intValue()) : soVOList);
             }else{
                 taskVO.setTaskInfo(null);
@@ -156,7 +158,7 @@ public class UploadTaskServiceImpl implements IUploadTaskService {
 
     private List<UploadTaskOverviewVO> transferUploadTaskOverviewPoToVO(List<UploadTaskOverviewPO> poList){
         List<UploadTaskOverviewVO>  uploadVOList= new ArrayList<UploadTaskOverviewVO>();
-        if(poList==null){
+        if(CollectionUtils.isEmpty(poList)){
             return uploadVOList;
         }
 

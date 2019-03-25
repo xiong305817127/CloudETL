@@ -24,9 +24,9 @@ public class SqlExecuteUtils {
      * @return
      */
     public static RdbLinkDto generateRdbLink(SqlExecReqDto database) {
-        RdbLinkDto config = new RdbLinkDto(database.getUsername(), database.getPassword(),
-                database.getType(), database.getIp(),
-                database.getPort(), database.getSchemaName());
+        RdbLinkDto config = new RdbLinkDto(database.getSchemaDetails().getUsername(), database.getSchemaDetails().getPassword(),
+                database.getSchemaDetails().getType(), database.getSchemaDetails().getIp(),
+                database.getSchemaDetails().getPort(), database.getSchemaDetails().getSchemaName());
         //hbase 和 hive 类型 不做重构处理
         if (DatabaseTypeEnum.HBASE.getName().equalsIgnoreCase(config.getType())
                 || DatabaseTypeEnum.HIVE.getName().equalsIgnoreCase(config.getType())) {

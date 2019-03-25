@@ -1,0 +1,13 @@
+:global #root .ant-advanced-search-form {
+  padding: 20px;
+  max-width: 1200px;
+}
+:global #root .ant-advanced-search-form .form-btn-style {
+  text-align: right;
+}
+:global #root .ant-advanced-search-form .ant-form-item {
+  display: flex;
+}
+:global #root .ant-advanced-search-form .ant-form-item-control-wrapper {
+  flex: 1;
+}

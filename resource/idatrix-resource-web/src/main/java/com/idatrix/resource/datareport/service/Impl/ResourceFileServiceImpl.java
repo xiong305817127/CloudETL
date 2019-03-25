@@ -8,10 +8,14 @@ import com.idatrix.resource.basedata.service.ISystemConfigService;
 import com.idatrix.resource.common.utils.CommonUtils;
 import com.idatrix.resource.common.utils.DateTools;
 import com.idatrix.resource.common.utils.ResultPager;
+import com.idatrix.resource.common.utils.UserUtils;
 import com.idatrix.resource.datareport.dao.ResourceFileDAO;
 import com.idatrix.resource.datareport.po.ResourceFilePO;
 import com.idatrix.resource.datareport.service.IResourceFileService;
 import com.idatrix.resource.datareport.vo.ResourceFileVO;
+import com.idatrix.unisecurity.api.domain.User;
+import com.idatrix.unisecurity.api.service.UserService;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,26 +45,59 @@ public class ResourceFileServiceImpl implements IResourceFileService {
     @Autowired
     private ISystemConfigService systemConfigService;
 
+    @Autowired
+    private UserUtils userUtils;
+
+    @Autowired
+    private UserService userService;
+
 
 
     @Override
-    public ResultPager<ResourceFileVO> queryResourceFile(Map<String, String> con,
+    public ResultPager<ResourceFileVO> queryResourceFile(String user, Map<String, String> con,
                                                          Integer pageNum, Integer pageSize) {
+
         pageNum = null == pageNum ? 1 : pageNum;
         pageSize = null == pageSize ? 10 : pageSize;
         PageHelper.startPage(pageNum, pageSize);
 
         List<ResourceFilePO> poList = resourceFileDAO.queryResourceFile(con);
-        if(poList==null || poList.size()==0){
+        if(CollectionUtils.isEmpty(poList)){
             return null;
         }
-        List<ResourceFileVO> voList = transferResourceFilePOToVO(poList);
+
+        String creator = poList.get(0).getCreator();
+        //对比是否同一个部门
+        Boolean downFlag = false;
+        int currentDeptId = userUtils.getCurrentUserDeptId();
+        User creatUser = userService.findByUserName(creator);
+        if (creatUser.getDeptId().equals(new Long(currentDeptId))) {
+            downFlag = true;
+        }
+
+        List<ResourceFileVO> voList = transferResourceFilePOToVO(downFlag, poList);
         //用PageInfo对结果进行包装
         PageInfo<ResourceFilePO> pi = new PageInfo<ResourceFilePO>(poList);
         Long totalNum = pi.getTotal();
         ResultPager<ResourceFileVO> rp = new ResultPager<ResourceFileVO>(pi.getPageNum(),
                 totalNum, voList);
         return rp;
+    }
+
+    /**
+     * 根据资源ID搜索文件名称
+     *
+     * @param con
+     * @return
+     */
+    @Override
+    public List<ResourceFileVO> getResourceFileByResourceId(Map<String, String> con) {
+
+        List<ResourceFilePO> poList = resourceFileDAO.queryResourceFile(con);
+        if(CollectionUtils.isEmpty(poList)){
+            return null;
+        }
+        return transferResourceFilePOToVO(false, poList);
     }
 
     /*文件下载*/
@@ -97,7 +134,7 @@ public class ResourceFileServiceImpl implements IResourceFileService {
 
             filePath = sysConfigPO.getFileRoot();
             if(StringUtils.isEmpty(filePath)){
-                throw new RuntimeException("请配置上传文件最终存储路径");
+                throw new Exception("请配置上传文件最终存储路径");
             }
         } else {
             throw new Exception("系统参数没有配置，请先配置再上传");
@@ -107,8 +144,8 @@ public class ResourceFileServiceImpl implements IResourceFileService {
         return  hdfsFilePath;
     }
 
-    private List<ResourceFileVO> transferResourceFilePOToVO(List<ResourceFilePO> rfList){
-        if(rfList==null || rfList.size()==0){
+    private List<ResourceFileVO> transferResourceFilePOToVO(Boolean downFlag, List<ResourceFilePO> rfList){
+        if(CollectionUtils.isEmpty(rfList)){
             return null;
         }
 
@@ -122,6 +159,7 @@ public class ResourceFileServiceImpl implements IResourceFileService {
             rfVO.setFileSize(CommonUtils.getFileSizeStr(Long.valueOf(rfPO.getFileSize())));
             rfVO.setFileType(rfPO.getFileType());
             rfVO.setFileDescription(rfPO.getFileDescription());
+            rfVO.setDownFlag(downFlag);
             if(StringUtils.isNotEmpty(rfPO.getDataBatch())) {
                 rfVO.setDataBatch(rfPO.getDataBatch());
             }

@@ -60,6 +60,9 @@ public class GraphService {
 		if( !isAnalyzerEnable() || Utils.isEmpty( transName )) {
 			return false ;
 		}
+		
+		CloudLogger.getInstance(userName).info(this, "createEtlTransNode("+transName+")...");
+		
 		String renterId = CloudSession.getLoginRenterId() ;
 		if(Utils.isEmpty(userName)) {
 			userName = CloudSession.getLoginUser() ;
@@ -71,6 +74,8 @@ public class GraphService {
 		node.setTransName(transName);
 		if( nodeService != null ) {
 			Long res = nodeService.createEtlTransNode(node);
+			CloudLogger.getInstance(userName).info(this, "createEtlTransNode result:", res );
+			
 			if( res != null && res < 0) {
 				return false ;
 			}
@@ -83,6 +88,9 @@ public class GraphService {
 		if( !isAnalyzerEnable() ||  Utils.isEmpty( transName )) {
 			return  ;
 		}
+		
+		CloudLogger.getInstance(userName).info(this, "deleteEtlTransNode("+transName+")...");
+		
 		String renterId = CloudSession.getLoginRenterId() ;
 		if(Utils.isEmpty(userName)) {
 			userName = CloudSession.getLoginUser() ;
@@ -94,6 +102,8 @@ public class GraphService {
 		node.setTransName(transName);
 		if( nodeService != null ) {
 			nodeService.deleteEtlTransNode(node);
+			
+			CloudLogger.getInstance(userName).info(this, "deleteEtlTransNode result: 成功" );
 		}
 		
 	}
@@ -102,6 +112,8 @@ public class GraphService {
 		if( !isAnalyzerEnable() ||  Utils.isEmpty( transName ) || Utils.isEmpty(oldTransName) || transName.equals(oldTransName)) {
 			return  ;
 		}
+		CloudLogger.getInstance(userName).info(this, "updateEtlTransNode("+oldTransName+","+transName+")...");
+		
 		String renterId = CloudSession.getLoginRenterId() ;
 		if(Utils.isEmpty(userName)) {
 			userName = CloudSession.getLoginUser() ;
@@ -109,10 +121,12 @@ public class GraphService {
 		EtlTransNodeDto node = new EtlTransNodeDto();
 		node.setRenterId(Long.valueOf(renterId));
 		node.setUserName(userName);
-		node.setTransName(transName);
+		node.setTransName(oldTransName);
 		//TODO
 		if( nodeService != null ) {
-			nodeService.renameEtlTransNode(node, oldTransName);
+			Long res = nodeService.renameEtlTransNode(node, transName);
+			
+			CloudLogger.getInstance(userName).info(this, "updateEtlTransNode result:", res );
 		}
 	}
 	
@@ -121,6 +135,9 @@ public class GraphService {
 		if( !isAnalyzerEnable() ||  Utils.isEmpty( transName ) || wrds == null || wrds.isEmpty() ) {
 			return  ;
 		}
+		
+		CloudLogger.getInstance(userName).info(this, "saveNodeAndRelationship("+transName+","+wrds+")...");
+		
 		if(Utils.isEmpty(userName)) {
 			userName = CloudSession.getLoginUser() ;
 		}else {
@@ -135,34 +152,43 @@ public class GraphService {
 		//删除该转换相关的关系数据
 		relationshipService.deleteDataDepByEtlTrans(etlTrans);
 		
+		CloudLogger.getInstance(userName).info(this, "deleteDataDepByEtlTrans:", etlTrans );
+		
+		int resNum = 0;
 		for( WriteRelationDto w : wrds ) {
 			SystemType startType = w.getStartParent().getSystemType() ;
 			SystemType endType = w.getEndParent().getSystemType() ;
 			
 			if( startType != null && endType != null ) {
-				if( SystemType.File.equals(startType)) {
-					if( SystemType.File.equals(endType) ) {
+				if( SystemType.File_Hdfs.equals(startType)) {
+					if( SystemType.File_Hdfs.equals(endType) ) {
 						sendRelationshipFileToFile(renterId, etlTrans,  w);
+						resNum++;
 					}else if( SystemType.DateBase.equals(endType)) {
 						sendRelationshipFileToDatabase(renterId, etlTrans,   w);
+						resNum++;
 					}else {
-						CloudLogger.getInstance(userName).warn(this, "忽略保存关系,节点["+w.getStartParent().getGuiKey()+","+w.getEndParent().getGuiKey()+"]");
+						CloudLogger.getInstance(userName).info(this, "忽略保存关系,节点["+w.getStartParent().getGuiKey()+","+w.getEndParent().getGuiKey()+"]");
 					}
 				}else if( SystemType.DateBase.equals(startType) ) {
-					if( SystemType.File.equals(endType) ) {
+					if( SystemType.File_Hdfs.equals(endType) ) {
 						sendRelationshipDatabaseToFile(renterId, etlTrans,   w);
+						resNum++;
 					}else if( SystemType.DateBase.equals(endType) ) {
 						sendRelationshipDatabaseToDatabase(renterId, etlTrans,   w);
+						resNum++;
 					}else {
-						CloudLogger.getInstance(userName).warn(this, "忽略保存关系,节点["+w.getStartParent().getGuiKey()+","+w.getEndParent().getGuiKey()+"]");
+						CloudLogger.getInstance(userName).info(this, "忽略保存关系,节点["+w.getStartParent().getGuiKey()+","+w.getEndParent().getGuiKey()+"]");
 					}
 				}else {
-					CloudLogger.getInstance(userName).warn(this, "忽略保存关系,节点["+w.getStartParent().getGuiKey()+","+w.getEndParent().getGuiKey()+"]");
+					CloudLogger.getInstance(userName).info(this, "忽略保存关系,节点["+w.getStartParent().getGuiKey()+","+w.getEndParent().getGuiKey()+"]");
 				}
 			}else {
-				CloudLogger.getInstance(userName).warn(this, "保存关系,出现未获取到系统类型的节点["+w.getStartParent().getGuiKey()+","+w.getEndParent().getGuiKey()+"]");
+				CloudLogger.getInstance(userName).info(this, "保存关系,出现未获取到系统类型的节点["+w.getStartParent().getGuiKey()+","+w.getEndParent().getGuiKey()+"]");
 			}
 		}
+		
+		CloudLogger.getInstance(userName).info(this, "saveNodeAndRelationship result: 发送 "+resNum+" 个数据关系" );
 		
 		CloudSession.clearThreadInfo();
 	}

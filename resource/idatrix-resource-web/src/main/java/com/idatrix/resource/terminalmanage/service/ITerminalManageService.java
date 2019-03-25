@@ -6,7 +6,7 @@ import com.idatrix.resource.terminalmanage.vo.TerminalManageVO;
 import java.util.Map;
 
 public interface ITerminalManageService {
-    void saveOrUpdateTerminalManageRecord(TerminalManageVO terminalManageVO, String userName) throws
+    void saveOrUpdateTerminalManageRecord(Long rentId, TerminalManageVO terminalManageVO, String userName) throws
             Exception;
 
     TerminalManageVO getTerminalManageRecordById(Long id);

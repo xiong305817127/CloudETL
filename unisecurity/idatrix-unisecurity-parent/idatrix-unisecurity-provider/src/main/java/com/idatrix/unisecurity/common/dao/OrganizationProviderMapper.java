@@ -36,4 +36,6 @@ public interface OrganizationProviderMapper {
 	Organization findOrganizationByUserName(@Param("userName") String userName);
 
     Organization findByCode(@Param("code") String code);
+
+	List<Organization> findByCodeList(@Param("codeList") List<String> codeList);
 }

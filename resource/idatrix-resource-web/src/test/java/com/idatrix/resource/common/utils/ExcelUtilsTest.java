@@ -33,7 +33,12 @@ public class ExcelUtilsTest {
     @Autowired
     private ICatalogClassifyService catalogClassifyService;
 
-
+    @Test
+    public void getCurrentTiem(){
+        Date startTime = DateTools.getDateBefore(new Date(), 10);
+        Date endTime = DateTools.getDateAfter(new Date(), 10);
+        System.out.println(CommonUtils.getRecentDayList(startTime, endTime));
+    }
 
     @Test
     public void execelImportCatalogTest(){
@@ -54,7 +59,7 @@ public class ExcelUtilsTest {
             }
             System.out.println("=============================================");
             //readExcel.preProcessExcelCatalog(cnList);
-            readExcel.saveExcelCatalogNode("robin", cnList);
+//            readExcel.saveExcelCatalogNode("robin", cnList);
 //            catalogClassifyService.saveExcelCatalogNode("robin", cnList);//            readExcel.saveExcelCatalogNode("admin",cnList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -78,7 +83,7 @@ public class ExcelUtilsTest {
             rcList = readExcel.processResourceExcel(cnList);
             System.out.println("=============================================");
             //System.out.println(rcList);
-            readExcel.preProcesBeforeSave(rcList);
+            readExcel.preProcesBeforeSave(12L, rcList);
         } catch (Exception e) {
             e.printStackTrace();
         }

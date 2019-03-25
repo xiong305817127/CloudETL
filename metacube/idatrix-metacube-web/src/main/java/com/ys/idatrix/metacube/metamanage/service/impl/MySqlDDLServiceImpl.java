@@ -435,6 +435,10 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
         AlterSqlVO alterPrimaryKeyVo = getAlterPrimaryKeySql(snapshotTableName,
                 snapshotTable.getTableColumnList(), newTable.getTableColumnList());
 
+        // 获取修改自增长的sql
+        AlterSqlVO alterAutoIncrementVo = alterAutoIncrementSql(snapshotTableName,
+                snapshotTable.getTableColumnList(), newTable.getTableColumnList());
+
         // 获取修改索引的sql
         AlterSqlVO alterIndexVo = getAlterIndexSql(snapshotTableName,
                 snapshotTable.getTableIndexList(), newTable.getTableIndexList(),
@@ -447,7 +451,8 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
 
         /**
          * sql执行顺序：
-         * 1.删除外键 2.删除主键 3.删除索引 4.表字段的修改（修改，删除，新增）5.新增索引 6.新增主键 7.新增外键 8.表基本信息修改
+         * 1.删除外键 2.删除自增长 3.删除主键 4.删除索引 5.表字段的修改（修改，删除，新增）
+         * 6.新增索引 7.新增主键 8.新增自增长 9.新增外键 10.表基本信息修改
          *
          * 直观依赖：外键依赖索引，索引依赖字段，主键相对来说也是约束（唯一不重复，不为空）
          * 特殊情况：字段在自增时，出现字段依赖索引
@@ -457,6 +462,13 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
         if (alterForeignKeyVo != null) {
             if (CollectionUtils.isNotEmpty(alterForeignKeyVo.getDeleteSql())) {
                 allCommands.addAll(alterForeignKeyVo.getDeleteSql());
+            }
+        }
+
+        // 删除自增长
+        if(alterAutoIncrementVo != null) {
+            if (CollectionUtils.isNotEmpty(alterAutoIncrementVo.getDeleteSql())) {
+                allCommands.addAll(alterAutoIncrementVo.getDeleteSql());
             }
         }
 
@@ -498,6 +510,13 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
         if (alterPrimaryKeyVo != null) {
             if (CollectionUtils.isNotEmpty(alterPrimaryKeyVo.getAddSql())) {
                 allCommands.addAll(alterPrimaryKeyVo.getAddSql());
+            }
+        }
+
+        // 新增自增长
+        if (alterAutoIncrementVo != null) {
+            if (CollectionUtils.isNotEmpty(alterAutoIncrementVo.getAddSql())) {
+                allCommands.addAll(alterAutoIncrementVo.getAddSql());
             }
         }
 
@@ -566,6 +585,49 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
         return alterSql;
     }
 
+    private AlterSqlVO alterAutoIncrementSql(String snapshotTableName, List<TableColumn> snapshotTableColumn,
+                                             List<TableColumn> newTableColumn) {
+        if (StringUtils.isBlank(snapshotTableName)) {
+            throw new MetaDataException("alter auto increment, tableName is null");
+        }
+        if (CollectionUtils.isEmpty(snapshotTableColumn) || CollectionUtils.isEmpty(newTableColumn)) {
+            throw new MetaDataException("alter auto increment, snapshotTableColumn or snapshotTableColumn is null");
+        }
+
+        TableColumn newAutoIncrementColumn = null; // 新自增长字段
+        TableColumn snapshotAutoIncrementColumn = null; // 旧自增长字段
+
+        for (TableColumn column : newTableColumn) {
+            if(column.getIsAutoIncrement()) {
+                newAutoIncrementColumn = column;
+            }
+        }
+        for (TableColumn column : snapshotTableColumn) {
+            if(column.getIsAutoIncrement()) {
+                snapshotAutoIncrementColumn = column;
+            }
+        }
+
+        // 没有自增长列，或没有修改自增长
+        if(newAutoIncrementColumn == null && snapshotAutoIncrementColumn == null ||
+                (newAutoIncrementColumn != null && snapshotAutoIncrementColumn != null
+                        && newAutoIncrementColumn.equals(snapshotAutoIncrementColumn))) {
+            return null;
+        }
+
+        AlterSqlVO vo = new AlterSqlVO();
+        // 自增长有修改。先删除自增长，再新增。
+        if(snapshotAutoIncrementColumn != null) {
+            String changeColumnSql = changeAutoIncrementColumn(snapshotTableName, snapshotAutoIncrementColumn, snapshotAutoIncrementColumn, false);
+            vo.getDeleteSql().add(changeColumnSql);
+        }
+        if(newAutoIncrementColumn != null) {
+            String changeColumnSql = changeAutoIncrementColumn(snapshotTableName, newAutoIncrementColumn, newAutoIncrementColumn, true);
+            vo.getAddSql().add(changeColumnSql);
+        }
+        return vo;
+    }
+
     @Override
     public List<String> getDeleteTableSql(List<String> removeTableNames) {
         if (CollectionUtils.isEmpty(removeTableNames)) {
@@ -606,14 +668,19 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
             }
         }
 
+        ArrayList<TableColumn> oldPrimaryKey = Lists.newArrayList(oldPrimaryKeyColumn); // 之前主键
+        ArrayList<TableColumn> newPrimaryKey = Lists.newArrayList(newPrimaryKeyColumn); // 现在主键
+
         ArrayList<TableColumn> oldCopy = Lists.newArrayList(oldPrimaryKeyColumn); // 之前主键
         ArrayList<TableColumn> newCopy = Lists.newArrayList(newPrimaryKeyColumn); // 现在主键
 
         // 求交集
         oldCopy.retainAll(newCopy);
+        oldPrimaryKey.removeAll(oldCopy);
+        newPrimaryKey.removeAll(oldCopy);
 
-        // 如果交集合最新一致，说明主键没有改变
-        if (oldCopy.size() == newCopy.size()) {
+        // 如果删除交集数据后，集合为主0，则主键没有改变
+        if (oldPrimaryKey.size() == 0 &&  newPrimaryKey.size()== 0) {
             return null;
         }
 
@@ -634,17 +701,19 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
         }
 
         // 先删除主键
-        String dropPrimaryKeySql = getDropPrimaryKeySql(snapshotTableName);
-        if (StringUtils.isNoneBlank(dropPrimaryKeySql)) {
-            alterSql.getDeleteSql().add(dropPrimaryKeySql);
+        if(CollectionUtils.isNotEmpty(oldPrimaryKeyColumn)) {
+            String dropPrimaryKeySql = getDropPrimaryKeySql(snapshotTableName);
+            if (StringUtils.isNoneBlank(dropPrimaryKeySql)) {
+                alterSql.getDeleteSql().add(dropPrimaryKeySql);
+            }
         }
-
         // 后新增主键
-        String addPrimaryKeySql = getAddPrimaryKeySql(snapshotTableName, newPrimaryKeyColumn);
-        if (StringUtils.isNoneBlank(addPrimaryKeySql)) {
-            alterSql.getAddSql().add(addPrimaryKeySql);
+        if(CollectionUtils.isNotEmpty(newPrimaryKeyColumn)) {
+            String addPrimaryKeySql = getAddPrimaryKeySql(snapshotTableName, newPrimaryKeyColumn);
+            if (StringUtils.isNoneBlank(addPrimaryKeySql)) {
+                alterSql.getAddSql().add(addPrimaryKeySql);
+            }
         }
-
         alterSql.setMessage("修改主键,");
         return alterSql;
     }
@@ -1340,7 +1409,47 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
 
         // 拼装字段其他属性
         StringBuilder replenish = new StringBuilder();
+
         defineColumnSyntax(replenish, newColumn);
+
+        // ALTER TABLE user10 CHANGE test test1 CHAR(32) NOT NULL DEFAULT '123';
+        String alterColumnSql = String.format(CHANGE_COLUMN, addBackQuote(tableName),
+                addBackQuote(oldColumn.getColumnName()), addBackQuote(newColumn.getColumnName()),
+                dataType, replenish.toString());
+        return alterColumnSql;
+    }
+
+    private String changeAutoIncrementColumn(String tableName, TableColumn newColumn,
+                                             TableColumn oldColumn, Boolean isAutoIncrement) {
+        if (StringUtils.isBlank(tableName)) {
+            throw new MetaDataException("change column，table name is null");
+        }
+        if (newColumn == null) {
+            throw new MetaDataException("change column，new column is null");
+        }
+        if (oldColumn == null) {
+            throw new MetaDataException("change column，old column is null");
+        }
+
+        // 数据类型和长度
+        String dataType = newColumn.getColumnType(); // 数据类型
+        if (StringUtils.isEmpty(newColumn.getTypeLength())) {
+            dataType = getAndVerifiedDataType(dataType);
+        } else {
+            dataType = getAndVerifiedDataType(dataType) + " (" + newColumn.getTypeLength();
+            if (StringUtils.isNotBlank(newColumn.getTypePrecision())) {
+                dataType += "," + newColumn.getTypePrecision();
+            }
+            dataType += ") ";
+        }
+
+        // 拼装字段其他属性
+        StringBuilder replenish = new StringBuilder();
+        defineColumnSyntax(replenish, newColumn);
+        // 判断是否是自增, mysql可以使用AUTO_INCREMENT关键字
+        if (isAutoIncrement) {
+            replenish.append(" AUTO_INCREMENT ");
+        }
 
         // ALTER TABLE user10 CHANGE test test1 CHAR(32) NOT NULL DEFAULT '123';
         String alterColumnSql = String.format(CHANGE_COLUMN, addBackQuote(tableName),
@@ -1432,7 +1541,7 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
             throw new MetaDataException("index indexType is null");
         }
         try {
-            return DBEnum.MysqlIndexTypeEnum.valueOf(indexType).getName();
+            return DBEnum.MysqlIndexTypeEnum.valueOf(indexType.toUpperCase()).getName();
         } catch (Exception e) {
             e.printStackTrace();
             throw new MetaDataException("错误的索引类型：" + indexType);
@@ -1501,9 +1610,9 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
                 }
 
                 // 判断是否是自增,mysql可以使用AUTO_INCREMENT关键字,oracle特殊处理
-                if (column.getIsAutoIncrement()) {
+/*                if (column.getIsAutoIncrement()) {
                     sb.append(" AUTO_INCREMENT ");
-                }
+                }*/
                 break;
         }
         // 是否有注释
@@ -1691,6 +1800,32 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
+            // 生效到数据库失败后，前台根据code来做处理
+            throw new MetaDataException(ResultCodeEnum.DATABASE_ERROR.getCode(),
+                    "生效到数据库失败，信息：" + e.getMessage());
+        }
+    }
+
+    @Transactional
+    @Override
+    public void goToDatabase(String user, Metadata metadata, List<String> commands) {
+        RdbLinkDto connectionConfig = getConnectionConfig(metadata);
+        try {
+            // 调用db proxy 运行sql
+            if (CollectionUtils.isNotEmpty(commands)) {
+                ArrayList list = new ArrayList();
+                list.addAll(commands);
+                RespResult<SqlExecRespDto> result = mysqlService
+                        .createTable(user, connectionConfig, list);
+                log.info("db proxy result：{}", result);
+                if (!result.isSuccess()) {
+                    throw new MetaDataException(ResultCodeEnum.DATABASE_ERROR.getCode(),
+                            "生效到数据库失败，信息：" + result.getMsg());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
             // 生效到数据库失败后，前台根据code来做处理
             throw new MetaDataException(ResultCodeEnum.DATABASE_ERROR.getCode(),
                     "生效到数据库失败，信息：" + e.getMessage());

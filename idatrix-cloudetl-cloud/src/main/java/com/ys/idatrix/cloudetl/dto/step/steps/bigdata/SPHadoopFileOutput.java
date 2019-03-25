@@ -93,10 +93,9 @@ public class SPHadoopFileOutput extends SPTextFileOutput {
 
 		SPHadoopFileOutput jtfo = (SPHadoopFileOutput) po;
 		// hadoopFileOutputMeta.setSourceConfigurationName(jtfo.getSourceConfigurationName());
-		OsgiBundleUtils.invokeOsgiMethod(stepMetaInterface, "setSourceConfigurationName",
-				new Object[] { jtfo.getSourceConfigurationName() }, new Class<?>[] { String.class });
-
-		OsgiBundleUtils.invokeOsgiMethod(stepMetaInterface, "setFileName", jtfo.getFileName());
+		OsgiBundleUtils.invokeOsgiMethod(stepMetaInterface, "setSourceConfigurationName", new Object[] { jtfo.getSourceConfigurationName() }, new Class<?>[] { String.class });
+		String hadoopFileUrl = hadoopFileInputDetailService.getConnectPath(null,jtfo.getSourceConfigurationName(), jtfo.getFileName());
+		OsgiBundleUtils.invokeOsgiMethod(stepMetaInterface, "setFileName", hadoopFileUrl);
 
 	}
 	

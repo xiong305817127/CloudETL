@@ -1,10 +1,13 @@
 package com.idatrix.resource.subscribe.po;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
  * Created by Administrator on 2018/7/16.
  */
+@Data
 public class SubscribePO {
 
     /*主键*/
@@ -58,6 +61,9 @@ public class SubscribePO {
     /*UUID，服务参数之一*/
     private String subKey;
 
+    /*租户ID，用于租户隔离*/
+    private Long rentId;
+
     /*创建人*/
     private String creator;
 
@@ -70,198 +76,4 @@ public class SubscribePO {
     /*修改时间*/
     private Date modifyTime;
 
-    public Long getSeq() {
-        return seq;
-    }
-
-    public void setSeq(Long seq) {
-        this.seq = seq;
-    }
-
-    public String getSubNo() {
-        return subNo;
-    }
-
-    public void setSubNo(String subNo) {
-        this.subNo = subNo;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(Long resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public Long getDeptId() {
-        return deptId;
-    }
-
-    public void setDeptId(Long deptId) {
-        this.deptId = deptId;
-    }
-
-    public String getDeptName() {
-        return deptName;
-    }
-
-    public void setDeptName(String deptName) {
-        this.deptName = deptName;
-    }
-
-    public String getSubscribeUserName() {
-        return subscribeUserName;
-    }
-
-    public void setSubscribeUserName(String subscribeUserName) {
-        this.subscribeUserName = subscribeUserName;
-    }
-
-    public String getSubscribeReason() {
-        return subscribeReason;
-    }
-
-    public void setSubscribeReason(String subscribeReason) {
-        this.subscribeReason = subscribeReason;
-    }
-
-    public Date getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(Date endData) {
-        this.endDate = endData;
-    }
-
-    public int getShareMethod() {
-        return shareMethod;
-    }
-
-    public void setShareMethod(int shareMethod) {
-        this.shareMethod = shareMethod;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getApprover() {
-        return approver;
-    }
-
-    public void setApprover(String approver) {
-        this.approver = approver;
-    }
-
-    public String getApproverName() {
-        return approverName;
-    }
-
-    public void setApproverName(String approverName) {
-        this.approverName = approverName;
-    }
-
-    public String getSuggestion() {
-        return suggestion;
-    }
-
-    public void setSuggestion(String suggestion) {
-        this.suggestion = suggestion;
-    }
-
-    public Date getApproveTime() {
-        return approveTime;
-    }
-
-    public void setApproveTime(Date approveTime) {
-        this.approveTime = approveTime;
-    }
-
-    public String getServiceUrl() {
-        return serviceUrl;
-    }
-
-    public void setServiceUrl(String serviceUrl) {
-        this.serviceUrl = serviceUrl;
-    }
-
-    public String getSubKey() {
-        return subKey;
-    }
-
-    public void setSubKey(String subKey) {
-        this.subKey = subKey;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier;
-    }
-
-    public Date getModifyTime() {
-        return modifyTime;
-    }
-
-    public void setModifyTime(Date modifyTime) {
-        this.modifyTime = modifyTime;
-    }
-
-    @Override
-    public String toString() {
-        return "SubscribePO{" +
-                "id=" + id +
-                ", seq=" + seq +
-                ", subNo='" + subNo + '\'' +
-                ", resourceId=" + resourceId +
-                ", deptId=" + deptId +
-                ", deptName='" + deptName + '\'' +
-                ", subscribeUserName='" + subscribeUserName + '\'' +
-                ", subscribeReason='" + subscribeReason + '\'' +
-                ", endDate=" + endDate +
-                ", shareMethod=" + shareMethod +
-                ", status='" + status + '\'' +
-                ", approver='" + approver + '\'' +
-                ", approverName='" + approverName + '\'' +
-                ", suggestion='" + suggestion + '\'' +
-                ", approveTime=" + approveTime +
-                ", serviceUrl='" + serviceUrl + '\'' +
-                ", subKey='" + subKey + '\'' +
-                ", creator='" + creator + '\'' +
-                ", createTime=" + createTime +
-                ", modifier='" + modifier + '\'' +
-                ", modifyTime=" + modifyTime +
-                '}';
-    }
 }

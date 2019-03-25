@@ -1,8 +1,13 @@
 package com.idatrix.resource.catalog.po;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Created by Robin Wing on 2018-5-28.
  */
+@Getter
+@Setter
 public class CatalogResourcePO implements Comparable<CatalogResourcePO>{
 
     private Long catalogId;
@@ -10,30 +15,6 @@ public class CatalogResourcePO implements Comparable<CatalogResourcePO>{
     private Long resourceId;
 
     private int depth;
-
-    public int getDepth() {
-        return depth;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    public Long getCatalogId() {
-        return catalogId;
-    }
-
-    public void setCatalogId(Long catalogId) {
-        this.catalogId = catalogId;
-    }
-
-    public Long getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(Long resourceId) {
-        this.resourceId = resourceId;
-    }
 
     @Override
     public int compareTo(CatalogResourcePO crPO) {

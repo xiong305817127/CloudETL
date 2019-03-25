@@ -9,8 +9,7 @@
     <result column="status" property="status" jdbcType="VARCHAR"/>
     <result column="data_batch" property="dataBatch" jdbcType="VARCHAR"/>
     <result column="data_type" property="dataType" jdbcType="VARCHAR"/>
-    <result column="import_time" property="importTime" javaType="java.util.Date"
-      jdbcType="TIMESTAMP"/>
+    <result column="import_time" property="importTime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
     <result column="import_count" property="importCount" jdbcType="BIGINT"/>
     <result column="insert_count" property="insertCount" jdbcType="BIGINT"/>
     <result column="update_count" property="updateCount" jdbcType="BIGINT"/>
@@ -20,12 +19,11 @@
     <result column="subscribe_id" property="subscribeId" jdbcType="VARCHAR"/>
     <result column="exec_id" property="execId" jdbcType="VARCHAR"/>
     <result column="import_errmsg" property="importErrmsg" jdbcType="VARCHAR"/>
+    <result column="rent_id" property="rentId" jdbcType="BIGINT"/>
     <result column="creator" property="creator" jdbcType="VARCHAR"/>
-    <result column="create_time" property="createTime" javaType="java.util.Date"
-      jdbcType="TIMESTAMP"/>
+    <result column="create_time" property="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
     <result column="modifier" property="modifier" jdbcType="VARCHAR"/>
-    <result column="modify_time" property="modifyTime" javaType="java.util.Date"
-      jdbcType="TIMESTAMP"/>
+    <result column="modify_time" property="modifyTime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
   </resultMap>
 
   <resultMap id="SearchResultMap" type="com.idatrix.resource.datareport.po.SearchDataUploadPO">
@@ -37,16 +35,13 @@
     <result column="name" property="name" jdbcType="VARCHAR"/>
     <result column="file_names" property="fileNames" jdbcType="VARCHAR"/>
     <result column="data_batch" property="dataBatch" jdbcType="VARCHAR"/>
-    <result column="create_time" property="createTime" javaType="java.util.Date"
-      jdbcType="TIMESTAMP"/>
-    <result column="import_time" property="importTime" javaType="java.util.Date"
-      jdbcType="TIMESTAMP"/>
+    <result column="create_time" property="createTime" javaType="java.util.Date"  jdbcType="TIMESTAMP"/>
+    <result column="import_time" property="importTime" javaType="java.util.Date"  jdbcType="TIMESTAMP"/>
     <result column="import_count" property="importCount" jdbcType="BIGINT"/>
     <result column="status" property="status" jdbcType="VARCHAR"/>
   </resultMap>
 
-  <resultMap id="UploadTaskResultMap"
-    type="com.idatrix.resource.taskmanage.po.UploadTaskOverviewPO">
+  <resultMap id="UploadTaskResultMap" type="com.idatrix.resource.taskmanage.po.UploadTaskOverviewPO">
     <id column="id" property="id" jdbcType="BIGINT"/>
     <result column="resource_id" property="resourceId" jdbcType="BIGINT"/>
     <result column="task_name" property="taskName" jdbcType="VARCHAR"/>
@@ -55,10 +50,8 @@
     <result column="code" property="code" jdbcType="VARCHAR"/>
     <result column="provide_dept" property="provideDept" jdbcType="VARCHAR"/>
     <result column="task_type" property="taskType" jdbcType="VARCHAR"/>
-    <result column="last_start_time" property="lastStartTime" javaType="java.util.Date"
-      jdbcType="TIMESTAMP"/>
-    <result column="last_end_time" property="lastEndTime" javaType="java.util.Date"
-      jdbcType="TIMESTAMP"/>
+    <result column="last_start_time" property="lastStartTime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+    <result column="last_end_time" property="lastEndTime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
     <result column="data_count" property="dataCount" jdbcType="BIGINT"/>
     <result column="status" property="status" jdbcType="VARCHAR"/>
     <result column="creator" property="creator" jdbcType="VARCHAR"/>
@@ -89,13 +82,13 @@
   <sql id="Base_Column_List">
     id, resource_id, status, data_batch, data_type, import_time, import_count, insert_count,
     update_count,
-    fail_count, import_task_id, task_seq, subscribe_id, exec_id, import_errmsg, creator,
+    fail_count, import_task_id, task_seq, subscribe_id, exec_id, import_errmsg, rent_id, creator,
     create_time, modifier,
     modify_time
   </sql>
 
 
-  <select id="getTaskInfoByMonth" parameterType="java.lang.Long" resultMap="TaskInfoResultMap">
+  <select id="getTaskInfoByMonth" resultMap="TaskInfoResultMap">
     SELECT
     DATE_FORMAT(create_time, '%Y%m') as month,
     SUM(import_count) as data_count,
@@ -103,6 +96,7 @@
     FROM
     rc_data_upload
     WHERE create_time>DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01') , INTERVAL #{num} MONTH)
+    AND rent_id=#{rentId}
     GROUP BY month
     ORDER BY month DESC;
   </select>
@@ -112,6 +106,7 @@
     count(id)
     from
     rc_data_upload
+    where rent_id=#{rentId}
   </select>
 
   <select id="queryOverview" resultMap="UploadTaskResultMap" parameterType="hashmap">
@@ -132,6 +127,9 @@
     <if test="status!=null">
       and rdu.status = #{status}
     </if>
+    <if test="rentId!=null">
+      and rdu.rent_id = #{rentId}
+    </if>
     order by rdu.create_time desc
   </select>
 
@@ -139,14 +137,13 @@
     parameterType="com.idatrix.resource.datareport.po.DataUploadPO"
     useGeneratedKeys="true" keyProperty="id">
     insert into rc_data_upload (
-    resource_id, status, data_batch, data_type, import_time, import_count, insert_count,
-    update_count, fail_count,
-    import_task_id, task_seq, subscribe_id, exec_id, import_errmsg, creator, create_time, modifier,
-    modify_time)
+    resource_id, status, data_batch, data_type, import_time, import_count,
+    insert_count, update_count, fail_count,
+    import_task_id, task_seq, subscribe_id, exec_id, import_errmsg, rent_id,
+    creator, create_time, modifier, modify_time)
     values (#{resourceId}, #{status}, #{dataBatch}, #{dataType}, #{importTime}, #{importCount},
-    #{insertCount},
-    #{updateCount}, #{failCount}, #{importTaskId}, #{taskSeq}, #{subscribeId}, #{execId},
-    #{importErrmsg},
+    #{insertCount}, #{updateCount}, #{failCount}, #{importTaskId}, #{taskSeq}, #{subscribeId},
+    #{execId}, #{importErrmsg}, #{rentId},
     #{creator}, #{createTime}, #{modifier}, #{modifyTime})
   </insert>
 
@@ -162,6 +159,7 @@
     subscribe_id = #{subscribeId},
     exec_id = #{execId},
     import_errmsg = #{importErrmsg},
+    rent_id=#{rentId},
     status = #{status},
     modifier = #{modifier},
     modify_time = #{modifyTime}
@@ -193,6 +191,9 @@
     <if test="code!=null">
       and r.code like '${code}%'
     </if>
+    <if test="rentId!=null">
+       and r.rent_id=#{rentId}
+    </if>
     <if test="status!=null">
       and u.status = #{status}
     </if>
@@ -212,7 +213,8 @@
   </select>
 
   <select id="getMaxTaskSeq" resultType="java.lang.Long">
-    select ifnull(MAX(task_seq), 0) as task_seq
+    select
+      ifnull(MAX(task_seq), 0) as task_seq
     from rc_data_upload
   </select>
 

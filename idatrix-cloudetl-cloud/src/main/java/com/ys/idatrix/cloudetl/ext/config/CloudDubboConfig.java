@@ -29,6 +29,7 @@ import com.alibaba.dubbo.config.spring.AnnotationBean;
  * @since 2017年7月27日
  *
  */
+@SuppressWarnings("deprecation")
 @Configuration
 @PropertySource("file:./config/idatrix.properties")
 public class CloudDubboConfig implements EnvironmentAware {

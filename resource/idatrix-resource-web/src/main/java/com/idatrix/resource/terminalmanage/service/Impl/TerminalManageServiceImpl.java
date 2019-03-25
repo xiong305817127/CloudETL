@@ -9,6 +9,7 @@ import com.idatrix.resource.terminalmanage.dao.TerminalManageDAO;
 import com.idatrix.resource.terminalmanage.po.TerminalManagePO;
 import com.idatrix.resource.terminalmanage.service.ITerminalManageService;
 import com.idatrix.resource.terminalmanage.vo.TerminalManageVO;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -90,7 +91,7 @@ public class TerminalManageServiceImpl implements ITerminalManageService {
         List<TerminalManagePO> terminalManagePOList
                 = terminalManageDAO.getTerminalManageRecordByCondition(conditionMap);
 
-        if(terminalManagePOList == null || terminalManagePOList.size() == 0){
+        if(CollectionUtils.isEmpty(terminalManagePOList)){
             return null;
         }
 
@@ -140,12 +141,13 @@ public class TerminalManageServiceImpl implements ITerminalManageService {
     }
 
     @Override
-    public void saveOrUpdateTerminalManageRecord (TerminalManageVO terminalManageVO, String userName)
+    public void saveOrUpdateTerminalManageRecord (Long rentId, TerminalManageVO terminalManageVO, String userName)
             throws Exception {
 
         TerminalManagePO terminalManagePO = convertToTerminalManagePO(terminalManageVO);
         terminalManagePO.setModifier(userName);
         terminalManagePO.setModifyTime(new Date());
+        terminalManagePO.setRentId(rentId);
 
         if (terminalManagePO.getId() == null) {
             terminalManagePO.setCreator(userName);

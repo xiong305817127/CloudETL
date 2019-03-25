@@ -1,0 +1,1098 @@
+import React from 'react';
+import {connect} from 'dva';
+import { Link,withRouter } from 'react-router';
+import { Input,Button,Tabs,Radio,Steps, message, Table,Icon,Popconfirm,Form,Select,Row, Col,TreeSelect,Checkbox } from 'antd';
+import Modal from 'components/Modal';
+const FormItem = Form.Item;
+const Search = Input.Search;
+const TabPane = Tabs.TabPane;
+const Step = Steps.Step;
+const RadioGroup = Radio.Group;
+const Option = Select.Option;
+const { TextArea } = Input;
+const CheckboxGroup = Checkbox.Group;
+import Style from '../style.css'
+import {check_get_name} from '../../../../services/metadata'
+import TableList from "../../../../components/TableList"
+import { getStoreDatabase,getAcquisition,getStoreDatabaseAcquition,CJLBlist } from '../../../../services/metadataCommon'
+import { SJCJgetdbinfo,SJCJgetTableInfo,SJCJgetDbFieldInfo,SJCJinsertTableFields,SJCJisExists } from '../../../../services/AcquisitionCommon'
+import {queryPlatformList} from "services/metadata";
+import { dateFormat, safeJsonParse,deepCopy } from 'utils/utils'
+import { strEnc,strDec } from 'utils/EncryptUtil';
+import { ACQUISITION_DB_TYPE_LIST } from 'constants'
+import dbDataType from '../../../../config/dbDataType.config';
+import dbTypeValue from '../../../../config/dbTypeValue.config';
+import { databaseType } from 'config/jsplumb.config';
+const steps = [{
+  title: '配置数据库',
+  content: 'First-content',
+}, {
+  title: '选择表',
+  content: 'Second-content',
+}, {
+  title: '设置元数据基础信息',
+  content: 'Last-content',
+}];
+let Timer;
+class Acquisition extends React.Component{
+  state = {
+      current: 0,
+      visible: false,
+      info:{},
+      value: 1,
+      type:true,
+      data2:[],
+      optionsSelect: [],
+      FildData:[],
+      dbDataTypeList:dbDataType["mysql"],
+      pluginId:'',
+      caijiList:[],
+      nextList:true,
+    }
+      
+   columns2 =()=>{
+    const acquisition=this.props.acquisition.lengthss;
+    const str = JSON.stringify(acquisition); 
+      const { getFieldDecorator } = this.props.form;
+      return[{
+        title: '字段名称',
+        dataIndex: 'name',
+        key:'name',
+        width:'23%',
+      },{
+        title: '字段类型',
+        dataIndex: 'type',
+        key:'type',
+        width:'20%',
+      },{
+        title: '长度',
+        dataIndex: 'prontioan',
+        key:'prontioan',
+        width:'15%',
+      },{
+        title: '是否主键',
+        dataIndex: 'isPrimaryKey',
+        key:'isPrimaryKey',
+        width:'17%',
+        render: (text) => text===1 ? '是' : '否'
+      },{
+        title: '是否允许为空',
+        dataIndex: 'nullable',
+        key:'nullable',
+        width:'15%',
+        render: (text) => text===1 ? '是' : '否'
+      }];  
+   }
+   columns1 = [{
+      title: '原表名',
+      dataIndex: 'tables',
+      key:'tables',
+      width:"45%"
+    },{
+      title: '表中文名称',
+      dataIndex: 'table',
+      key:'table',
+       render: (text, record, index) => {
+         const { getFieldDecorator, getFieldValue } = this.props.form;
+          return <FormItem style={{marginBottom:"0px"}}>
+            {getFieldDecorator(`tables.${text}`, {
+              initialValue: text,
+              rules:[
+                { required: true, message: '字段名称不能为空' }]
+            })(
+              <Input  onChange={(e)=>{this.modifyField(`tables.${text}`,e.target.value,record)}}    />
+            )}
+          </FormItem>
+        }
+    }];
+  // 修改字段
+  modifyField(keyOfCol, value, record) {
+    const { dispatch } = this.props;
+    const { data1 } = this.props.acquisition;
+    console.log(value,"修改后的值");
+    const data = deepCopy(data1).map(row => {
+  
+        if(row.key === record.key){
+            row.table = value;
+            console.log("成功的rows",row);
+        }
+        return row;
+    });
+    dispatch({ type: 'acquisition/setMetaId', payload:{data1:data} });
+  }
+    columnsTwo =()=>{
+     const acquisition=this.props.acquisition.lengthss;
+     const str = JSON.stringify(acquisition); 
+      return[{
+        title: '列名',
+        dataIndex: 'name',
+        key:'name',
+        width:'23%',
+      },{
+        title: '数据类型',
+        dataIndex: 'type',
+        key:'type',
+        width:'20%',
+      },{
+        title: '长度',
+        dataIndex: 'prontioan',
+        key:'prontioan',
+        width:'18%',
+      },{
+        title: '是否主键',
+        dataIndex: 'isPrimaryKey',
+        key:'isPrimaryKey',
+        width:'18%',
+        render: (text) => text===1 ? '是' : '否'
+      },{
+        title: '允许为空',
+        dataIndex: 'nullable',
+        key:'nullable',
+        width:'18%',
+        render: (text) => text===1 ? '是' : '否'
+      }];  
+   }
+  Import(keyOfCol,value,record){
+    const args=this.props.acquisition.data2;
+    args.some(item => {
+      if (item.id == record.id) {
+        item[keyOfCol]=value;
+        // 切换数据类型时处理
+        if(keyOfCol === 'isPk' && record.isPk === "1"){
+          item.isNull = '0';
+            this.setState({
+                cities: cityData[value],
+                secondCity: cityData[value][0],
+              });
+        }
+        return true;
+      }
+    });
+     const { dispatch }=this.props;
+       dispatch({
+          type:"acquisition/setMetaId",
+            payload:{
+               data2:args
+            }
+        });
+         this.setState({
+            data2:args,
+          })
+  }
+   /*校验表名称*/
+    SJCJisExistsListName = (rule, value, callback) => {
+      const { dispatch }=this.props;
+      const data1 = this.props.acquisition.selectRowLeft;
+      const { setFields } = this.props.form;
+      const formData = data1.map(row => ({ metaNameEn: row.table,dsId:this.props.acquisition.infoDsId}));
+      SJCJisExists(formData).then(({ data })=>{
+        callback();
+        if (Array.isArray(data.data)) {
+          const fields = {};
+          data.data.forEach((table) => {
+            const tableName = Object.keys(table)[0];
+            if (table[tableName]) {
+              fields[`tables.${tableName}`] = {
+                value: tableName,
+                errors: ['已存在该表名'],
+              };
+            }
+             dispatch({
+                  type:"acquisition/setMetaId",
+                     payload:{
+                       options:table,
+                       optionsKey:tableName,
+                    }
+                });
+          });
+          setFields(fields);
+        }
+      });
+    };
+    /*检测数据库名称*/
+  handleGetName = (rule,value, callback) => {
+    const { info,dsType } = this.props.acquisition;
+    if(value && value !== info.dbDatabasename){
+      if(Timer){
+        clearTimeout(Timer);
+        Timer = null;
+      }
+      Timer = setTimeout(()=>{
+        let obj = {};
+        obj.dbDatabasename = value;
+        obj.dsType = 3;
+          check_get_name(obj).then(( res)=>{
+          const { data } = res.data;
+          if(data === true){
+            callback(true)
+          }else{
+            callback()
+          }
+        });
+      },300);
+    }else{
+      callback()
+    }
+  };
+ next = (e) => {
+   const { dispatch,form }=this.props;
+   const acquisition =this.props.acquisition;
+   console.log(acquisition,"acquisition");
+   form.validateFields({ force: false }, (err, values) => {
+       this.setState({
+          nextList:false
+       })
+      if (!err) {
+       if(this.state.current === 0){
+           /*  values.password = strEnc(values.password,values.username,values.hostname,values.port);*/
+              if(acquisition.pluginId === '' && acquisition.pluginId && undefined && acquisition.selectedRowKeys.length === 0){
+                  message.error("请选择源数据库类型");
+                  return false
+              }else{
+                   let bussChecked = this.state.checked;
+                    let obj={};
+                    obj.hostname = values.hostname;
+                    obj.port = values.port;
+                    obj.username = values.username;
+                    obj.password = values.password;
+                    obj.databaseName = values.databaseName;
+                    obj.pluginId= acquisition.pluginId === 14?"DM7":(()=>{
+                      let name = "";
+                      for(let index of databaseType){
+                          if(index.value === acquisition.pluginId){
+                              name = index.name.toUpperCase();
+                          }
+                      }
+                      return name;
+                    })()
+                    obj.schemaName = values.dsName;
+                    obj.type = values.type === true ? 3 :0;
+                    
+                 SJCJgetdbinfo(obj).then((res)=>{
+                   
+                  if(res.data.code === '0' || res.data.code==="705"){
+                     const current = this.state.current + 1;
+                     this.setState({ current });
+                     dispatch({
+                      type:"acquisition/setMetaId",
+                         payload:{
+                           selectedRowKeys:acquisition.selectedRowKeys,
+                           selectedRows:acquisition.selectedRows,
+                            hostname:obj.hostname,
+                            port:obj.port,
+                            username:obj.username,
+                            password:obj.password,
+                            databaseName:obj.databaseName,
+                            pluginId:obj.pluginId,
+                           /* key:key,*/
+                            dsTypes:acquisition.dsTypes,
+                            type:this.state.type,
+                            dsIdData:res.data.data,
+                            dsName:obj.schemaName,
+                            
+                        }
+                        
+                    });
+                       SJCJgetTableInfo(obj).then((res)=>{
+                          this.setState({
+                              nextList:true
+                           })
+                             let args=[];
+                              let i = 0;
+                             
+                               if(res.data.code === "0"){
+                                 let data1 = res.data.data.tables;
+                                  for (let index of data1){
+                                   args.push({
+                                      key:i++,
+                                      table:index.table,
+                                      tables:index.table,
+                                   });
+                                  dispatch({
+                                    type:"acquisition/setMetaId",
+                                       payload:{
+                                          data1:args,
+                                          selectedRowKeys:acquisition.selectedRowKeys,
+                                           selectedRows:acquisition.selectedRows,
+                                            hostname:obj.hostname,
+                                            port:obj.port,
+                                            username:obj.username,
+                                            password:obj.password,
+                                            databaseName:obj.databaseName,
+                                            pluginId:obj.pluginId,
+                                            dsType:acquisition.dsTypes,
+                                            dsName:obj.schemaName,
+                                      }
+                                  });
+                                 this.setState({
+                                  data1:args,
+                                 })
+                              }
+                          }else if(res.data.code === '700'){
+                            message.error(res.data.msg);
+                          }else if(data1 === [] || data1 === null || data1 === "" || res.data.code === '500'){
+                             message.error("获取表信息失败");
+                              
+                          }else{
+                             message.error(res.data.msg);
+                          }
+                     })
+                  }else{
+                     const current = this.state.current = 0;
+                      this.setState({ current,
+                           nextList:true
+                        });
+                       message.error("数据库连接失败");
+                       dispatch({
+                            type:"acquisition/setMetaId",
+                               payload:{
+                                 selectedRowKeys:acquisition.selectedRowKeys,
+                                 selectedRows:acquisition.selectedRows,
+                                  hostname:obj.hostname,
+                                  port:obj.port,
+                                  username:obj.username,
+                                  password:obj.password,
+                                  databaseName:obj.databaseName,
+                                  pluginId:obj.pluginId,
+                                 /* key:key,*/
+                                  dsTypes:acquisition.dsTypes,
+                                  type:this.state.type,
+                                  dsIdData:res.data.data,
+                                  dsName:obj.dsName,
+                                  infoDsId:values.dsId,
+                              }
+                          });
+                     }
+                })
+              }
+         }else if(this.state.current === 1){
+          const { dispatch,acquisition }=this.props;
+          
+          const {selectRowLeft,selectRowKeysLeft,acquList} = this.props.acquisition;
+          if(acquisition.selectRowLeft.length === 0){
+               message.error("请选择表名");
+               return false
+          }else{
+             const current = this.state.current + 1;
+             this.setState({ current });
+          }
+         }
+      } 
+    });    
+  }
+  prev() {  
+     const { dispatch }=this.props;
+     const info =this.props.acquisition;
+     console.log(info,"infoinfoinfo");
+     dispatch({
+            type:"acquisition/setMetaId",
+               payload:{
+                  selectedRowKeys:info.selectedRowKeys,
+                   selectedRows:info.selectedRows,
+                    hostname:info.hostname,
+                    port:info.port,
+                    username:info.username,
+                    password:info.password,
+                    databaseName:info.databaseName,
+                    pluginId:dbTypeValue[info.pluginId.toLowerCase()],
+                    data1:info.data1,
+                    data2:info.data2,
+                    selectRowLeft:info.selectRowLeft,
+                    selectRowKeysRight:info.selectRowKeysRight,
+                    selectRowRight:info.selectRowRight,
+                   /* tableNames:info.optionsKey,*/
+                    tableNames:info.tableNames,
+                    tableNameX:info.data1,
+                    dsName:info.dsName,
+              }
+          });
+    const current = this.state.current - 1;
+    this.setState({ current, nextList:true });
+  }
+  StartAcquisition(){
+    const { id,renterId } = this.props.account;
+    const { dsTypes ,valueGrade,data1,selectRowKeysLeft} = this.props.acquisition;
+    const { dispatch,acquisition,form }=this.props;
+    console.log(acquisition,"参数");
+    form.validateFields((err, values) => {
+      if (!err) {
+        if(dsTypes.length === 0){
+          message.error("请选择存储的数据库类型");
+          return false
+       }else if(valueGrade.length === 0){
+          message.error("请输入组织外公开等级");
+          return false
+       }else{
+          let metaNameEn =[];
+          let tableNames = [];
+          for(let key of selectRowKeysLeft){
+            for(let index of data1){
+                if(index.key === key){
+                     metaNameEn.push({
+                       newTable:index.table,
+                       oldTable:index.tables
+                    });
+                    tableNames.push(index.tables);   
+                }
+            }
+          }
+          values.metaNameEn = metaNameEn;
+          values.dsType =  dbTypeValue[acquisition.pluginId.toLowerCase()];
+          values.dsId = acquisition.dsId;
+          let obj={};
+          obj.hostname = acquisition.hostname;
+          obj.port  = acquisition.port;
+          obj.username  = acquisition.username;
+          obj.password = acquisition.password;
+          obj.databaseName = acquisition.databaseName;
+          obj.pluginId = acquisition.pluginId;
+          obj.tableNames = tableNames;
+          obj.dsType = acquisition.dsTypes;
+          SJCJinsertTableFields({metaDataList:{...values,...acquisition.keyList},...obj}).then((res)=>{
+             if(res.data.code === "0"){
+                message.success("成功");
+                dispatch({
+                  type:"acquisition/setMetaId",
+                     payload:{
+                       total:res.data.data.total,
+                       success:res.data.data.success,
+                    }
+                });
+               let over = res.data.data.total- res.data.data.success;
+                this.setState({
+                    total:res.data.data.total,
+                    success:res.data.data.success,
+                    over:over,
+                })
+                this.showModals();
+              }else{
+                message.error(res.data.msg);
+              }
+          })
+        }
+      }
+      });
+    }
+    onChangeRadio = (e) => {
+      const { dsTypes } = this.props.acquisition;
+       const { dispatch }=this.props;
+        dispatch({
+            type:"acquisition/setMetaId",
+              payload:{
+               dsTypes:e.target.value,
+              }
+          });
+            dispatch({type: 'metadataCommon/getStoreDatabase', dstype:e.target.value});
+    }
+    onChangeGrade = (e) => {
+      const { valueGrade } = this.props.acquisition;
+       const { dispatch }=this.props;
+     dispatch({
+            type:"acquisition/setMetaId",
+              payload:{
+               valueGrade:e.target.value,
+              }
+          });
+      }
+   formItemLayout1 = {
+        labelCol: { span: 0 },
+        wrapperCol: { span: 20 },
+      };
+    showModals(){
+        this.setState({
+        visible: true,
+      });
+    }
+      handleOk = (e) =>{
+         const { metaDataDefine,dispatch } = this.props;  
+         dispatch({ type: 'metaDataDefine/hideAllViewAcquisition' });
+    }
+     handleCancelAlert = (e) =>{
+      const { dispatch }=this.props;
+        const current = this.state.current = 0;
+          this.setState({ current });
+        this.setState({
+          visible: false,
+        });
+         dispatch({type:"acquisition/closeModel"});
+      }
+         onChangeChecked = (e) => {
+          /*文件表类型或者文件目录类型*/
+              this.setState({
+                value: e.target.value,
+              });
+          }
+          onChangeOptions = (e) => {
+            /*是否需要元数据表名称*/
+             const { dispatch } = this.props;
+             dispatch({
+                type:"acquisition/setMetaId",
+                  payload:{
+                   type:e.target.checked,
+                  }
+              });
+            this.setState({
+               type:e.target.checked
+            })
+          }
+          handleChange = (value,dsName) => {
+            /*判断数据库表中文名名称*/
+            const account = this.props.account;
+              const { dispatch,acquisition }=this.props;
+              let obj={};
+                  obj.sourceId = "1";
+                  obj.renterId=account.renterId;
+                  obj.dsName = value;
+                
+               getStoreDatabase(obj).then((res)=>{
+                  const {code ,total} = res.data;
+                  if(code === "0"){
+                    let add=[];
+                    for(let index of res.data.data.rows){
+                     /* add.push(index);*/
+                      if(value===index.dsName){
+                            dispatch({
+                                type:"acquisition/setMetaId",
+                                  payload:{
+                                   /*hostname:index.dbHostname,*/
+                                   port:index.frontEndServer.dbPort,
+                                   username:index.dbUsername,
+                                   password:index.dbPassword,
+                                   databaseName:index.dbDatabasename,
+                                   pluginId:index.dsType,
+                                   hostname:index.frontEndServer.serverIp,
+                                   manager:index.frontEndServer.manager,
+                                   dsId:index.dsId,
+                                  }
+                              });
+                              return;
+                        }
+                    }
+                    dispatch({
+                      type:"acquisition/setMetaId",
+                        payload:{
+                         caijiList:res.data.data.rows,
+                        }
+                    });
+                  }
+              })
+            let optionsSelect;
+            this.setState({ optionsSelect });
+          }
+  
+       componentDidMount() {
+            const { dispatch } = this.props;
+            dispatch({ type: 'metadataCommon/getSourceTable' });
+            dispatch({ type: 'metadataCommon/getUsers' });
+            dispatch({ type: 'metadataCommon/getDepartments' });
+            dispatch({type: 'metadataCommon/getStoreDatabase',});
+            dispatch({ type: 'metadataCommon/getUserByRenterId' });
+            dispatch({ type: 'metadataCommon/getAllResource' });
+            dispatch({ type: 'metadataCommon/getHdfsTree' });
+            dispatch({ type:"acquisition/closeModel"});
+         this.handleChange();
+    }
+    history(){
+       const { metaDataDefine,dispatch } = this.props;  
+         dispatch({ type: 'metaDataDefine/hideAllViewAcquisition' });
+     }
+  render() {
+    const { metaDataDefine, metadataCommon, account } = this.props;
+    const { sourceTableOptions, departmentsOptions, departmentsTree,storeAcquisitionDatabaseOptions, storeDatabaseOptions, usersOptions, industryOptions, themeOptions, tagsOptions } = this.props.metadataCommon;
+    const {visible, confirmLoading,current,info,type} = this.state;
+    const {caijiList,pluginId,dsTypes ,valueGrade,data1,data2,data,indexSelect,selectedRows,selectedRowKeys,selectRowKeysRight,selectRowLeft,selectRowRight,selectRowKeysLeft} = this.props.acquisition;
+    const { getFieldDecorator } = this.props.form;
+    const infos = this.props.acquisition;
+    let selectCaiJiList = caijiList?caijiList:[];
+    const { dispatch }=this.props;
+    const options = [
+        { label: 'xls，xlst', value: '1' },
+        { label: 'txt', value: '2' },
+        { label: 'doc，docx', value: '3' },
+        { label: 'pdf', value: '4' },
+        { label: 'XML', value: '5' },
+        { label: 'JSON', value: '6' },
+        { label: '压缩包（rar，zip，7z...）', value: '7' },
+        { label: '图片（jpg，png，tiff，gif，bmp，jpeg，raw...）', value: '8' },
+      ];
+  
+  const rowSelection1 = {
+    selectedRowKeys:selectRowKeysLeft,
+      onChange: (selectRowKeysLeft, selectRowLeft) => {
+           const { dispatch } = this.props;
+            var tableNames = [];
+            console.log(selectRowKeysLeft,"选择右边");
+            for(var index of selectRowLeft){ 
+              tableNames.push(index.table)
+            }
+            console.log(tableNames,"更新tableNames");
+            dispatch({
+              type:"acquisition/setMetaId",
+                 payload:{
+                    selectRowLeft:selectRowLeft,
+                    tableNames,
+                    selectRowKeysLeft:selectRowKeysLeft,
+                }
+            });
+            if(selectRowLeft.length>0){
+              this.setState({
+                nextList:true
+              })  
+            }
+      },
+    };
+   const rowSelection2 = {
+      selectedRowKeys:selectRowKeysRight,
+      onChange: (selectRowKeysRight, selectRowRight) => {
+        const { dispatch }=this.props;
+        const { keyList }= this.props.acquisition;
+      let tableLi = this.props.acquisition.tableNames;
+       let as = this.props.acquisition.keyList;
+           let nameList=[];
+          let shallList=[];
+        for(var index in selectRowRight){
+            nameList.push(selectRowRight[index]);
+            shallList.push({
+              colName: nameList[index].name,
+              frontDataType: nameList[index].type,
+              IsPk:nameList[index].isPrimaryKey,
+              IsNull:nameList[index].nullable,
+              length:nameList[index].length,
+              dataType:nameList[index].metaType,
+            })
+        }
+       let obj = {};
+        obj[tableLi] = shallList; 
+        let tablekey={[tableLi]:shallList};
+        let keyFile = {...tablekey}
+        let FileName = [];
+         this.props.acquisition.dataNameBest = selectRowRight;
+        dispatch({
+           type:"acquisition/setMetaId",
+              payload:{
+               selectRowKeysRight:selectRowKeysRight,
+               selectRowRight:selectRowRight,
+               keyList:{
+                 ...keyList,
+                 ...obj
+               },
+              }
+          });
+       },
+    };
+    let dept = Array.isArray(infos.dept) ? infos.dept : safeJsonParse(infos.dept) || this.props.account.deptId && [String(this.props.account.deptId)];
+    dept = Array.isArray(dept) ? dept : dept && [String(dept)];
+     if (!departmentsTree) dept = null;
+     const formItemLayout = {
+      labelCol: { span: 6 },
+      wrapperCol: { span: 10 },
+    };
+     const formItemLayout1 = {
+      labelCol: { span: 6 },
+      wrapperCol: { span: 8 },
+    };
+    const formItemLayout2 = {
+      labelCol: { span: 8 },
+      wrapperCol: { span: 14 },
+    };
+     const formItemLayout3 = {
+      labelCol: { span: 8 },
+      wrapperCol: { span: 15 },
+    };
+    const formItemLayout4 = {
+      labelCol: { span: 9 },
+      wrapperCol: { span: 15 },
+    };
+    const formItemLayout5 = {
+      labelCol: { span: 3 },
+      wrapperCol: { span: 15 },
+    };
+    const formItemLayoutS = {
+      labelCol: { span: 3 },
+      wrapperCol: { span: 10 },
+    };
+    let renderShow;
+    switch (this.state.current) {
+      case 0:
+        renderShow = (
+           <div className={Style.center}>
+               <div className={Style.fromList}>
+                     
+                <FormItem   label="数据库中文名称: "  {...formItemLayout} >
+                    {getFieldDecorator('dsName', {
+                      initialValue:infos.dsName,
+                      validateTrigger: 'onBlur',
+                      rules: [{ required: true, message: '请输入数据库中文名称' },
+                              {validator:this.handleGetNameScarch,message: '数据库中文名称已存在'}]
+                    })(
+                           <Select  mode="combobox" {...formItemLayout} onChange={this.handleChange}
+                              filterOption={false} placeholder="请输入自定义数据库中文名称" >
+                              {selectCaiJiList.map(item => {
+                                 return <Option key={item.dsName} value={item.dsName}>{item.dsName}</Option>
+                              })}
+                            </Select>
+                    )}
+                </FormItem>
+                <FormItem  label="IP地址" {...formItemLayout}>
+                  {getFieldDecorator('hostname', {
+                     initialValue: infos.hostname,
+                    rules: [{ required: true, message: '请输入数据库所在IP地址' }]
+                  })(
+                    <Input disabled placeholder="请输入数据库所在IP地址" />
+                  )}
+                </FormItem>
+                 
+               {pluginId === 3 ? (
+                   <FormItem label="数据库名称" {...formItemLayout}>
+                    {getFieldDecorator('databaseName', {
+                       initialValue: infos.databaseName,
+                      rules: [{ required: true, message: '请输入数据库名称' }]
+                    })(
+                      <Input disabled placeholder="请输入数据库名称" />
+                    )}
+                  </FormItem>
+               ):(
+                <FormItem label="实例名称" {...formItemLayout}>
+                  {getFieldDecorator('databaseName', {
+                     initialValue: infos.databaseName,
+                    rules: [{ required: true, message: '请输入实例名称' }]
+                  })(
+                    <Input disabled placeholder="请输入实例名称" />
+                  )}
+                </FormItem>
+               )}
+                {pluginId === 3 ? (
+                     <FormItem label="端口号" {...formItemLayout}>
+                        {getFieldDecorator('port', {
+                          initialValue: infos.port || "3306",
+                          rules: [{ required: true, message: '请输入端口号' }
+                            ]
+                      })(
+                          <Input disabled placeholder="请输入端口号" />
+                        )}
+                      </FormItem>
+                  ):(
+                     <FormItem label="端口号" {...formItemLayout}>
+                        {getFieldDecorator('port', {
+                          initialValue: infos.port || "1521",
+                          rules: [{ required: true, message: '请输入端口号' }
+                            ]
+                      })(
+                          <Input disabled placeholder="请输入端口号" />
+                        )}
+                      </FormItem>
+                  )}
+               
+                <FormItem label="用户名" {...formItemLayout}>
+                  {getFieldDecorator('username', {
+                    initialValue: infos.username,
+                    rules: [{ required: true, message: '请输入用户名' }],
+                  })(
+                    <Input disabled placeholder="请输入用户名" />
+                  )}
+                </FormItem>
+                <FormItem label="密码" {...formItemLayout}>
+                  {getFieldDecorator('password', {
+                    initialValue:infos.password,
+                    rules: [{ required: true, message: '请输入密码' }],
+                  })(
+                    <Input disabled type="password" placeholder="请输入密码" />
+                  )}
+                </FormItem>
+               {/* <FormItem {...formItemLayout2} style={{ marginLeft:'18%'}}>
+                    {getFieldDecorator('type', {
+                       initialValue: infos.type || true,
+                    })(
+                    <Checkbox checked={type} onChange={this.onChangeOptions}>采集外部数据源表的同时，批量新建元数据表</Checkbox>
+                    )}
+                  </FormItem> */ }
+           
+                </div>
+          </div>
+        )
+        break;
+      case 1:
+        // onRowClick={this.headonRowClick.bind(this)} 
+        renderShow = (
+           <div className={Style.center1}>
+             {this.state.type === true ? (
+                <TableList scroll={{y:450}}
+                 pagination={false} 
+                 rowClassName = {(record,index) => index === indexSelect ? "rowColor":''}
+                 rowSelection={rowSelection1}
+                 style={{color:'#fff'}}
+                 className={Style.TabelList} dataSource={data1} columns={this.columns1} />
+             ):null}
+             {this.state.type === false ?(
+                  <Table scroll={{y:450}}
+                   pagination={false} 
+                   rowClassName = {(record,index) => index === indexSelect ? "rowColor":''}
+                   rowSelection={rowSelection1}
+                   style={{color:'#fff'}}
+                   className={Style.TabelList} dataSource={data1} columns={this.columnsOne} />
+             ):null}
+             {this.state.type === false ?(
+                  <TableList scroll={{y:450}} 
+                    pagination={false} 
+                    rowSelection={rowSelection2}
+                    onRowClick={(record)=>{console.log(record)}}  
+                    className={Style.TabelList1} 
+                    dataSource={data2} 
+                    columns={this.columnsTwo()} />
+              ):null}
+          </div>
+        )
+        break;
+         case 2:
+        renderShow = (
+           <div className={Style.center2}>
+               <Row>
+                   <Col span={12}>
+                      <FormItem label="所属组织: " {...formItemLayout3}>
+                          {getFieldDecorator('dept', {
+                            initialValue: dept,
+                          })(
+                             <TreeSelect disabled
+                                placeholder="选择组织"
+                                treeData={departmentsTree}
+                                treeDefaultExpandAll
+                                dropdownStyle={{height: 300}}
+                              />
+                          )}
+                       </FormItem>
+                  </Col>
+                  
+               </Row>
+               <Row>
+                  <Col span={12}>
+                   <FormItem label="组织外公开等级" {...formItemLayout4}>
+                       {getFieldDecorator('publicStats', {
+                          initialValue: infos.publicStats || '1',
+                      })(
+                        <RadioGroup onChange={this.onChangeGrade} value={valueGrade}>
+                          <Radio value="1">授权公开</Radio>
+                          <Radio value="2">不公开</Radio>
+                        </RadioGroup>
+                      )}
+                    </FormItem>
+                 </Col>
+                 <Col span={12}>
+                    <FormItem label="表拥有者： " {...formItemLayout3}>
+                        {getFieldDecorator('owner', {
+                          initialValue: infos.owner,
+                          rules: [
+                            { required: true, message: "请选择表拥有者" },
+                          ]
+                        })(
+                          <Select placeholder="选择表拥有者">
+                            {usersOptions.map(item => {
+                              return <Option key={item.value} value={item.label}>{item.label}</Option>
+                            })}
+                          </Select>
+                        )}
+                      </FormItem>
+                 </Col>
+               </Row>
+              <Row>
+               <Col span={12}>
+                  <FormItem  style={{marginBottom:'10px'}} label="行业： " {...formItemLayout3}>
+                    {getFieldDecorator('industry', {
+                      initialValue: infos.industry,
+                      rules:[{required:true,message:"请选择行业"}]
+                    })(
+                      <Select  placeholder="选择行业">
+                        {industryOptions.map(item => {
+                          return <Option key={item.value} value={item.value}>{item.label}</Option>
+                        })}
+                      </Select>
+                    )}
+                  </FormItem>
+                </Col>
+                 <Col span={12}>
+                 <FormItem label="标签：" {...formItemLayout3} >
+                    {getFieldDecorator('tag',{
+                      initialValue: infos.tag,
+                      rules:[{required:true,message:"请选择标签"}]
+                    })(
+                      <Select  placeholder="选择标签">
+                        {tagsOptions.map(item => {
+                          return <Option key={item.value} value={item.value}>{item.label}</Option>
+                        })}
+                      </Select>
+                    )}
+                  </FormItem>
+                  </Col>
+              </Row>
+              <Row>
+              <FormItem  label="备注：" {...formItemLayout5} >
+                {getFieldDecorator('remark',{
+                  initialValue: infos.remark,
+                })(
+                  <TextArea maxLength="200" autosize={{ minRows: 3, maxRows: 5 }} />
+                )}
+              </FormItem>
+              </Row>
+          </div>
+        )
+        break;
+      default:
+        break;
+    }
+    return <Modal
+      title="新建采集字段"
+      visible={metaDataDefine.viewAcquisitionVisible}
+      maskClosable={false}
+      closable={false}
+      footer={null}
+      width={800}
+    >
+      <div>
+         <div style={{width:'86%',marginLeft:'8%'}}>
+          {this.state.value  === 1 ? (
+            <Steps current={current}>
+             {steps.map(item => <Step key={item.title} title={item.title} style={{marginTop:"20px"}} />)}
+            </Steps>
+            ):null}
+        </div>
+         {/*  <RadioGroup onChange={this.onChangeChecked} value={this.state.value} style={{marginLeft:'7%'}}>
+              <Radio className={Style.radioStyle} value={1}>数据表类型</Radio>
+              <Radio className={Style.radioStyle} value={2}>文件目录类型</Radio>
+            </RadioGroup>*/}
+           <div className="stepsContent">
+                <Form>
+                    {this.state.value === 1 ? renderShow : null}
+                    {this.state.value === 2 ? 
+                        <div>
+                          <FormItem  label="目录路径" {...formItemLayout1}>
+                            {getFieldDecorator('hostFile', {
+                               initialValue: infos.hostFile,
+                              rules: [{ required: true, message: '请输入目录路径' }]
+                            })(
+                              <Input placeholder="请输入主机名称" />
+                            )}
+                          </FormItem>
+                          <FormItem  label="目录路径" {...formItemLayout1}>
+                            {getFieldDecorator('hostnameUrl', {
+                               initialValue: infos.hostnameUrl,
+                              rules: [{ required: true, message: '请输入目录路径' }]
+                            })(
+                              <Input placeholder="请输入主机名称" />
+                            )}
+                          </FormItem>
+                          <FormItem  label="目录中的文件类型" {...formItemLayout1}>
+                            {getFieldDecorator('hostnametype', {
+                               initialValue: infos.hostnametype,
+                              
+                            })(
+                             <CheckboxGroup options={options} onChange={this.onChangeGroup.bind(this)} />
+                            )}
+                          </FormItem>
+                          <FormItem  label="备注：" {...formItemLayout1} >
+                              {getFieldDecorator('remark',{
+                                initialValue: infos.remark,
+                              })(
+                                <TextArea maxLength="200" autosize={{ minRows: 3, maxRows: 5 }} />
+                              )}
+                            </FormItem>
+                        </div>
+                     : null}
+                </Form> 
+           </div>
+           <div className={Style.stepsAction}>
+          {this.state.current < steps.length - 1 &&
+                <div>
+                    {this.state.current === 1 && this.props.acquisition.type === false ?  (
+                      <Button type="primary" style={{ marginLeft: 8 }} onClick={() => this.StartAcquisition()}>保存</Button>
+                      ) :<Button type="primary" style={{ marginLeft: 8 }} onClick={() => this.next()} disabled={this.state.nextList === false}>下一步</Button> 
+                    }
+                    <Button type="primary" style={{ marginLeft: 20 }} onClick={()=>this.history()}>取消</Button>
+                </div>
+          }
+          { this.state.current === steps.length - 1 &&                                
+                 <div>
+                      {this.state.value === 1 ? (
+                         <Button type="primary" style={{ marginRight: '-1%' }} onClick={() => this.StartAcquisition()}>开始采集</Button>
+                      ) : null }
+                      {this.state.value === 2 ? (
+                         <Button type="primary" style={{ marginRight: '-1%' }} onClick={() => this.StartAcquisition()}>开始采集</Button>
+                      ) : null }
+                       <Button type="primary" style={{ marginLeft: 20 }} onClick={()=>this.history()}>取消</Button>
+                 </div>
+          }
+          { this.state.current > 0 &&
+               <div style={{margin: '-4% 23% 0% 0%'}}>
+                {this.state.value === 1 ? (
+                   <Button onClick={() => this.prev()}>
+                      上一步
+                    </Button>
+                    ):null}
+               </div>
+          }
+        </div>
+        <Modal title="采集结果"
+            visible={visible}
+            confirmLoading={confirmLoading}
+            closable={true}
+            onCancel={this.handleCancelAlert}
+            zIndex={1030}
+            footer={null}>
+                  <Row>
+                      <Col span={8}>
+                         <FormItem label="总表数" >
+                         {getFieldDecorator('total',{
+                            initialValue: info.total,
+                          })(
+                           <label className="ant-form-text">{this.state.total}</label>
+                          )}
+                         </FormItem>
+                      </Col>
+                      <Col span={8}>
+                         <FormItem label="采集成功表数">
+                           {getFieldDecorator('success',{
+                              initialValue: info.success,
+                            })(
+                              <label className="ant-form-text">{this.state.success}</label>
+                            )}
+                        </FormItem>
+                      </Col>
+                      <Col span={8}>
+                        <FormItem  label="采集失败表数" >
+                         {getFieldDecorator('over',{
+                              initialValue: info.over,
+                            })(
+                             <label className="ant-form-text">{this.state.over}</label>
+                            )}
+                        </FormItem>
+                      </Col>
+                  </Row>
+                  {this.state.type === true ?(
+                      <div>
+                           <div style={{height: 30,textAlign:'center',marginTop:'5%'}}>
+                            <Button type="primary" onClick={() => this.handleOk()}>
+                                <Link to="/MetadataDefine">去查看</Link>
+                            </Button>
+                          </div>
+                      </div>
+                       
+                    ):null}
+  
+                   {this.state.type === false ?(
+                      <div>
+                           <div style={{height: 30,textAlign:'center',marginTop:'5%'}}>
+                            <Button type="primary" onClick={() => this.handleOk()}>
+                                <Link to="/MetadataDefine">去查看</Link>
+                            </Button>
+                           </div>
+                      </div>
+                       
+                    ):null}
+                
+      </Modal>
+        </div>
+      </Modal>   
+  }
+}
+const AcquisitionModelForm = Form.create()(Acquisition);
+export default withRouter(connect(({acquisition,metadataCommon,system,account,metaDataDefine }) => ({
+ acquisition,metadataCommon,system,account ,metaDataDefine
+}))(AcquisitionModelForm));

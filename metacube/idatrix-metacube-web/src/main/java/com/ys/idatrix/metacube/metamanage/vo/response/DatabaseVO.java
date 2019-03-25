@@ -41,7 +41,7 @@ public class DatabaseVO {
     private String password;
 
     @ApiModelProperty("数据库模式")
-    private List<McSchemaPO> schemaList;
+    private List<SchemaListVO> schemaList;
 
     public DatabaseVO() {
     }

@@ -4,7 +4,7 @@ import com.ys.idatrix.metacube.api.beans.ActionTypeEnum;
 import com.ys.idatrix.metacube.api.beans.ModuleTypeEnum;
 import com.ys.idatrix.metacube.metamanage.domain.ResourceAuth;
 import com.ys.idatrix.metacube.metamanage.mapper.ResourceAuthMapper;
-import com.ys.idatrix.metacube.metamanage.service.ResourceAuthService;
+import com.ys.idatrix.metacube.authorize.service.ResourceAuthService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

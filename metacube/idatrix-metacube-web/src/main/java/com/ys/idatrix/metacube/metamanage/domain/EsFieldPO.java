@@ -16,7 +16,7 @@ import javax.validation.constraints.NotBlank;
  * @Date: 2019/1/23
  */
 @Data
-@ApiModel(value = "EsIndexFieldPO", description = "索引字段实体")
+@ApiModel(value = "EsFieldPO", description = "索引字段实体")
 public class EsFieldPO extends BasePO {
 
     @ApiModelProperty("索引主表Id")
@@ -50,6 +50,6 @@ public class EsFieldPO extends BasePO {
     private Integer location;
 
     @ApiModelProperty("修改操作,标识字段 0=不变,1-新增,2修改,3-删除")
-    private Integer opFlag = 0;
+    private Integer status = 0;
 
 }

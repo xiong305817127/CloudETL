@@ -88,7 +88,11 @@ public abstract class SqoopConfig {
 	public static final String LIBJARS = "libjars";
 	public static final String ARCHIVES = "archives";
 
+	private Long databaseId;
 	private Long schemaId;
+	private Long tableId;
+	private String tableType;
+	
 	private String database;
 	private String schema;
 
@@ -244,6 +248,30 @@ public abstract class SqoopConfig {
 
 	public void setSchemaId(Long schemaId) {
 		this.schemaId = schemaId;
+	}
+
+	public Long getDatabaseId() {
+		return databaseId;
+	}
+
+	public void setDatabaseId(Long databaseId) {
+		this.databaseId = databaseId;
+	}
+
+	public Long getTableId() {
+		return tableId;
+	}
+
+	public void setTableId(Long tableId) {
+		this.tableId = tableId;
+	}
+
+	public String getTableType() {
+		return tableType;
+	}
+
+	public void setTableType(String tableType) {
+		this.tableType = tableType;
 	}
 
 	public void setDatabase(String database) {

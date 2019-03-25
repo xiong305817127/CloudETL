@@ -1,8 +1,11 @@
 package com.idatrix.resource.datareport.vo;
 
+import lombok.Data;
+
 /**
  * Created by Robin Wing on 2018-6-19.
  */
+@Data
 public class ResourceFileVO {
 
     /*主键*/
@@ -26,67 +29,6 @@ public class ResourceFileVO {
 
     private String fileDescription;
 
-    public String getFileDescription() {
-        return fileDescription;
-    }
+    private Boolean downFlag;
 
-    public void setFileDescription(String fileDescription) {
-        this.fileDescription = fileDescription;
-    }
-
-    public String getFileType() {
-        return fileType;
-    }
-
-    public void setFileType(String fileType) {
-        this.fileType = fileType;
-    }
-
-    public String getFileSize() {
-        return fileSize;
-    }
-
-    public void setFileSize(String fileSize) {
-        this.fileSize = fileSize;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(Long resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public String getPubFileName() {
-        return pubFileName;
-    }
-
-    public void setPubFileName(String pubFileName) {
-        this.pubFileName = pubFileName;
-    }
-
-    public String getDataBatch() {
-        return dataBatch;
-    }
-
-    public void setDataBatch(String dataBatch) {
-        this.dataBatch = dataBatch;
-    }
-
-    public String getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(String updateTime) {
-        this.updateTime = updateTime;
-    }
 }

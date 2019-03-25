@@ -4,12 +4,17 @@ import com.idatrix.resource.common.controller.BaseController;
 import com.idatrix.resource.common.utils.DateTools;
 import com.idatrix.resource.common.utils.Result;
 import com.idatrix.resource.common.utils.ResultPager;
+import com.idatrix.resource.common.utils.UserUtils;
 import com.idatrix.resource.subscribe.service.ISubscribeService;
+import com.idatrix.resource.subscribe.vo.SubscribeOverviewVO;
 import com.idatrix.resource.subscribe.vo.SubscribeVO;
 import com.idatrix.resource.subscribe.vo.SubscribeWebServiceVO;
 import com.idatrix.resource.subscribe.vo.request.SubscribeApproveRequestVO;
 import com.idatrix.resource.subscribe.vo.request.SubscribeOverviewRequestVO;
-import com.ys.idatrix.db.proxy.api.hdfs.HdfsDao;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,15 +28,21 @@ import java.util.*;
 
 @Controller
 @RequestMapping("/subscribe")
+@Api(value = "/subscribe" , tags="资源管理-订阅流程处理接口")
 public class SubscribeController extends BaseController {
 
     @Autowired
     private ISubscribeService resourceSubscribeService;
 
+
     @Autowired
-    private HdfsDao hdfsDaoHessian;
+    private UserUtils userUtils;
 
     /*数据库服务开放描述*/
+    @ApiOperation(value = "获取数据库服务开放描述", notes="获取数据库服务开放描述", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "订阅ID", required = true, dataType="Long")
+    })
     @RequestMapping(value="/getWebservice", method = RequestMethod.GET)
     @ResponseBody
     public Result getWebservice(@RequestParam(value="id", required=true)Long id) {
@@ -41,30 +52,33 @@ public class SubscribeController extends BaseController {
             webServiceVO = resourceSubscribeService.getWebserviceDescription(id);
         }catch(Exception e){
             e.printStackTrace();
-            return Result.error(6001000, e.getMessage()); //调试Ajax屏蔽掉
+            return Result.error(e.getMessage()); //调试Ajax屏蔽掉
         }
         return Result.ok(webServiceVO);
     }
 
     /*订阅关系管理*/
+    @ApiOperation(value = "订阅关系管理", notes="对订阅关系进行管理", httpMethod = "POST")
     @RequestMapping(value="/getManage", method = RequestMethod.POST)
     @ResponseBody
     public Result getManage(@RequestBody SubscribeOverviewRequestVO requestVO) {
 
         String user = null;
         Map<String, String> conMap = newQueryCondition(user, requestVO);
+        conMap.put("rentId", userUtils.getCurrentUserRentId().toString());
         ResultPager tasks = null;
         try {
             tasks = resourceSubscribeService.queryOverview(conMap, requestVO.getPage(),
                     requestVO.getPageSize());
         }catch(Exception e){
             e.printStackTrace();
-            return Result.error(6001000, e.getMessage()); //调试Ajax屏蔽掉
+            return Result.error(e.getMessage()); //调试Ajax屏蔽掉
         }
         return Result.ok(tasks);
     }
 
     /*管理本人审批同意流程的订阅关系管理*/
+    @ApiOperation(value = "已处理订阅关系管理", notes="管理本人审批同意流程的订阅关系管理", httpMethod = "POST")
     @RequestMapping(value="/getOwnManage", method = RequestMethod.POST)
     @ResponseBody
     public Result getOwnManage(@RequestBody SubscribeOverviewRequestVO requestVO) {
@@ -77,12 +91,16 @@ public class SubscribeController extends BaseController {
                     requestVO.getPageSize());
         }catch(Exception e){
             e.printStackTrace();
-            return Result.error(6001000, e.getMessage()); //调试Ajax屏蔽掉
+            return Result.error(e.getMessage()); //调试Ajax屏蔽掉
         }
         return Result.ok(tasks);
     }
 
     /*停止订阅关系*/
+    @ApiOperation(value = "停止订阅关系", notes="根据订阅ID停止订阅关系", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "订阅ID", required = true, dataType="Long")
+    })
     @RequestMapping(value="/stop", method = RequestMethod.GET)
     @ResponseBody
     public Result stop(@RequestParam(value="id", required=true)Long id){
@@ -92,12 +110,16 @@ public class SubscribeController extends BaseController {
             resourceSubscribeService.stopSubscribe(id);
         }catch(Exception e){
             e.printStackTrace();
-            return Result.error(6001000, e.getMessage()); //调试Ajax屏蔽掉
+            return Result.error(e.getMessage()); //调试Ajax屏蔽掉
         }
         return Result.ok(true);
     }
 
     /*恢复订阅关系*/
+    @ApiOperation(value = "恢复订阅关系", notes="根据订阅ID恢复订阅关系", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "订阅ID", required = true, dataType="Long")
+    })
     @RequestMapping(value="/resume", method = RequestMethod.GET)
     @ResponseBody
     public Result resume(@RequestParam(value="id", required=true)Long id){
@@ -107,7 +129,7 @@ public class SubscribeController extends BaseController {
             resourceSubscribeService.resumeSubscibe(id);
         }catch(Exception e){
             e.printStackTrace();
-            return Result.error(6001000, e.getMessage()); //调试Ajax屏蔽掉
+            return Result.error(e.getMessage()); //调试Ajax屏蔽掉
         }
         return Result.ok(true);
     }
@@ -115,9 +137,10 @@ public class SubscribeController extends BaseController {
     /*
     *  获取资源订阅概览
     */
+    @ApiOperation(value = "获取资源订阅概览", notes="获取资源订阅概览", httpMethod = "POST")
     @RequestMapping(value="/getOverview", method = RequestMethod.POST)
     @ResponseBody
-    public Result getOverview(@RequestBody SubscribeOverviewRequestVO requestVO) {
+    public Result<ResultPager<SubscribeOverviewVO>> getOverview(@RequestBody SubscribeOverviewRequestVO requestVO) {
 
         String user = getUserName(); //"admin";
         Map<String, String> conMap = newQueryCondition(user, requestVO);
@@ -127,7 +150,7 @@ public class SubscribeController extends BaseController {
                     requestVO.getPageSize());
         }catch(Exception e){
             e.printStackTrace();
-            return Result.error(6001000, e.getMessage()); //调试Ajax屏蔽掉
+            return Result.error(e.getMessage()); //调试Ajax屏蔽掉
         }
         return Result.ok(tasks);
     }
@@ -135,9 +158,13 @@ public class SubscribeController extends BaseController {
     /*
     *  订阅时候页面初始配置
     */
+    @ApiOperation(value = "订阅时候页面初始配置", notes="获取订阅页面初始化配置", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "resourceId", value = "被订阅的资源ID", required = true, dataType="Long")
+    })
     @RequestMapping(value="/getConfigInit")
     @ResponseBody
-    public Result getConfigInit(@RequestParam(value="resourceId", required=true)Long resourceId) {
+    public Result<SubscribeVO> getConfigInit(@RequestParam(value="resourceId", required=true)Long resourceId) {
 
         String user = getUserName(); //"admin";
         SubscribeVO svo = new SubscribeVO();
@@ -146,7 +173,7 @@ public class SubscribeController extends BaseController {
             svo = resourceSubscribeService.getInitConfig(resourceId);
         }catch(Exception e){
             e.printStackTrace();
-            return Result.error(6001000, e.getMessage()); //调试Ajax屏蔽掉
+            return Result.error(e.getMessage()); //调试Ajax屏蔽掉
         }
         return Result.ok(svo);
     }
@@ -154,6 +181,7 @@ public class SubscribeController extends BaseController {
    /*
     *  增加资源订阅
     */
+    @ApiOperation(value = "新增资源订阅", notes="新增资源订阅", httpMethod = "POST")
     @RequestMapping(value="/add", method = RequestMethod.POST)
     @ResponseBody
     public Result addSubscribe(@RequestBody SubscribeVO subscribeVO) {
@@ -163,7 +191,7 @@ public class SubscribeController extends BaseController {
             resourceSubscribeService.addSubscribe(user, subscribeVO);
         }catch(Exception e){
             e.printStackTrace();
-            return Result.error(6001000, e.getMessage()); //调试Ajax屏蔽掉
+            return Result.error(e.getMessage()); //调试Ajax屏蔽掉
         }
         return Result.ok(true);
     }
@@ -171,6 +199,7 @@ public class SubscribeController extends BaseController {
     /*
     *  获取已经审核信息
     */
+    @ApiOperation(value = "获取已经审核信息", notes="获取已经审核信息", httpMethod = "POST")
     @RequestMapping(value="/getProcessedApprove", method = RequestMethod.POST)
     @ResponseBody
     public Result getProcessedApprove(@RequestBody SubscribeOverviewRequestVO requestVO) {
@@ -183,7 +212,7 @@ public class SubscribeController extends BaseController {
                     requestVO.getPageSize());
         }catch(Exception e){
             e.printStackTrace();
-            return Result.error(6001000, e.getMessage());
+            return Result.error(e.getMessage());
         }
         return Result.ok(tasks);
     }
@@ -191,6 +220,7 @@ public class SubscribeController extends BaseController {
     /*
      *   获取等待评审的资源
      */
+    @ApiOperation(value = "获取等待评审的资源", notes="获取等待评审的资源", httpMethod = "POST")
     @RequestMapping(value="/getWaitApprove", method = RequestMethod.POST)
     @ResponseBody
     public Result getWaitApprove(@RequestBody SubscribeOverviewRequestVO requestVO) {
@@ -203,7 +233,7 @@ public class SubscribeController extends BaseController {
                     requestVO.getPageSize());
         }catch(Exception e){
             e.printStackTrace();
-            return Result.error(6001000, e.getMessage());
+            return Result.error(e.getMessage());
         }
         return Result.ok(tasks);
     }
@@ -211,17 +241,18 @@ public class SubscribeController extends BaseController {
     /*
     *  单个评审
     */
+    @ApiOperation(value = "处理资源订阅评审", notes="处理资源订阅评审", httpMethod = "POST")
     @RequestMapping(value="/process", method = RequestMethod.POST)
     @ResponseBody
     public Result process(@RequestBody SubscribeApproveRequestVO requestVO) {
 
         String user = getUserName(); //"admin";
         try {
-            resourceSubscribeService.processApprove(user, requestVO.getId(),
-                    requestVO.getAction(),requestVO.getSuggestion());
+            resourceSubscribeService.processApprove(user, requestVO);
+            //resourceSubscribeService.processApprove(user, requestVO.getId(), requestVO.getAction(),requestVO.getSuggestion());
         }catch(Exception e){
             e.printStackTrace();
-            return Result.error(6001000, e.getMessage());
+            return Result.error(e.getMessage());
         }
         return Result.ok(true);
     }
@@ -229,6 +260,7 @@ public class SubscribeController extends BaseController {
     /*
     *  批量评审
     */
+    @ApiOperation(value = "批量评审", notes="批量处理资源评审", httpMethod = "GET")
     @RequestMapping(value="/batchProcess", method = RequestMethod.GET)
     @ResponseBody
     public Result batchProcess(@RequestParam(value="ids", required=true)List<Long> ids){
@@ -238,22 +270,22 @@ public class SubscribeController extends BaseController {
             resourceSubscribeService.batchProcessApprove(user, ids);
         }catch(Exception e){
             e.printStackTrace();
-            return Result.error(6001000, e.getMessage());
+            return Result.error(e.getMessage());
         }
         return Result.ok(true);
     }
-
-
-
-
 
     /*
     *  获取订阅详情详情
     *
     */
+    @ApiOperation(value = "获取订阅详情", notes="获取资源订阅详情", httpMethod = "GET")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "订阅ID", required = true, dataType="Long")
+    })
     @RequestMapping(value="/getDetail", method = RequestMethod.GET)
     @ResponseBody
-    public Result getDetail(@RequestParam(value="id", required=true)Long id){
+    public Result<SubscribeVO> getDetail(@RequestParam(value="id", required=true)Long id){
 
         String user = getUserName(); //"admin";
         SubscribeVO subscribeVO = null;
@@ -261,7 +293,7 @@ public class SubscribeController extends BaseController {
             subscribeVO = resourceSubscribeService.getSubscribeById(id);
         }catch(Exception e){
             e.printStackTrace();
-            return Result.error(6001000, e.getMessage());
+            return Result.error(e.getMessage());
         }
         return Result.ok(subscribeVO);
     }

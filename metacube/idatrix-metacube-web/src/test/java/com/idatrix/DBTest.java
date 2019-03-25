@@ -22,4 +22,13 @@ public class DBTest {
         System.out.println(tableDataTypeList);
     }
 
+    @Test
+    public void test0101(){
+        String deptCode = "hh";
+        for (String code : deptCode.split(",")) {
+            System.out.println("分解后数据 "+code);
+        }
+    }
+
+
 }

@@ -1,8 +1,11 @@
 package com.idatrix.resource.taskmanage.vo.request;
 
+import lombok.Data;
+
 /**
  * 上传任务概览查询信息
  */
+@Data
 public class UploadTaskRequestVO {
 
     /*作业名称*/
@@ -29,51 +32,5 @@ public class UploadTaskRequestVO {
         this.pageSize=10;
     }
 
-    public String getTaskName() {
-        return taskName;
-    }
 
-    public void setTaskName(String taskName) {
-        this.taskName = taskName;
-    }
-
-    public String getDeptName() {
-        return deptName;
-    }
-
-    public void setDeptName(String deptName) {
-        this.deptName = deptName;
-    }
-
-    public String getTaskType() {
-        return taskType;
-    }
-
-    public void setTaskType(String taskType) {
-        this.taskType = taskType;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public int getPage() {
-        return page;
-    }
-
-    public void setPage(int page) {
-        this.page = page;
-    }
-
-    public int getPageSize() {
-        return pageSize;
-    }
-
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
-    }
 }

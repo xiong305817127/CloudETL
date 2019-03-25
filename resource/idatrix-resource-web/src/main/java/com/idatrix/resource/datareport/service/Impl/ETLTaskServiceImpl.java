@@ -14,6 +14,8 @@ import com.idatrix.resource.datareport.po.DataUploadDetailPO;
 import com.idatrix.resource.datareport.po.DataUploadPO;
 import com.idatrix.resource.datareport.po.ResourceFilePO;
 import com.idatrix.resource.datareport.service.IETLTaskService;
+import com.idatrix.resource.portal.service.IStatisticsDailyService;
+import com.idatrix.resource.portal.service.IStatisticsDeptService;
 import com.idatrix.resource.subscribe.dao.SubscribeDAO;
 import com.idatrix.resource.subscribe.po.SubscribePO;
 import com.idatrix.resource.taskmanage.dao.SubTaskDAO;
@@ -58,6 +60,12 @@ public class ETLTaskServiceImpl implements IETLTaskService {
 
 	@Autowired
     private IResourceStatiscsService resourceStatiscsService;
+
+	@Autowired
+    private IStatisticsDailyService statisticsDailyService;
+	
+	@Autowired
+    private IStatisticsDeptService statisticsDeptService;
 
 	@Override
 	public StatusFeedbackDto updateETLTaskProcessResults(ETLTaskResultDto results) {
@@ -126,6 +134,7 @@ public class ETLTaskServiceImpl implements IETLTaskService {
 
                         //文件类型增加每个文件个数为1
                         resourceStatiscsService.increaseDataCount(dataUploadPO.getResourceId(), 1L);
+                        statisticsDailyService.saveStatisticsDaily(dataUploadPO.getResourceId(), 1L);
                     }
 
                     if (dataUploadPO.getDataType().equals(CommonConstants.DATA_TYPE_DB)
@@ -136,6 +145,7 @@ public class ETLTaskServiceImpl implements IETLTaskService {
                         dataUploadPO.setFailCount(results.getFailCount() == null ? 0 : results.getFailCount());
                         //数据库类型增加导入文件个数
                         resourceStatiscsService.increaseDataCount(dataUploadPO.getResourceId(), dataUploadPO.getImportCount());
+                        statisticsDailyService.saveStatisticsDaily(dataUploadPO.getResourceId(), dataUploadPO.getImportCount());
                     }
 
                     if (result.equals(CommonConstants.IMPORT_ERROR)) {
@@ -217,25 +227,28 @@ public class ETLTaskServiceImpl implements IETLTaskService {
                                 StringUtils.equals(exchangeResult, "Stopped")){
             String runningId = results.getRunningId();
             String subscribeId = results.getSubscribeId();
-            SubTaskExecPO execHistoryPo = subTaskExecDAO.getByEtlSubscribeAndRunningId(subscribeId, runningId);
-            if(execHistoryPo==null){
-                LOG.error("ETL 交换任务返回任务runningId没有记录, {}-{}-{}, Rusults:{}", results.getSubscribeId(),
-                        results.getExecId(),results.getRunningId(), results.getResult());
-                return getFeedBackDto(CommonConstants.EC_NOT_EXISTED_VALUE, "ETL SubscribeId或者RunningId不存在");
-            }
+//            if(StringUtils.isNotEmpty(runningId) && StringUtils.isNotEmpty(subscribeId))
+            {
+                SubTaskExecPO execHistoryPo = subTaskExecDAO.getByEtlSubscribeAndRunningId(subscribeId, runningId);
+                if (execHistoryPo == null) {
+                    LOG.error("ETL 交换任务返回任务runningId没有记录, {}-{}-{}, Rusults:{}", results.getSubscribeId(),
+                            results.getExecId(), results.getRunningId(), results.getResult());
+                    return getFeedBackDto(CommonConstants.EC_NOT_EXISTED_VALUE, "ETL SubscribeId或者RunningId不存在");
+                }
 
-            execHistoryPo.setStatus(result);
-            Date endTime = results.getEndTime();
-            if(endTime!=null){
-                execHistoryPo.setEndTime(endTime);
-            }
-            execHistoryPo.setImportCount(results.getStockInCount()==null ? 0 : results.getStockInCount());
-            execHistoryPo.setModifyTime(new Date());
-            if(execHistoryPo.getImportCount()==0){  //交换数据为空，说明没有交换不需要存储记录。
-                subTaskExecDAO.deleteById(execHistoryPo.getId());
-            }else {
-                importCount = execHistoryPo.getImportCount();
-                subTaskExecDAO.updateById(execHistoryPo);
+                execHistoryPo.setStatus(result);
+                Date endTime = results.getEndTime();
+                if (endTime != null) {
+                    execHistoryPo.setEndTime(endTime);
+                }
+                execHistoryPo.setImportCount(results.getStockInCount() == null ? 0 : results.getStockInCount());
+                execHistoryPo.setModifyTime(new Date());
+                if (execHistoryPo.getImportCount() == 0) {  //交换数据为空，说明没有交换不需要存储记录。
+                    subTaskExecDAO.deleteByIdAndTaskStatus(execHistoryPo.getId(), CommonConstants.IMPORTING);
+                } else {
+                    importCount = execHistoryPo.getImportCount();
+                    subTaskExecDAO.updateById(execHistoryPo);
+                }
             }
         }
 
@@ -256,6 +269,9 @@ public class ETLTaskServiceImpl implements IETLTaskService {
                 if(sPO!=null) {
                     resourceStatiscsService.increaseShareDataCount(sPO.getResourceId(), toltalCounts);
                 }
+                
+                //记录统计数据
+                statisticsDeptService.saveDeptShareInfo(sPO.getDeptId(), sPO.getDeptName(), sPO.getResourceId(), importCount);
             } else if(StringUtils.equals(result, CommonConstants.STOP_IMPORT)){
                 if(importCount!=0) {
                     Long toltalCounts = subTaskExecDAO.getTotalImport(etlSubscribeId);

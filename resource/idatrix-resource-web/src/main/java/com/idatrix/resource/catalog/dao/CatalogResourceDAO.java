@@ -10,20 +10,20 @@ import java.util.List;
  */
 public interface CatalogResourceDAO {
 
-    public void insert(CatalogResourcePO catalogResourcePO);
+    void insert(CatalogResourcePO catalogResourcePO);
 
-    public void deleteByResourceId(Long resourceId);
+    void deleteByResourceId(Long resourceId);
 
     /*可以根据resourceId或者catalogId去查找*/
-    public List<CatalogResourcePO> getByResourceId(Long resourceId);
+    List<CatalogResourcePO> getByResourceId(Long resourceId);
 
-    public List<CatalogResourcePO> getByCatalogId(Long catalog);
+    List<CatalogResourcePO> getByCatalogId(Long catalog);
 
-    public List<CatalogResourcePO> getAll();
+    List<CatalogResourcePO> getAll();
 
-    public Long[] getCatalogListByResourceId(Long resourceId);
+    Long[] getCatalogListByResourceId(Long resourceId);
 
     /*此处不需要使用update,逻辑上需要修改信息时，改变了父节点关系，是要先删除的！*/
 
-
+    Long getCatalogCount(Long catalogId);
 }

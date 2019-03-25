@@ -20,8 +20,10 @@
     <!-- 设置所有服务消费的 timeout -->
     <dubbo:consumer timeout="30000" />
 
-    <dubbo:reference interface="com.ys.idatrix.metacube.api.service.cloudetl.CloudETLService" id="cloudETLService" />
 
     <!-- sql execute dao dubbo consumer -->
-    <dubbo:reference interface="com.ys.idatrix.db.proxy.api.sql.SqlExecuteDao" id="sqlExecuteDao" />
+    <dubbo:reference interface="com.ys.idatrix.db.api.sql.service.SqlExecService" id="sqlExecuteDao" />
+    <dubbo:reference interface="com.idatrix.unisecurity.api.service.UserService" id="userService" />
+    <dubbo:reference  id="organizationService"
+            interface="com.idatrix.unisecurity.api.service.OrganizationService"/>
 </beans>

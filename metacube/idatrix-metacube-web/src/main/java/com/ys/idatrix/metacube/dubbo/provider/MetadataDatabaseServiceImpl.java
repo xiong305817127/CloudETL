@@ -1,10 +1,17 @@
 package com.ys.idatrix.metacube.dubbo.provider;
 
+import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.idatrix.unisecurity.api.domain.Organization;
 import com.idatrix.unisecurity.api.domain.User;
-import com.ys.idatrix.metacube.api.beans.*;
+import com.ys.idatrix.metacube.api.beans.ActionTypeEnum;
+import com.ys.idatrix.metacube.api.beans.Database;
+import com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum;
+import com.ys.idatrix.metacube.api.beans.ModuleTypeEnum;
+import com.ys.idatrix.metacube.api.beans.ResultBean;
+import com.ys.idatrix.metacube.api.beans.Schema;
 import com.ys.idatrix.metacube.api.service.MetadataDatabaseService;
+import com.ys.idatrix.metacube.authorize.service.AuthorityService;
 import com.ys.idatrix.metacube.common.enums.DataWarehouseEnum;
 import com.ys.idatrix.metacube.common.enums.ServerUseTypeEnum;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
@@ -16,17 +23,23 @@ import com.ys.idatrix.metacube.metamanage.beans.Host;
 import com.ys.idatrix.metacube.metamanage.domain.McDatabasePO;
 import com.ys.idatrix.metacube.metamanage.domain.McSchemaPO;
 import com.ys.idatrix.metacube.metamanage.domain.McServerPO;
-import com.ys.idatrix.metacube.metamanage.service.*;
+import com.ys.idatrix.metacube.metamanage.service.AmbariRestApiAdapterService;
+import com.ys.idatrix.metacube.metamanage.service.McDatabaseService;
+import com.ys.idatrix.metacube.metamanage.service.McSchemaService;
+import com.ys.idatrix.metacube.metamanage.service.McServerService;
 import com.ys.idatrix.metacube.metamanage.vo.request.ApprovalProcessVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.DatabaseServerAggregationVO;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 元数据数据库服务提供者实现
@@ -73,7 +86,7 @@ public class MetadataDatabaseServiceImpl implements MetadataDatabaseService {
     @Override
     public ResultBean<Boolean> registerOrUpdatePlatformDatabaseInfo(Long renterId) {
         if (renterId == null) {
-            throw new MetaDataException("非法参数renterId: " + renterId);
+            throw new MetaDataException("非法参数renterId");
         }
         List<McDatabasePO> databasePOList =
                 databaseService
@@ -157,7 +170,9 @@ public class MetadataDatabaseServiceImpl implements MetadataDatabaseService {
         List<McSchemaPO> schemaPOList = listSchemaByUsername(username);
         List<Schema> schemaList = convertSchema(schemaPOList);
 
-        List<DatabaseServerAggregationVO> list = listDatabaseBySchemaList(schemaPOList);
+        User user = securityConsumer.findByUserName(username);
+        List<DatabaseServerAggregationVO> list = listDatabaseBySchemaList(schemaPOList,
+                user.getRenterId(), getDbTypeList());
         List<Database> databaseList = convertDatabase(list);
         fillSchemaIntoDatabase(databaseList, schemaList);
 
@@ -171,16 +186,19 @@ public class MetadataDatabaseServiceImpl implements MetadataDatabaseService {
         Organization org = securityConsumer.getAscriptionDeptByUserName(username);
         String orgCode = org.getDeptCode();
         User user = securityConsumer.findByUserName(username);
-        return schemaService.listSchema(orgCode, user.getRenterId(), getDbTypeList());
+        return schemaService.listSchema(orgCode, user.getRenterId(), getDbTypeList(), null);
     }
 
     /**
      * 根据模式列表返回数据库列表
      */
     private List<DatabaseServerAggregationVO> listDatabaseBySchemaList(
-            List<McSchemaPO> schemaPOList) {
-        return databaseService.list(schemaPOList.stream().map(e -> e.getDbId())
-                .collect(Collectors.toList()));
+            List<McSchemaPO> schemaPOList, Long renterId, List<Integer> dbTypes) {
+
+        List<Long> dbIds = schemaPOList.stream().map(e -> e.getDbId())
+                .collect(Collectors.toList());
+
+        return databaseService.list(dbIds, renterId, dbTypes);
     }
 
     /**
@@ -199,32 +217,41 @@ public class MetadataDatabaseServiceImpl implements MetadataDatabaseService {
         databaseTypes.add(DatabaseTypeEnum.HIVE.getCode());
         databaseTypes.add(DatabaseTypeEnum.HBASE.getCode());
 
-        List<ApprovalProcessVO> processVOList = null;
+        User user = securityConsumer.findByUserName(username);
 
-        // 根据操作权限类型返回数据
-        if (module.equals(ModuleTypeEnum.ETL)) {
-            processVOList = authorityService
+        try {
+            // 根据操作权限类型返回数据
+            List<ApprovalProcessVO> processVOList = authorityService
                     .getAuthorizedResource(username, module, actionType, databaseTypes, null);
+
+            List<DatabaseServerAggregationVO> authDatabaseList = new ArrayList<>();
+            List<McSchemaPO> authSchemaList = new ArrayList<>();
+            // 授权数据如果不为空
+            if (CollectionUtils.isNotEmpty(processVOList)) {
+                List<Long> schemaIds = processVOList.stream().map(e -> e.getSchemaId())
+                        .collect(Collectors.toList());
+                authSchemaList = schemaService.listSchemaBySchemaIds(schemaIds, user.getRenterId()
+                        , null, null);
+                authDatabaseList = listDatabaseBySchemaList(authSchemaList, user.getRenterId(),
+                        getDbTypeList());
+            }
+
+            List<McSchemaPO> orgSchemaList = listSchemaByUsername(username);
+            List<DatabaseServerAggregationVO> orgDatabaseList = listDatabaseBySchemaList(
+                    orgSchemaList, user.getRenterId(), getDbTypeList());
+
+            List<McSchemaPO> schemaList = merge(orgSchemaList, authSchemaList);
+            List<DatabaseServerAggregationVO> databaseList = merge(orgDatabaseList,
+                    authDatabaseList);
+
+            List<Schema> schemas = convertSchema(schemaList);
+            List<Database> databases = convertDatabase(databaseList);
+            fillSchemaIntoDatabase(databases, schemas);
+            return ResultBean.ok(databases);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        List<McSchemaPO> authSchemaList =
-                schemaService.listSchemaBySchemaIds(
-                        processVOList.stream().map(e -> e.getSchemaId())
-                                .collect(Collectors.toList()));
-        List<DatabaseServerAggregationVO> authDatabaseList = listDatabaseBySchemaList(
-                authSchemaList);
-
-        List<McSchemaPO> orgSchemaList = listSchemaByUsername(username);
-        List<DatabaseServerAggregationVO> orgDatabaseList = listDatabaseBySchemaList(orgSchemaList);
-
-        List<McSchemaPO> schemaList = merge(orgSchemaList, authSchemaList);
-        List<DatabaseServerAggregationVO> databaseList = merge(orgDatabaseList, authDatabaseList);
-
-        List<Schema> schemas = convertSchema(schemaList);
-        List<Database> databases = convertDatabase(databaseList);
-        fillSchemaIntoDatabase(databases, schemas);
-
-        return ResultBean.ok(databases);
+        return ResultBean.error("系统异常");
     }
 
     /**

@@ -1,0 +1,315 @@
+.modelConfig {
+  display: flex;
+  width: 100%;
+}
+.modelConfig .silder {
+  box-sizing: border-box;
+  flex: 0 1 210px;
+  border-right: 1px solid #d2d2d2;
+  overflow-y: scroll;
+}
+.modelConfig .silder .silderHeader {
+  padding: 20px 10px;
+}
+.modelConfig .silder .silderList :global .item {
+  box-sizing: border-box;
+  cursor: pointer;
+  padding: 0px;
+  margin: 10px 0;
+}
+.modelConfig .silder .silderList :global .item .ant-list-item-content-single {
+  display: flex;
+  align-items: center;
+  border: 1px solid #FFF;
+  border-left: 2px solid #FFF;
+  padding: 5px 5px 5px 30px;
+  box-sizing: border-box;
+}
+.modelConfig .silder .silderList :global .item .ant-list-item-content-single img {
+  height: 14px;
+  margin-right: 8px;
+}
+.modelConfig .silder .silderList :global .item .ant-list-item-content-single .text {
+  width: calc(210px - 85px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.modelConfig .silder .silderList :global .item .ant-list-item-content-single img:last-child {
+  display: none;
+}
+.modelConfig .silder .silderList :global .item:hover .ant-list-item-content-single {
+  border: 1px solid #c0d1da;
+  border-left: 2px solid #40b9fc;
+}
+.modelConfig .silder .silderList :global .item:hover .ant-list-item-content-single img:last-child {
+  display: block;
+  margin: 0px;
+}
+.modelConfig .silder .silderList :global .ant-list-split .ant-list-item {
+  border-bottom: none;
+}
+.modelConfig .content {
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 210px);
+}
+.modelConfig .content.viewContent {
+  width: 100%;
+}
+.modelConfig .content .modelContent {
+  height: calc(100% - 46px);
+  box-sizing: border-box;
+  margin: 10px 20px 0px;
+}
+.modelConfig .content .modelContent .upPart {
+  height: calc(100% - 450px);
+  box-sizing: border-box;
+  overflow: scroll;
+  border: 1px dashed #d2d2d2;
+  position: relative;
+}
+.modelConfig .content .modelContent .upPart .item {
+  position: absolute;
+  height: 33px;
+  line-height: 33px;
+  width: 210px;
+  border: 1px solid #d2d2d2;
+  box-sizing: border-box;
+  border-left: 2px solid #40b9fc;
+  border-radius: 5px;
+  border-bottom-left-radius: 0px;
+  border-top-left-radius: 0px;
+  padding: 0 10px;
+  cursor: default;
+  display: flex;
+}
+.modelConfig .content .modelContent .upPart .item .text {
+  width: 176px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.modelConfig .content .modelContent .upPart .item .img {
+  display: none;
+  width: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.modelConfig .content .modelContent .upPart :global .aLabel {
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 24px;
+  line-height: 22px;
+  box-sizing: border-box;
+  border: 1px solid #d2d2d2;
+  text-align: center;
+  color: #555;
+}
+.modelConfig .content .modelContent .upPart :global .aLabel:hover {
+  border: 1px solid #40b9fc;
+  cursor: pointer;
+}
+.modelConfig .content .modelContent .upPart :global .enter {
+  border-color: #40b9fc;
+}
+.modelConfig .content .modelContent .downPart {
+  height: 450px;
+  display: flex;
+  box-sizing: border-box;
+  padding-top: 10px;
+}
+.modelConfig .content .modelContent .downPart :global ::-webkit-scrollbar {
+  display: none;
+}
+.modelConfig .content .modelContent .downPart .left {
+  width: 45%;
+}
+.modelConfig .content .modelContent .downPart .right {
+  width: 55%;
+  padding-left: 20px;
+}
+.modelConfig .content .modelContent .downPart .header {
+  font-weight: bold;
+  height: 30px;
+  line-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modelConfig .content .modelContent .downPart .header .split {
+  color: #40b9fc;
+  font-weight: bolder;
+  font-size: 16px;
+}
+.modelConfig .content .modelContent .downPart .tables {
+  height: calc(100% - 30px);
+  border: 1px solid #d2d2d2;
+  box-sizing: border-box;
+  border-radius: 5px;
+}
+.modelConfig .content .modelContent .downPart .tables .rightTable {
+  height: 100%;
+}
+.modelConfig .content .modelContent .downPart .tables .rightTable .rightHeader {
+  width: 100%;
+  height: 38px;
+  line-height: 38px;
+  background: #F3F5F4;
+  border-bottom: 1px solid #d2d2d2;
+}
+.modelConfig .content .modelContent .downPart .tables .rightTable .rightHeader span {
+  display: inline-block;
+  text-align: center;
+  border-right: 1px solid #d2d2d2;
+  width: calc((100% - 220px)/3);
+}
+.modelConfig .content .modelContent .downPart .tables .rightTable .rightHeader span:nth-child(3) {
+  width: 120px;
+}
+.modelConfig .content .modelContent .downPart .tables .rightTable .rightHeader span:last-child {
+  width: 100px;
+  border: none;
+}
+.modelConfig .content .modelContent .downPart .tables .rightTable .rightContent {
+  overflow-y: scroll;
+  height: calc(100% - 38px);
+}
+.modelConfig .content .modelContent .downPart .tables .rightTable .rightContent .item {
+  display: flex;
+  flex-direction: row;
+}
+.modelConfig .content .modelContent .downPart .tables .rightTable .rightContent .item .itemSpan {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #d2d2d2;
+  border-bottom: 1px solid #d2d2d2;
+  width: calc((100% - 220px)/3);
+  box-sizing: border-box;
+  height: 40px;
+  line-height: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.modelConfig .content .modelContent .downPart .tables .rightTable .rightContent .item .itemSpan:nth-child(3) {
+  width: 120px;
+}
+.modelConfig .content .modelContent .downPart .tables .rightTable .rightContent .item .itemSpan:last-child {
+  width: 100px;
+  border-right: none;
+}
+.modelConfig .content .modelContent .downPart .tables .rightTable .rightContent .item:hover {
+  background: #e6f7ff;
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable {
+  height: 100%;
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable .headerSpan {
+  display: inline-block;
+  text-align: center;
+  width: 100px;
+  box-sizing: border-box;
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable .headerText {
+  display: inline-block;
+  width: calc(100% - 100px);
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable .leftHeader {
+  width: 100%;
+  height: 38px;
+  line-height: 38px;
+  background: #F3F5F4;
+  border-bottom: 1px solid #d2d2d2;
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable .leftHeader span {
+  display: inline-block;
+  text-align: center;
+  border-right: 1px solid #d2d2d2;
+  width: calc((100% - 100px)/2);
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable .leftHeader span:last-child {
+  width: 100px;
+  border: none;
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable .leftContent {
+  overflow-y: scroll;
+  height: calc(100% - 38px);
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable .leftContent .item .itemSpan {
+  display: inline-block;
+  text-align: center;
+  border-right: 1px solid #d2d2d2;
+  border-bottom: 1px solid #d2d2d2;
+  width: calc((100% - 100px)/2);
+  box-sizing: border-box;
+  height: 35px;
+  line-height: 35px;
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable .leftContent .item .itemSpan:last-child {
+  width: 100px;
+  border-right: none;
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable .leftContent .item:last-child .itemSpan {
+  border-bottom: none;
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable .leftContent .item:hover {
+  background: #e6f7ff;
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable .leftContent :global .ant-collapse {
+  border-radius: 0;
+  border: none;
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable .leftContent :global .ant-collapse .ant-collapse-item .ant-collapse-header {
+  padding: 6px 0px 7px 40px;
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable .leftContent :global .ant-collapse .ant-collapse-item .ant-collapse-header .arrow {
+  line-height: 35px;
+}
+.modelConfig .content .modelContent .downPart .tables .leftTable .leftContent :global .ant-collapse-content > .ant-collapse-content-box {
+  padding: 0;
+}
+.modelConfig .content .modelContent .downPart .tables :global .ant-table-placeholder {
+  border: none;
+}
+.modelConfig .content .modelContent .downPart .tables :global .ant-table-thead > tr > th {
+  text-align: center;
+  padding: 8px 0px;
+  background: #F3F5F4;
+}
+.modelConfig .content .modelContent .downPart .tables :global .ant-table-tbody > tr > td {
+  padding: 0px 0px;
+  text-align: center;
+  height: 34px;
+  line-height: 34px;
+}
+.modelConfig .content .modelContent .downPart .tables :global .ant-table-tbody > tr > td input,
+.modelConfig .content .modelContent .downPart .tables :global .ant-table-tbody > tr > td .ant-select-selection {
+  border: none;
+  border-radius: 0px;
+}
+.modelConfig .content .modelContent .downPart .tables :global .ant-table-thead > tr > th,
+.modelConfig .content .modelContent .downPart .tables :global .ant-table-tbody > tr > td {
+  border-left: 1px solid #d2d2d2;
+}
+.modelConfig .content .modelContent .downPart .tables :global .ant-table-thead > tr > th:first-child,
+.modelConfig .content .modelContent .downPart .tables :global .ant-table-tbody > tr > td:first-child {
+  border-left: none;
+}
+.modelConfig .content .footer {
+  height: 46px;
+  line-height: 46px;
+  text-align: right;
+}
+.modelConfig .content .footer :global {
+  /*.ant-btn:last-child{
+					margin-right: 20px;
+				};*/
+}
+.modelConfig .content .footer :global .ant-btn {
+  margin-right: 20px;
+}

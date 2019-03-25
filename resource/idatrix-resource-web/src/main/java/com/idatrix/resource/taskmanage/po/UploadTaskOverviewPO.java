@@ -1,10 +1,13 @@
 package com.idatrix.resource.taskmanage.po;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
  * 数据库查询到 上报任务概览信息
  */
+@Data
 public class UploadTaskOverviewPO {
 
     /*主键ID*/
@@ -46,107 +49,4 @@ public class UploadTaskOverviewPO {
     /*上报任务创建者*/
     private String creator;
 
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getLastStartTime() {
-        return lastStartTime;
-    }
-
-    public void setLastStartTime(Date lastStartTime) {
-        this.lastStartTime = lastStartTime;
-    }
-
-    public Date getLastEndTime() {
-        return lastEndTime;
-    }
-
-    public void setLastEndTime(Date lastEndTime) {
-        this.lastEndTime = lastEndTime;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(Long resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public String getTaskName() {
-        return taskName;
-    }
-
-    public void setTaskName(String taskName) {
-        this.taskName = taskName;
-    }
-
-    public String getEtlSubscribeId() {
-        return etlSubscribeId;
-    }
-
-    public void setEtlSubscribeId(String etlSubscribeId) {
-        this.etlSubscribeId = etlSubscribeId;
-    }
-
-    public String getDataBatch() {
-        return dataBatch;
-    }
-
-    public void setDataBatch(String dataBatch) {
-        this.dataBatch = dataBatch;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getProvideDept() {
-        return provideDept;
-    }
-
-    public void setProvideDept(String provideDept) {
-        this.provideDept = provideDept;
-    }
-
-    public String getTaskType() {
-        return taskType;
-    }
-
-    public void setTaskType(String taskType) {
-        this.taskType = taskType;
-    }
-
-    public Long getDataCount() {
-        return dataCount;
-    }
-
-    public void setDataCount(Long dataCount) {
-        this.dataCount = dataCount;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
 }

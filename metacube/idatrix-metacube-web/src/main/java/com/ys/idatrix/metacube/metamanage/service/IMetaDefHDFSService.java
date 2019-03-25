@@ -6,6 +6,8 @@ import com.ys.idatrix.metacube.metamanage.vo.request.MetaDefHDFSVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo;
 import com.ys.idatrix.metacube.metamanage.vo.response.MetaDefOverviewVO;
 
+import java.util.List;
+
 /**
  * 元数据定义-HDFS
  */
@@ -55,4 +57,14 @@ public interface IMetaDefHDFSService {
      * @return
      */
     Metadata getDetail(Long rentId, String user, Long id);
+
+
+    /**
+     * 根据租户或者搜索关键字查询所有列表
+     * @param rentId
+     * @param searchKey
+     * @return
+     */
+    List<Metadata> getAllDirByRentId(Long rentId, String searchKey);
+
 }

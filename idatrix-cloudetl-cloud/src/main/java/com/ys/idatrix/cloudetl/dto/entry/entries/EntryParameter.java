@@ -7,9 +7,9 @@ package com.ys.idatrix.cloudetl.dto.entry.entries;
 import java.util.List;
 
 import org.pentaho.di.core.util.OsgiBundleUtils;
+import org.pentaho.di.core.util.Utils;
 import org.pentaho.di.job.JobMeta;
 import org.pentaho.di.job.entry.JobEntryCopy;
-
 import mondrian.olap.Util;
 
 /**
@@ -53,6 +53,14 @@ public interface EntryParameter {
 
 	default  String getToAttribute(JobEntryCopy jobEntryCopy , String key  ) {
 		return jobEntryCopy.getAttribute("idatrix", key);
+	}
+	
+	default  Long getToAttributeLong(JobEntryCopy jobEntryCopy , String key  ) {
+		String val = jobEntryCopy.getAttribute("idatrix", key);
+		if( Utils.isEmpty(val) ) {
+			return null;
+		}
+		return Long.valueOf(val) ;
 	}
 
 	default  Object objectToObject(Object source, Object target) throws Exception {      

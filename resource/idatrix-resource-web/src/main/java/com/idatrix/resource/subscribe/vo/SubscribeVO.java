@@ -1,12 +1,16 @@
 package com.idatrix.resource.subscribe.vo;
 
 import com.idatrix.resource.catalog.vo.ResourceColumnVO;
+import io.swagger.annotations.ApiModel;
+import lombok.Data;
 
 import java.util.List;
 
 /**
  * 订阅详情和配置订阅信息时候使用
  */
+@Data
+@ApiModel
 public class SubscribeVO {
     /*主键*/
     private Long id;
@@ -71,171 +75,4 @@ public class SubscribeVO {
     /*查询条件*/
     private List<ResourceColumnVO> outputDbioList;
 
-    public String getSubNo() {
-        return subNo;
-    }
-
-    public void setSubNo(String subNo) {
-        this.subNo = subNo;
-    }
-
-    public int getDbShareMethod() {
-        return dbShareMethod;
-    }
-
-    public void setDbShareMethod(int dbShareMethod) {
-        this.dbShareMethod = dbShareMethod;
-    }
-
-    public String getSubscribeTime() {
-        return subscribeTime;
-    }
-
-    public void setSubscribeTime(String subscribeTime) {
-        this.subscribeTime = subscribeTime;
-    }
-
-    public String getTerminalName() {
-        return terminalName;
-    }
-
-    public void setTerminalName(String terminalName) {
-        this.terminalName = terminalName;
-    }
-
-    public String getTernimalDbName() {
-        return ternimalDbName;
-    }
-
-    public void setTernimalDbName(String ternimalDbName) {
-        this.ternimalDbName = ternimalDbName;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(Long resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public String getDeptName() {
-        return deptName;
-    }
-
-    public void setDeptName(String deptName) {
-        this.deptName = deptName;
-    }
-
-    public String getSubscribeUserName() {
-        return subscribeUserName;
-    }
-
-    public void setSubscribeUserName(String subscribeUserName) {
-        this.subscribeUserName = subscribeUserName;
-    }
-
-    public String getSubscribeReason() {
-        return subscribeReason;
-    }
-
-    public void setSubscribeReason(String subscribeReason) {
-        this.subscribeReason = subscribeReason;
-    }
-
-    public String getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(String endDate) {
-        this.endDate = endDate;
-    }
-
-    public int getShareMethod() {
-        return shareMethod;
-    }
-
-    public void setShareMethod(int shareMethod) {
-        this.shareMethod = shareMethod;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getApprover() {
-        return approver;
-    }
-
-    public void setApprover(String approver) {
-        this.approver = approver;
-    }
-
-    public String getApproverName() {
-        return approverName;
-    }
-
-    public void setApproverName(String approverName) {
-        this.approverName = approverName;
-    }
-
-    public String getSuggestion() {
-        return suggestion;
-    }
-
-    public void setSuggestion(String suggestion) {
-        this.suggestion = suggestion;
-    }
-
-    public String getApproveTime() {
-        return approveTime;
-    }
-
-    public void setApproveTime(String approveTime) {
-        this.approveTime = approveTime;
-    }
-
-    public String getServiceUrl() {
-        return serviceUrl;
-    }
-
-    public void setServiceUrl(String serviceUrl) {
-        this.serviceUrl = serviceUrl;
-    }
-
-    public String getSubKey() {
-        return subKey;
-    }
-
-    public void setSubKey(String subKey) {
-        this.subKey = subKey;
-    }
-
-    public List<ResourceColumnVO> getInputDbioList() {
-        return inputDbioList;
-    }
-
-    public void setInputDbioList(List<ResourceColumnVO> inputDbioList) {
-        this.inputDbioList = inputDbioList;
-    }
-
-    public List<ResourceColumnVO> getOutputDbioList() {
-        return outputDbioList;
-    }
-
-    public void setOutputDbioList(List<ResourceColumnVO> outputDbioList) {
-        this.outputDbioList = outputDbioList;
-    }
-}
+   }

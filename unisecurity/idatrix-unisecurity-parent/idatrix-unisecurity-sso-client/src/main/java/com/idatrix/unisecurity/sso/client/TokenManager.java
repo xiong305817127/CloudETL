@@ -14,8 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -26,15 +25,12 @@ public class TokenManager {
 
     private static Logger logger = LoggerFactory.getLogger(TokenManager.class);
 
-    /**
-     * 客户端
-     * 令牌管理器
-     */
+    public static String serverIndderAddress; // 服务端内网通信地址
+
+    public static String projectName; // 服务端项目名称
+
+    // 客户端令牌管理器
     private final static ConcurrentHashMap<String, Token> LOCAL_CACHE = new ConcurrentHashMap<String, Token>();
-
-    static String serverIndderAddress; // 服务端内网通信地址
-
-    static String projectName; // 服务端项目名称
 
     // 复合结构体，含SSOUser与最后访问时间lastAccessTime两个成员
     private static class Token {
@@ -239,4 +235,42 @@ public class TokenManager {
         LOCAL_CACHE.clear();
     }
 
+    public static String validateLT(String lt) {
+        if(StringUtils.isBlank(lt)) {
+            return null;
+        }
+        String vt = null;
+        String address;
+        // 拼接出服务端的url
+        if (StringUtils.isNotEmpty(projectName)) {
+            address = serverIndderAddress + projectName + "/role/list.shtml";
+        } else {
+            address = serverIndderAddress + "/role/list.shtml";
+        }
+        try {
+            // 发送请求到服务端，获取返回值
+            URL url = new URL(address);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestProperty("Cookie", "LT=" + lt);
+            InputStream is = conn.getInputStream();
+            conn.connect();
+            byte[] buff = new byte[is.available()];
+            is.read(buff);
+            conn.disconnect();
+            is.close();
+
+            // 获取cookie
+            Map<String,List<String>> map = conn.getHeaderFields();
+            List<String> cookies = map.get("Set-Cookie");
+            for (String str : cookies) {
+                if(str.startsWith("VT=")) {
+                    vt = str;
+                }
+            }
+            return vt;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return vt;
+        }
+    }
 }

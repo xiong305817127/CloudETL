@@ -35,8 +35,6 @@ public class FreeIPATemplate implements IFreeIPATemplate{
 		this.changePwdUrl = this.ldapUrl + IPACommonInfo.CHNAGE_PASSWORD;
 	}
 	
-	
-
 	public String getLdapUrl() {
 		return ldapUrl;
 	}
@@ -49,17 +47,13 @@ public class FreeIPATemplate implements IFreeIPATemplate{
 		return referUrl;
 	}
 
-
-
 	public String getOprUrl() {
 		return oprUrl;
 	}
 
-
 	public String getChangePwdUrl() {
 		return changePwdUrl;
 	}
-
 
 	public void setLdapUrl(String ldapUrl) {
 		this.ldapUrl = ldapUrl;
@@ -80,8 +74,6 @@ public class FreeIPATemplate implements IFreeIPATemplate{
 	public void setAdminPwd(String adminPwd) {
 		this.adminPwd = adminPwd;
 	}
-
-
 
 	@Override
 	public String toString() {

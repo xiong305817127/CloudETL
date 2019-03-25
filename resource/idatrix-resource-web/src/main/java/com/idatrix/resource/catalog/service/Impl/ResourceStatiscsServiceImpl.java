@@ -69,6 +69,28 @@ public class ResourceStatiscsServiceImpl implements IResourceStatiscsService{
     }
 
     @Override
+    public void refreshDataCount(Long resourceId, Long count) {
+        ResourceStatisticsPO rsPO = resourceStatisticsDAO.getLatestByResourceId(resourceId);
+        if(rsPO==null){
+            ResourceStatisticsPO rsSavePO = new ResourceStatisticsPO();
+            rsSavePO.setDataCount(count);
+            rsSavePO.setCreator(user);
+            rsSavePO.setCreateTime(new Date());
+            rsSavePO.setModifier(user);
+            rsSavePO.setModifyTime(new Date());
+            rsSavePO.setId(resourceId);
+            rsSavePO.setDataUpdateTime(new Date());
+            resourceStatisticsDAO.insert(rsSavePO);
+        }else {
+            rsPO.setModifier(user);
+            rsPO.setModifyTime(new Date());
+            rsPO.setDataCount(count);
+            rsPO.setDataUpdateTime(new Date());
+            resourceStatisticsDAO.updateById(rsPO);
+        }
+    }
+
+    @Override
     public void increaseShareDataCount(Long resourceId, Long count) {
         ResourceStatisticsPO rsPO = resourceStatisticsDAO.getLatestByResourceId(resourceId);
         if(rsPO==null){

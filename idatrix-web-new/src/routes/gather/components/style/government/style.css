@@ -1,0 +1,71 @@
+:global(.skin-government)  :global(.gather) :global(.ant-card){
+     border: none;
+}
+
+:global(.skin-government)  :global(#common-page.gather #common-main-wrapper) {
+     background: rgb(228,242,255);
+}
+
+:global(.skin-government)  :global(#common-page.gather #common-main-footer) {
+     background: rgb(228,242,255);
+}
+
+
+/*政府风格图标*/
+:global(.skin-government .gather .anticon-taskcenter:before){
+     background: url("../../../image/government/small_blue_task.png") no-repeat center;
+     width: 22px;
+     height: 22px;
+     content: "";
+}
+
+:global(.skin-government .gather .anticon-transcenter:before){
+     content: "";
+     background: url("../../../image/government/trans_blue.png") no-repeat center;
+     width: 22px;
+     height: 22px;
+}
+ :global(.skin-government .gather .ant-menu-item-selected .anticon-transcenter:before){
+      content: "";
+      background: url("../../../image/government/trans_white.png") no-repeat center;
+      width: 22px;
+      height: 22px;
+ }
+
+:global(.skin-government .gather .anticon-jobscenter:before){
+     content: "";
+     background: url("../../../image/government/job_blue.png") no-repeat center;
+     width: 22px;
+     height: 22px;
+}
+:global(.skin-government .gather .ant-menu-item-selected .anticon-jobscenter:before){
+     content: "";
+     background: url("../../../image/government/job_white.png") no-repeat center;
+     width: 22px;
+     height: 22px;
+}
+
+:global(.skin-government .gather .anticon-designplatform:before){
+     content: "";
+     background: url("../../../image/government/design_blue.png") no-repeat center;
+     width: 22px;
+     height: 22px;
+}
+:global(.skin-government .gather .ant-menu-item-selected .anticon-designplatform:before){
+     content: "";
+     background: url("../../../image/government/design_white.png") no-repeat center;
+     width: 22px;
+     height: 22px;
+}
+
+:global(.skin-government .gather .anticon-resourcecenter:before){
+     content: "";
+     background: url("../../../image/government/resource_blue.png") no-repeat center;
+     width: 22px;
+     height: 22px;
+}
+
+
+:global(.anticon-bars:before){
+
+}

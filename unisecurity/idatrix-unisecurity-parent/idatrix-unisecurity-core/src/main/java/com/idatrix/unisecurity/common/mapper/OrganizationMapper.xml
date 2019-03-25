@@ -315,7 +315,10 @@
     </select>
 
     <select id="findAscriptionDeptList" resultMap="BaseResultMap" >
-        select * from idatrix_unisecurity_organization where ascription_dept_id is null and renter_id = #{renterId}
+        select * from idatrix_unisecurity_organization
+        where parent_id is not null
+        AND ascription_dept_id is null
+        AND renter_id = #{renterId}
     </select>
 
 </mapper>

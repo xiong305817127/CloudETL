@@ -10,22 +10,22 @@ import lombok.Data;
  * @Author ouyang
  * @Date
  */
-@ApiModel(value = "UserLoginCountVO", description = "用户登陆次数统计实体类")
 @Data
+@ApiModel(value = "UserLoginCountVO", description = "用户登陆次数统计实体类")
 public class UserLoginCountVO {
 
     @ApiModelProperty("月")
     private Integer month;
 
-    @ApiModelProperty("登录用户数量")
-    private Integer loginUserCount;
+    @ApiModelProperty("用户登录次数")
+    private Integer userLoginCount;
 
     public UserLoginCountVO() {
 
     }
 
-    public UserLoginCountVO(Integer month, Integer loginUserCount) {
+    public UserLoginCountVO(Integer month, Integer userLoginCount) {
         this.month = month;
-        this.loginUserCount = loginUserCount;
+        this.userLoginCount = userLoginCount;
     }
 }

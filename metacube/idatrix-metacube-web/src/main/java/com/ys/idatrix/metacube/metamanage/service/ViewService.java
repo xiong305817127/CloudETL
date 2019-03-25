@@ -13,10 +13,10 @@ import com.ys.idatrix.metacube.metamanage.domain.TableColumn;
 import com.ys.idatrix.metacube.metamanage.domain.ViewDetail;
 import com.ys.idatrix.metacube.metamanage.mapper.MetadataMapper;
 import com.ys.idatrix.metacube.metamanage.mapper.ViewDetailMapper;
-import com.ys.idatrix.metacube.metamanage.service.impl.sqlAnalyzer.BaseSQLAnalyzer;
 import com.ys.idatrix.metacube.metamanage.vo.request.DBViewVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo;
 import com.ys.idatrix.metacube.metamanage.vo.request.ViewVO;
+import com.ys.idatrix.metacube.sysmanage.service.ThemeService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,6 +72,23 @@ public interface ViewService {
         addView(view);
         // 视图生效到数据库并生成快照信息
         generateOrUpdateView(view.getId());
+        // 数据地图保存视图节点
+        getGraphSyncService().graphSaveViewNode(view.getId());
+    }
+    
+    // 保存直采视图
+    default void addMiningView(DBViewVO view ) {
+        // 修改当前表为生效状态
+        view.setStatus(DataStatusEnum.VALID.getValue());
+        // 保存到元数据数据库中
+        addView(view);
+        // 保存快照信息
+        saveViewSnapshot(view.getId());
+        // 保存视图列信息到数据库
+        Metadata meta = getMetadataMapper().findById(view.getId());
+		if( meta != null ) {
+			saveOrUpdateViewColumns(meta);
+		}
         // 数据地图保存视图节点
         getGraphSyncService().graphSaveViewNode(view.getId());
     }
@@ -156,7 +173,7 @@ public interface ViewService {
         }
 
         // 参数校验
-        validatedView(view, false);
+        validatedView(view);
 
         // view base info insert
         Metadata metadata = new Metadata();
@@ -188,7 +205,7 @@ public interface ViewService {
         view.setModifyTime(modifyTime);
 
         // 参数校验
-        validatedView(viewVo, true);
+        validatedView(viewVo);
 
         // 视图基本信息修改
         getMetadataMapper().updateByPrimaryKeySelective(view);
@@ -214,7 +231,7 @@ public interface ViewService {
         // 新增
         String creator = UserUtils.getUserName();
         Date createTime = new Date();
-        List<TableColumn> viewColumns = getBaseSQLAnalyzer().getViewColumns(view.getSchemaId(), view.getName(), null);
+        List<TableColumn> viewColumns = getDirectMiningService().getViewColumns(view.getSchemaId(), view.getName(), null);
         getColumnService().insertColumnList(viewColumns, view.getId(), creator, createTime);
     }
 
@@ -222,7 +239,7 @@ public interface ViewService {
 
     ViewDetailMapper getViewDetailMapper();
 
-    BaseSQLAnalyzer getBaseSQLAnalyzer();
+    McDirectMiningService getDirectMiningService();
 
     TableColumnService getColumnService();
 
@@ -233,11 +250,23 @@ public interface ViewService {
     GraphSyncService getGraphSyncService();
 
     // 校验视图
-    void validatedView(DBViewVO viewVo, Boolean hasFilter);
+    void validatedView(DBViewVO viewVo);
 
     // 生成或修改视图生效到数据库中
     void generateOrUpdateView(Long id);
 
     // 删除生效到数据库中
     void deleteGoToDatabase(List<String> viewNames, Metadata copy);
+
+    // 保存视图快照信息
+    default void saveViewSnapshot(Long id) {
+        // view 基本信息
+        Metadata view = getMetadataMapper().findById(id);
+        // view详细信息
+        ViewDetail viewDetail = getViewDetailMapper().findByViewId(view.getId());
+        // 视图生效到数据库后，再去生成快照信息
+        getSnapshotService().createViewSnapshot(view, viewDetail, "直采");
+    }
+
+    MysqlSnapshotService getSnapshotService();
 }

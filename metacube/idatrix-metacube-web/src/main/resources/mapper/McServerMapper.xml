@@ -25,7 +25,7 @@
 
     <sql id="Base_Column_List">
         s.id, s.name, s.`use`, s.ip as ip, s.hostname, s.org_code, s.location, s.contact,
-        s.contact_number, s.remark, s.creator, s.create_time, s.modifier, s.modify_time, s.renter_id
+        s.contact_number, s.remark, s.creator, s.create_time, s.modifier, s.modify_time, s.renter_id, s.is_deleted
     </sql>
 
     <insert id="insert" keyProperty="id"
@@ -177,7 +177,6 @@
         LEFT JOIN mc_database db ON s.id = db.server_id
         <where>
             <choose>
-                <!-- 已删除列表 -->
                 <when test="deleted">
                     s.is_deleted = 1
                 </when>
@@ -191,12 +190,15 @@
             <if test="ip != null and ip != ''">
                 AND s.ip = #{ip}
             </if>
+            <if test="name != null and name != ''">
+                AND s.`name` LIKE CONCAT("%", #{name}, "%")
+            </if>
             <if test="keyword != null and keyword != ''">
                 AND (
                 MATCH (s.`name`) AGAINST (
                 '*${keyword}*' IN BOOLEAN MODE
                 )
-                OR s.ip LIKE "${keyword}%"
+                OR s.ip LIKE CONCAT("%", #{keyword}, "%")
                 )
             </if>
             <if test="useList != null and useList.size() > 0">
@@ -206,12 +208,14 @@
                 </foreach>
             </if>
             <if test="typeList != null and typeList.size() > 0">
+                AND db.is_deleted = 0
                 AND db.type IN
                 <foreach close=")" collection="typeList" item="type" open="(" separator=",">
                     #{type}
                 </foreach>
             </if>
             <if test="belongList != null and belongList.size() > 0">
+                AND db.is_deleted = 0
                 AND db.belong IN
                 <foreach close=")" collection="belongList" item="belong" open="(" separator=",">
                     #{belong}

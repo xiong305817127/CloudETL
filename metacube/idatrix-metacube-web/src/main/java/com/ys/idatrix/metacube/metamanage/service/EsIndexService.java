@@ -4,6 +4,8 @@ import com.ys.idatrix.metacube.api.beans.PageResultBean;
 import com.ys.idatrix.metacube.metamanage.domain.EsMetadataPO;
 import com.ys.idatrix.metacube.metamanage.vo.request.EsIndexVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo;
+import com.ys.idatrix.metacube.metamanage.vo.request.SchemaSearchVO;
+import com.ys.idatrix.metacube.metamanage.vo.response.SchemaVO;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,16 @@ public interface EsIndexService {
 
 
     /**
+     * 查询数据库Id 下的 es schema
+     *
+     * @param searchVO
+     * @param schemaId
+     * @return
+     */
+    List<SchemaVO> queryEsSchema(SchemaSearchVO searchVO, Long schemaId);
+
+
+    /**
      * 根据索引标识id 查询索引详细（基本信息+类型、字段信息）
      *
      * @param metaId
@@ -47,24 +59,15 @@ public interface EsIndexService {
 
 
     /**
-     * 保存索引
+     *保存索引
      * ①保存并生效
      * ②保存操作(草稿)
-     *
      * @param esIndexVO
+     * @param isUpdated
      * @param isDrafted
      * @return
      */
-    boolean saveOrCreatedIndex(EsIndexVO esIndexVO, boolean isDrafted);
-
-
-    /**
-     * 修改
-     *
-     * @param esIndexVO
-     * @return
-     */
-    boolean updateIndex(EsIndexVO esIndexVO);
+    boolean saveIndexDraftedOrCreated(EsIndexVO esIndexVO, boolean isUpdated, boolean isDrafted);
 
 
     /**
@@ -92,7 +95,7 @@ public interface EsIndexService {
      * @param id
      * @return
      */
-    List<Map<Long, Integer>> queryVersionsByMetaId(Long id);
+    List<Map<Long, Integer>> querySwitchVersionsByMetaId(Long id);
 
 
     /**

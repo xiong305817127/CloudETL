@@ -36,7 +36,7 @@ public class FilePathUtil {
 	 * 支持的所有文件类型
 	 */
 	public static enum FileType {
-		data, excel, access, txt, csv, json, output, upload, input,hdfs,sftp,ktr,kjb ;
+		data, excel, access, txt, csv, json, output, upload, input,hdfs,sftp,ktr,kjb ,mp4;
 		
 		public static FileType getFileType(String name) {
 			try {
@@ -47,12 +47,12 @@ public class FilePathUtil {
 		}
 	}
 
-	public static final List<FileType> TEMPLETE=Lists.newArrayList(FileType.excel, FileType.access, FileType.txt, FileType.csv, FileType.json );
+	public static final List<FileType> TEMPLETE=Lists.newArrayList(FileType.excel, FileType.access, FileType.txt, FileType.csv, FileType.json,FileType.mp4 );
 	
 	/**
 	 * 允许上传的文件类型
 	 */
-	private static final List<FileType> allowsUploadType = Lists.newArrayList(FileType.data, FileType.excel, FileType.access, FileType.txt, FileType.csv, FileType.json,  FileType.upload,FileType.ktr,FileType.kjb);
+	private static final List<FileType> allowsUploadType = Lists.newArrayList(FileType.data, FileType.excel, FileType.access, FileType.txt, FileType.csv, FileType.json,  FileType.upload,FileType.ktr,FileType.kjb,FileType.mp4);
 
 	/**
 	 * 文件类型对应的文件扩展名设置
@@ -274,6 +274,7 @@ public class FilePathUtil {
 		case sftp:
 		case hdfs:
 			return  getGoodPath(owner ,null,relativePath);
+		case mp4:
 		case excel:
 		case access:
 		case txt:

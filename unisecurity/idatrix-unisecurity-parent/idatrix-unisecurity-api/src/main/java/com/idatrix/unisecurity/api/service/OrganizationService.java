@@ -33,4 +33,7 @@ public interface OrganizationService {
 
     // 根据code查询组织
     Organization findByCode(String code);
+
+    // 根据codes查询组织
+    List<Organization> findByCodes(String codes);
 }

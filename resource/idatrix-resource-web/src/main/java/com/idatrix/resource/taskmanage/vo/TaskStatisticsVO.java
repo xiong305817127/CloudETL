@@ -1,10 +1,13 @@
 package com.idatrix.resource.taskmanage.vo;
 
+import lombok.Data;
+
 import java.util.List;
 
 /**
  * 作业统计
  */
+@Data
 public class TaskStatisticsVO {
 
     /*作业总数*/
@@ -13,19 +16,4 @@ public class TaskStatisticsVO {
     /*作业统计信息*/
     List<DescribeInfoVO> describes;
 
-    public Long getCount() {
-        return count;
-    }
-
-    public void setCount(Long count) {
-        this.count = count;
-    }
-
-    public List<DescribeInfoVO> getDescribes() {
-        return describes;
-    }
-
-    public void setDescribes(List<DescribeInfoVO> describes) {
-        this.describes = describes;
-    }
 }

@@ -12,6 +12,13 @@
         catalog_id, resource_id, depth
     </sql>
 
+    <select id="getCatalogCount" resultMap="BaseResultMap">
+        select
+            count(catalog_id)
+        from rc_catalog_resource
+        where catalog_id=#{catalogId}
+    </select>
+
     <select id="getAll" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List" />

@@ -1,5 +1,7 @@
 package com.idatrix.resource.catalog.po;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
@@ -7,6 +9,7 @@ import java.util.Date;
  * @Author: Wangbin
  * @Date: 2018/5/23
  */
+@Data
 public class ResourceColumnPO {
 
     /*主键*/
@@ -48,115 +51,4 @@ public class ResourceColumnPO {
 
     private Date modifyTime;
 
-    public String getColSeqNum() {
-        return colSeqNum;
-    }
-
-    public void setColSeqNum(String colSeqNum) {
-        this.colSeqNum = colSeqNum;
-    }
-
-    public String getTableColType() {
-        return tableColType;
-    }
-
-    public void setTableColType(String tableColType) {
-        this.tableColType = tableColType;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(Long resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public String getColName() {
-        return colName;
-    }
-
-    public void setColName(String colName) {
-        this.colName = colName;
-    }
-
-    public String getColType() {
-        return colType;
-    }
-
-    public void setColType(String colType) {
-        this.colType = colType;
-    }
-
-    public String getTableColCode() {
-        return tableColCode;
-    }
-
-    public void setTableColCode(String tableColCode) {
-        this.tableColCode = tableColCode;
-    }
-
-    public Boolean getRequiredFlag() {
-        return requiredFlag;
-    }
-
-    public void setRequiredFlag(Boolean requiredFlag) {
-        this.requiredFlag = requiredFlag;
-    }
-
-    public Boolean getUniqueFlag() {
-        return uniqueFlag;
-    }
-
-    public void setUniqueFlag(Boolean uniqueFlag) {
-        this.uniqueFlag = uniqueFlag;
-    }
-
-    public String getDateFormat() {
-        return dateFormat;
-    }
-
-    public void setDateFormat(String dateFormat) {
-        this.dateFormat = dateFormat;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier;
-    }
-
-    public Date getModifyTime() {
-        return modifyTime;
-    }
-
-    public void setModifyTime(Date modifyTime) {
-        this.modifyTime = modifyTime;
-    }
 }

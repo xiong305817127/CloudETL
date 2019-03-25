@@ -32,13 +32,15 @@ public interface MetadataServiceProvide {
     ResultBean<MetadataDTO> findViewId(Long renterId, String ip, int databaseType, String serviceName, String schemaName, String tableName);
 
 
-    // ======  view & table     etl 需要接口
+    // ======  view & table     bi 与 etl 使用接口
     // 根据模式ID查询用户可以访问的表和视图，加上权限判断（查出当前用户可访问的集合）
     ResultBean<TableViewDTO> findTableOrViewBySchemaId(Long schemaId, String username, ModuleTypeEnum module, ActionTypeEnum actionType);
 
     // 根据表ID/视图ID 查询表字段
     ResultBean<List<MetaFieldDTO>> findColumnListByTableIdOrViewId(Long metaId);
 
+    // 提供BI使用，根据ID获取元数据信息
+    ResultBean<MetadataDTO> findByMetadataId(Long metaId);
 
     // ========== HDFS
 

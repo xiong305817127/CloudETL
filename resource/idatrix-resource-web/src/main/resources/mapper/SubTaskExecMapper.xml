@@ -58,9 +58,9 @@
         where id = #{id}
     </select>
 
-    <delete id="deleteById" parameterType="java.lang.Long">
+    <delete id="deleteByIdAndTaskStatus">
         delete from rc_sub_task_exec
-        where id = #{id}
+        where id = #{id} and status=#{status}
     </delete>
 
 

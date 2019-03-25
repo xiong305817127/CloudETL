@@ -5,7 +5,7 @@ import org.apache.log4j.net.SyslogAppender;
 
 /**
  * @ClassName SecurityLog
- * @Description TODO
+ * @Description
  * @Author ouyang
  * @Date 2018/9/17 13:57
  * @Version 1.0

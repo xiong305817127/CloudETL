@@ -11,7 +11,7 @@ import lombok.Data;
  * @Author: ZhouJian
  * @Date: 2019/1/23
  */
-@ApiModel(value = "EsMetadata", description = "ES元数据实体类，也是主表")
+@ApiModel(value = "EsMetadataPO", description = "ES元数据实体类，也是主表")
 @Data
 public class EsMetadataPO extends BasePO {
 

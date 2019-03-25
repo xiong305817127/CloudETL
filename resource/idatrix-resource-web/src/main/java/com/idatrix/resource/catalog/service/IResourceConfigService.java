@@ -22,7 +22,7 @@ public interface IResourceConfigService {
 	/**
 	 * 增加资源信息
 	 */
-	Long addResourceInfo(String user, ResourceConfigVO resourceConfigVO) throws Exception;
+	Long addResourceInfo(Long rentId, String user, ResourceConfigVO resourceConfigVO) throws Exception;
 
 
     /**
@@ -45,6 +45,11 @@ public interface IResourceConfigService {
 	 */
 	ResourceConfigVO getResourceInfoById(Long id) throws Exception;
 
+    /**
+     * 查找某个节点详细信息
+     */
+    ResourceConfigVO getResourceInfoById(String user, Long id) throws Exception;
+
 
 	/*
 	 * 资源查询：可以按照资源名称、资源代码、提供方名称、提供方代码等方式进行查询
@@ -65,5 +70,5 @@ public interface IResourceConfigService {
     /*
      *  处理批量上传 节点信息
      */
-    void processExcel(String user,String fileName) throws Exception;
+    void processExcel(Long rentId, String user,String fileName) throws Exception;
 }

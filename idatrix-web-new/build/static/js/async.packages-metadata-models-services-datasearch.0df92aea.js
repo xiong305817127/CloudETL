@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[11],{398:function(e,t,a){"use strict";a.r(t);var d=a(11),s={hdfsEdit:Object(d.a)(["metadata","hdfsEdit"],"GET"),hdfsDelete:Object(d.a)(["metadata","hdfsDelete"],"GET")};t.default=s}}]);

@@ -1,5 +1,6 @@
 package com.ys.idatrix.metacube.metamanage.service.impl;
 
+import com.ys.idatrix.metacube.common.exception.MetaDataException;
 import com.ys.idatrix.metacube.metamanage.domain.McSchemaPO;
 import com.ys.idatrix.metacube.metamanage.mapper.McSchemaMapper;
 import com.ys.idatrix.metacube.metamanage.service.McSchemaService;
@@ -25,7 +26,7 @@ public class ElasticsearchSchemaServiceImpl implements McSchemaService {
      */
     @Override
     public McSchemaPO create(McSchemaPO schemaPO) {
-        return insert(schemaPO);
+        return register(schemaPO);
     }
 
     /**
@@ -33,6 +34,29 @@ public class ElasticsearchSchemaServiceImpl implements McSchemaService {
      */
     @Override
     public McSchemaPO register(McSchemaPO schemaPO) {
+        checkIndexContainsUpperCase(schemaPO.getName());
         return insert(schemaPO);
+    }
+
+    /**
+     * 校验索引名称是否包含大写
+     *
+     * @param index 索引名称
+     * @return 包含大写返回true 否则返回false
+     */
+    private static boolean verifyUpperCase(String index) {
+        for (int i = 0; i < index.length(); i++) {
+            char ch = index.charAt(i);
+            if (Character.isUpperCase(ch)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void checkIndexContainsUpperCase(String index) {
+        if (verifyUpperCase(index)) {
+            throw new MetaDataException("索引名称不能包含大写字母");
+        }
     }
 }

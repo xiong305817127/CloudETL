@@ -36,7 +36,7 @@ public class SourceServiceServiceTest {
 			ssp.setUrl("http://www.webxml.com.cn/WebServices/WeatherWebService.asmx?WSDL");
 			ssp.setWsdl("WSDL");
 
-			String msg = iSourceServiceService.saveOrUpdateSourceService(user, ssp);
+			String msg = iSourceServiceService.saveOrUpdateSourceService(642L, user, ssp);
 
 			System.out.println("******************************************************");
 			System.out.println(msg);
@@ -64,7 +64,7 @@ public class SourceServiceServiceTest {
 
 	@Test
 	public void getAllSourceService() {
-		List<SourceServiceVO> servicesList = iSourceServiceService.getAllSourceService();
+		List<SourceServiceVO> servicesList = iSourceServiceService.getAllSourceService(642L);
 
 		System.out.println("**********************************************************");
 		if (servicesList != null) {

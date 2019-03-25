@@ -1,12 +1,11 @@
 package com.idatrix.unisecurity.user.controller;
 
 import com.idatrix.unisecurity.common.utils.ResultVoUtils;
+import com.idatrix.unisecurity.common.vo.PageResultVo;
 import com.idatrix.unisecurity.common.vo.ResultVo;
 import com.idatrix.unisecurity.core.shiro.token.manager.ShiroTokenManager;
 import com.idatrix.unisecurity.user.service.LoginCountService;
-import com.idatrix.unisecurity.user.vo.ActiveUserCountVO;
-import com.idatrix.unisecurity.user.vo.DeptLoginInfoVO;
-import com.idatrix.unisecurity.user.vo.UserLoginCountVO;
+import com.idatrix.unisecurity.user.vo.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.NotNull;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -57,6 +58,20 @@ public class LoginCountController {
     public ResultVo<DeptLoginInfoVO> searchDeptLoginInfo() {
         DeptLoginInfoVO deptLoginInfo = loginCountService.getDeptLoginInfo(ShiroTokenManager.getToken().getRenterId());
         return ResultVoUtils.ok(deptLoginInfo);
+    }
+
+    @ApiOperation(value = "登陆统计-获取登录详情信息", notes = "", httpMethod = "GET")
+    @RequestMapping(value = "/show/login/details", method = RequestMethod.GET)
+    public ResultVo<PageResultVo<LoginDetailsInfoVO>> searchLoginDetailsInfo(LoginSearchVO search) {
+        // 年份补齐
+        if(search.getYear() == null) {
+            Calendar c = Calendar.getInstance();
+            c.setTime(new Date());
+            search.setYear(c.get(Calendar.YEAR));
+        }
+        search.setRenterId(ShiroTokenManager.getToken().getRenterId());
+        PageResultVo<LoginDetailsInfoVO> result = loginCountService.searchLoginDetailsInfo(search);
+        return ResultVoUtils.ok(result);
     }
 
 }

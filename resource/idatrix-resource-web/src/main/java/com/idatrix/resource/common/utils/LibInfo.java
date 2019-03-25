@@ -66,4 +66,13 @@ public enum LibInfo{
         }
         return null;
     }
+
+    public static String getLibName(String resourceFullCode){
+        for(LibInfo libInfo: values()){
+            if(resourceFullCode.startsWith(libInfo.getLibValue())){
+                return libInfo.getLibName();
+            }
+        }
+        return null;
+    }
 }

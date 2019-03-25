@@ -69,8 +69,7 @@ public class SPHadoopFileInput extends SPTextFileInput {
 		SPTextFileInput obj = (SPTextFileInput) super.encodeParameterObject(stepMeta);
 		for (TextFileInputFileDto file : obj.getInputFiles()) {
 
-			file.setSourceConfigurationName((String) OsgiBundleUtils.invokeOsgiMethod(stepMetaInterface,
-					"getClusterNameBy", file.getFileName()));
+			file.setSourceConfigurationName((String) OsgiBundleUtils.invokeOsgiMethod(stepMetaInterface, "getClusterNameBy", file.getFileName()));
 			file.setFileName(StringEscapeHelper.getUrlPath(file.getFileName()));
 		}
 
@@ -87,8 +86,7 @@ public class SPHadoopFileInput extends SPTextFileInput {
 			TextFileInputFileDto file = jtfi.getInputFiles().get(i);
 			file.setFileName(FilePathUtil.getRelativeFileName(null ,file.getFileName(), FileType.input));
 
-			String hadoopFileUrl = hadoopFileInputDetailService.getConnectPath(null,file.getSourceConfigurationName(),
-					file.getFileName());
+			String hadoopFileUrl = hadoopFileInputDetailService.getConnectPath(null,file.getSourceConfigurationName(), file.getFileName());
 
 			Object map = OsgiBundleUtils.invokeOsgiMethod(stepMetaInterface, "getNamedClusterURLMapping");
 			OsgiBundleUtils.invokeOsgiMethod(map, "put", hadoopFileUrl, file.getSourceConfigurationName());

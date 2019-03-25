@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.pentaho.di.core.Const;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.util.OsgiBundleUtils;
 import org.pentaho.di.job.JobMeta;
@@ -183,8 +182,15 @@ public class SPSqoopExport extends SqoopConfig implements EntryParameter {
 			}
 		}
 		
+		DatabaseMeta dbMeta = (DatabaseMeta) OsgiBundleUtils.invokeOsgiMethod(entryMetaInterface, "getDatabaseMeta");
+		if( dbMeta != null ) {
+			spSqoopExport.setDatabase(dbMeta.getDisplayName());
+		}
 		//获取SchemaId
-		spSqoopExport.setSchemaId(Long.valueOf(Const.NVL(getToAttribute(jobEntryCopy, "schemaId"), "-1") ) );
+		spSqoopExport.setSchemaId(getToAttributeLong(jobEntryCopy, "schemaId"));
+		spSqoopExport.setTableId(getToAttributeLong(jobEntryCopy, "tableId"));
+		spSqoopExport.setDatabaseId(getToAttributeLong(jobEntryCopy, "databaseId"));
+		spSqoopExport.setTableType(getToAttribute(jobEntryCopy, "tableType"));
 		
 		return spSqoopExport;
 		
@@ -216,11 +222,14 @@ public class SPSqoopExport extends SqoopConfig implements EntryParameter {
 		if( dbMeta !=null) {
 			//保存SchemaId
 			setToAttribute(jobEntryCopy, "schemaId", spSqoopExport.getSchemaId());
+			setToAttribute(jobEntryCopy, "databaseId", spSqoopExport.getDatabaseId());
+			setToAttribute(jobEntryCopy, "tableId", spSqoopExport.getTableId());
+			setToAttribute(jobEntryCopy, "tableType", spSqoopExport.getTableType());
 			
 			//sqoopExportJobEntry.getJobConfig().setConnectionInfo(dbMeta.getName(), dbMeta.getUrl(), dbMeta.getUsername(), dbMeta.getPassword());
 			OsgiBundleUtils.invokeOsgiMethod(config,"setConnectionInfo",dbMeta.getName(), dbMeta.getURL(), dbMeta.getUsername(), dbMeta.getPassword());
 			//sqoopExportJobEntry.setDatabaseMeta(DatabaseMeta.findDatabase(cloudDbService.getAllDbConnection(), databaseName));
-			OsgiBundleUtils.invokeOsgiMethod(entryMetaInterface,"setDatabaseMeta",DatabaseMeta.findDatabase(cloudDbService.getAllDbConnection(null), spSqoopExport.getDatabase()));
+			OsgiBundleUtils.invokeOsgiMethod(entryMetaInterface,"setDatabaseMeta",dbMeta);
 		}
 		
 		Map<String, String> map = spSqoopExport.getCustomArgumentsMap();

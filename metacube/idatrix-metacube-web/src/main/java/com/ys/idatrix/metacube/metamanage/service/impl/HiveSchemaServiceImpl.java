@@ -3,6 +3,7 @@ package com.ys.idatrix.metacube.metamanage.service.impl;
 import com.ys.idatrix.db.api.common.RespResult;
 import com.ys.idatrix.db.api.hive.service.HiveService;
 import com.ys.idatrix.db.api.sql.dto.SqlExecRespDto;
+import com.ys.idatrix.metacube.common.enums.SchemaOperationTypeEnum;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
 import com.ys.idatrix.metacube.common.utils.UserUtils;
 import com.ys.idatrix.metacube.metamanage.domain.McSchemaPO;
@@ -51,5 +52,21 @@ public class HiveSchemaServiceImpl implements McSchemaService {
     @Override
     public McSchemaPO register(McSchemaPO schemaPO) {
         return insert(schemaPO);
+    }
+
+    /**
+     * 删除模式
+     */
+    @Override
+    public McSchemaPO delete(McSchemaPO schemaPO) {
+        if (schemaPO.getType() == SchemaOperationTypeEnum.REGISTER.getCode()) {
+            return schemaPO;
+        }
+        RespResult<SqlExecRespDto> result =
+                hiveService.dropDatabase(schemaPO.getUsername(), schemaPO.getName());
+        if (!result.isSuccess()) {
+            throw new MetaDataException(result.getMsg());
+        }
+        return schemaPO;
     }
 }

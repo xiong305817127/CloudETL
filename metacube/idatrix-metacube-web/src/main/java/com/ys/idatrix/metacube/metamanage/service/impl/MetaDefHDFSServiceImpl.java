@@ -1,15 +1,12 @@
 package com.ys.idatrix.metacube.metamanage.service.impl;
 
-import static com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum.HDFS;
-import static com.ys.idatrix.metacube.common.enums.DataStatusEnum.DELETE;
-import static com.ys.idatrix.metacube.common.enums.DataStatusEnum.DRAFT;
-import static com.ys.idatrix.metacube.common.enums.DataStatusEnum.VALID;
-
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.ys.idatrix.db.api.common.RespResult;
 import com.ys.idatrix.db.api.hdfs.service.HdfsUnrestrictedService;
 import com.ys.idatrix.graph.service.api.def.DatabaseType;
 import com.ys.idatrix.metacube.api.beans.PageResultBean;
+import com.ys.idatrix.metacube.common.enums.TableColumnStatusEnum;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
 import com.ys.idatrix.metacube.metamanage.domain.Metadata;
 import com.ys.idatrix.metacube.metamanage.domain.SnapshotMetadata;
@@ -20,9 +17,6 @@ import com.ys.idatrix.metacube.metamanage.service.IMetaDefHDFSService;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetaDefHDFSVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetadataSearchVo;
 import com.ys.idatrix.metacube.metamanage.vo.response.MetaDefOverviewVO;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +24,14 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum.HDFS;
+import static com.ys.idatrix.metacube.common.enums.DataStatusEnum.*;
 
 /**
  * 元数据定义-HDFS
@@ -110,27 +112,37 @@ public class MetaDefHDFSServiceImpl implements IMetaDefHDFSService  {
     }
 
     private boolean verifyConfigParam(Long rentId, MetaDefHDFSVO baseVO){
+
         //数据检验:1.同一个节点下面不能名字相同的配置，不同节点下名字相同没关系。2.文件路径名称必须唯一。
 
-        if(StringUtils.isEmpty(baseVO.getIdentification()) ||
-                StringUtils.isEmpty(baseVO.getName()) ||
+        if(StringUtils.isBlank(baseVO.getIdentification()) ||
+                StringUtils.isBlank(baseVO.getName()) ||
                   baseVO.getSchemaId()==null){
             throw new MetaDataException("缺少必填参数");
+        }
+
+        //HDFS需要在更目录自自动增加路径符号"/"
+        String name = baseVO.getName();
+        if(!name.startsWith("/")){
+            baseVO.setName(new StringBuilder("/").append(name).toString());
         }
 
         Long id = baseVO.getId();
         if(id==null||id.equals(0L)){
             List<Metadata> sameNameDataList = metadataMapper.queryMetaData(baseVO.getSchemaId(), baseVO.getName(), null);
-            if(CollectionUtils.isNotEmpty(sameNameDataList)){
+            List<Metadata> existList = sameNameDataList.stream().filter(p->p.getStatus()!=2).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(existList)){
                 throw new MetaDataException("同一模式下存在相同目录名称");
             }
             List<Metadata> sameDictList = metadataMapper.queryMetaData(baseVO.getSchemaId(), null, baseVO.getIdentification());
-            if(CollectionUtils.isNotEmpty(sameDictList)){
+            List<Metadata> existSameDictList =sameDictList.stream().filter(p->p.getStatus()!=2).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(existSameDictList)){
                 throw new MetaDataException("配置子目录路径已经存在，请修改");
             }
         }else{
             List<Metadata> sameNameDataList = metadataMapper.queryMetaData(baseVO.getSchemaId(), baseVO.getName(), null);
-            if(CollectionUtils.isNotEmpty(sameNameDataList)){
+            List<Metadata> existSameNameDataList =sameNameDataList.stream().filter(p->p.getStatus()!=2).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(existSameNameDataList)){
 
                 if(sameNameDataList.size()>1){
                     throw new MetaDataException("同一模式下存在相同目录名称");
@@ -143,12 +155,12 @@ public class MetaDefHDFSServiceImpl implements IMetaDefHDFSService  {
             }
 
             List<Metadata> sameDictList = metadataMapper.queryMetaData(baseVO.getSchemaId(), null, baseVO.getIdentification());
-            if(CollectionUtils.isNotEmpty(sameDictList)){
-
+            List<Metadata> existSameDictList =sameDictList.stream().filter(p->p.getStatus()!=2).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(existSameDictList)){
                 if(sameDictList.size()>1){
                     throw new MetaDataException("配置子目录路径已经存在，请修改");
                 }else{
-                    Metadata sameMetaData = sameDictList.get(0);
+                    Metadata sameMetaData = existSameDictList.get(0);
                     if(!sameMetaData.getId().equals(id)){
                         throw new MetaDataException("配置子目录路径已经存在，请修改");
                     }
@@ -216,22 +228,22 @@ public class MetaDefHDFSServiceImpl implements IMetaDefHDFSService  {
         String errorMsg=null;
         Metadata lastData = getLastData(baseVO.getId());
         if(lastData==null || !StringUtils.equals(lastData.getIdentification(), baseVO.getIdentification())) {
-//            try {
-//                String fullPath = baseVO.getRootPath() + baseVO.getIdentification();
-//                if (StringUtils.isNotBlank(fullPath)) {
-//                    HdfsExecuteResult hr = hdfsUnrestrictedService.createDir(user, fullPath);
-//                    if (hr.isSuccess()) {
-//                        log.info("成功创建HDFS目录:{}", fullPath);
-//                    } else {
-//                        errorMsg = hr.getMessage();
-//                        log.info("创建HDFS目录:{},失败:{}", fullPath, hr.getMessage());
-//                    }
-//                }
-//            } catch (Exception e) {
-//                errorMsg = "操作失败:" + e.getMessage();
-//                e.printStackTrace();
-//                throw new MetaDataException("创建HDFS失败 " + errorMsg);
-//            }
+            try {
+                String fullPath = baseVO.getRootPath() + baseVO.getName();
+                if (StringUtils.isNotBlank(fullPath)) {
+                    RespResult<Boolean> hr = hdfsUnrestrictedService.createDir(user, fullPath);
+                    if (hr.isSuccess()) {
+                        log.info("成功创建HDFS目录:{}", fullPath);
+                    } else {
+                        errorMsg = hr.getMsg();
+                        log.info("创建HDFS目录:{},失败:{}", fullPath, hr.getMsg());
+                    }
+                }
+            } catch (Exception e) {
+                errorMsg = "操作失败:" + e.getMessage();
+                e.printStackTrace();
+                throw new MetaDataException("创建HDFS失败 " + errorMsg);
+            }
         }
 
         //入库数据库
@@ -336,7 +348,7 @@ public class MetaDefHDFSServiceImpl implements IMetaDefHDFSService  {
 //                String hasDataErrorMsg = "存在子文件";
 //                throw new MetaDataException("删除HDFS失败 "+result.getMessage());
 //            }
-        }else if(data.getStatus().equals(DELETE.getValue())){
+        }else if(data.getStatus().equals(TableColumnStatusEnum.DELETE.getValue())){
             throw new MetaDataException("删除HDFS失败 该记录已经被删除");
         }
 
@@ -364,5 +376,26 @@ public class MetaDefHDFSServiceImpl implements IMetaDefHDFSService  {
             throw new MetaDataException("存储系统中没有该记录");
         }
         return data;
+    }
+
+    /**
+     * 根据租户或者搜索关键字查询所有列表
+     *
+     * @param rentId
+     * @param searchKey
+     * @return
+     */
+    @Override
+    public List<Metadata> getAllDirByRentId(Long rentId, String searchKey) {
+
+        List<Metadata> orgHdfsList = metadataMapper.getAllHDFSFolderInfo(null, null, null, rentId);
+        if (CollectionUtils.isNotEmpty(orgHdfsList)) {
+            if (StringUtils.isNotEmpty(searchKey)) {
+                return orgHdfsList.stream().filter(p -> StringUtils.containsIgnoreCase(p.getIdentification(), searchKey)).collect(Collectors.toList());
+            } else {
+                return orgHdfsList;
+            }
+        }
+        return null;
     }
 }

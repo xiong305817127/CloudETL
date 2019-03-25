@@ -3,6 +3,7 @@ package com.ys.idatrix.metacube.metamanage.controller;
 import com.ys.idatrix.metacube.api.beans.PageResultBean;
 import com.ys.idatrix.metacube.api.beans.ResultBean;
 import com.ys.idatrix.metacube.common.utils.UserUtils;
+import com.ys.idatrix.metacube.common.utils.ValidateUtil;
 import com.ys.idatrix.metacube.metamanage.domain.McServerDatabaseChangePO;
 import com.ys.idatrix.metacube.metamanage.domain.McServerPO;
 import com.ys.idatrix.metacube.metamanage.service.McServerService;
@@ -13,7 +14,6 @@ import com.ys.idatrix.metacube.metamanage.vo.response.ServerVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
-import java.util.List;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -36,15 +36,17 @@ public class McServerController {
 
     @GetMapping
     @ApiOperation(value = "服务器列表")
-    public ResultBean<PageResultBean<List<ServerVO>>> list(ServerSearchVO searchVO) {
+    public ResultBean<PageResultBean<ServerVO>> list(ServerSearchVO searchVO) {
+        ValidateUtil.checkIp(searchVO.getIp());
         searchVO.setRenterId(UserUtils.getRenterId());
-        return ResultBean.ok(serverService.list(searchVO));
+        PageResultBean<ServerVO> resultBean = serverService.list(searchVO);
+        return ResultBean.ok(resultBean);
     }
 
     @GetMapping("/{id}")
     @ApiOperation(value = "服务器详情")
-    public ResultBean<McServerPO> getServerById(@PathVariable Long id) {
-        return ResultBean.ok(serverService.getServerById(id));
+    public ResultBean<ServerVO> getServerById(@PathVariable Long id) {
+        return ResultBean.ok(serverService.getServerVOById(id));
     }
 
     @PostMapping
@@ -58,12 +60,13 @@ public class McServerController {
 
     @PutMapping("/{id}")
     @ApiOperation(value = "修改服务器")
-    public ResultBean<McServerPO> update(@PathVariable Long id,
+    public ResultBean<ServerVO> update(@PathVariable Long id,
             @Validated @RequestBody ServerAddOrUpdateVO serverUpdateVO) {
         McServerPO serverPO = new McServerPO();
         serverPO.setId(id);
         BeanUtils.copyProperties(serverUpdateVO, serverPO);
-        return ResultBean.ok(serverService.update(serverPO));
+        serverService.update(serverPO);
+        return ResultBean.ok(serverService.getServerVOById(id));
     }
 
     @DeleteMapping("/{id}")
@@ -76,7 +79,7 @@ public class McServerController {
     @ApiOperation(value = "服务器的变更记录")
     @GetMapping("/{id}/changelog")
     @ApiImplicitParam(name = "id", value = "服务器id", required = true)
-    public ResultBean<PageResultBean<List<McServerDatabaseChangePO>>> search(
+    public ResultBean<PageResultBean<McServerDatabaseChangePO>> search(
             @PathVariable Long id, ChangeSearchVO searchVO) {
         searchVO.setType(1);
         searchVO.setFkId(id);

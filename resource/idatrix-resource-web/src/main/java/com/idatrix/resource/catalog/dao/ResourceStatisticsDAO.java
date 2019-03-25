@@ -1,6 +1,7 @@
 package com.idatrix.resource.catalog.dao;
 
 import com.idatrix.resource.catalog.po.ResourceStatisticsPO;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ public interface ResourceStatisticsDAO {
 
     List<ResourceStatisticsPO> getLatestListByResourceId(Long resourceId);
 
-    List<ResourceStatisticsPO> getLatest(Long count);
+    List<ResourceStatisticsPO> getLatestByRentId(@Param("rentId") Long rentId,
+                                                 @Param("count") Long count);
 
 }

@@ -66,11 +66,6 @@ public class EsSnapshotMetadata {
     private String remark;
 
     /**
-     * 所属组织code，多个，以，隔开
-     */
-    private String deptCodes;
-
-    /**
      * 状态
      */
     private Integer status;

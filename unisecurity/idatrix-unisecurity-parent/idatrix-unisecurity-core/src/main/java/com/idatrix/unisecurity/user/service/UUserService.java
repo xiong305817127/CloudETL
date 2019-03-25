@@ -39,8 +39,6 @@ public interface UUserService {
 
     Integer deleteUserById(String ids) throws Exception;
 
-    Map<String, Object> updateForbidUserById(Long id, Long status);
-
     Pagination<UserRoleAllocationBo> findUserAndRole(ModelMap modelMap,
                                                      Integer pageNo, Integer pageSize);
 

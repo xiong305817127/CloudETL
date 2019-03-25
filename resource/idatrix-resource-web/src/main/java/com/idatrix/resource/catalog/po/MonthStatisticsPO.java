@@ -1,5 +1,7 @@
 package com.idatrix.resource.catalog.po;
 
+import lombok.Data;
+
 import java.util.Date;
 
 /**
@@ -8,6 +10,7 @@ import java.util.Date;
  * @Date: 2018/5/23
  */
 
+@Data
 public class MonthStatisticsPO {
 
     /*主键*/
@@ -25,6 +28,9 @@ public class MonthStatisticsPO {
     /*注册资源总量*/
     private int regCount;
 
+    /*组合ID，租户隔离使用*/
+    private Long rentId;
+
     private String creator;
 
     private Date createTime;
@@ -33,75 +39,4 @@ public class MonthStatisticsPO {
 
     private Date modifyTime;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getMonth() {
-        return month;
-    }
-
-    public void setMonth(String month) {
-        this.month = month;
-    }
-
-    public int getSubCount() {
-        return subCount;
-    }
-
-    public void setSubCount(int subCount) {
-        this.subCount = subCount;
-    }
-
-    public int getPubCount() {
-        return pubCount;
-    }
-
-    public void setPubCount(int pubCount) {
-        this.pubCount = pubCount;
-    }
-
-    public int getRegCount() {
-        return regCount;
-    }
-
-    public void setRegCount(int regCount) {
-        this.regCount = regCount;
-    }
-
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public String getModifier() {
-        return modifier;
-    }
-
-    public void setModifier(String modifier) {
-        this.modifier = modifier;
-    }
-
-    public Date getModifyTime() {
-        return modifyTime;
-    }
-
-    public void setModifyTime(Date modifyTime) {
-        this.modifyTime = modifyTime;
-    }
 }

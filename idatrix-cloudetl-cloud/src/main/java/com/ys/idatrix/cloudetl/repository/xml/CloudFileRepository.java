@@ -270,7 +270,7 @@ public class CloudFileRepository {
 	 */
 	public Map<String,List<Object>> getTransElementsMap( String owner ,String group,boolean isSort) throws KettleException {
 		 Map<String,List<Object>> result =  Maps.newHashMap() ;
-		if( CloudSession.isRenterPrivilege()) {
+		if( CloudSession.isPrivilegeEnable()) {
 			//当前登录者是租户,获取 owner用户下的 group组 下的信息
 			if(Utils.isEmpty(owner)) {
 				//获取所有的用户
@@ -593,7 +593,7 @@ public class CloudFileRepository {
 	 */
 	public Map<String,List<Object>> getJobElementsMap( String owner ,String group,boolean isSort) throws KettleException {
 		 Map<String,List<Object>> result =  Maps.newHashMap() ;
-		if( CloudSession.isRenterPrivilege()) {
+		if( CloudSession.isPrivilegeEnable()) {
 			//当前登录者是租户,获取 owner用户下的 group组 下的信息
 			if(Utils.isEmpty(owner)) {
 				//获取所有的用户

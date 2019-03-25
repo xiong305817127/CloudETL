@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.pentaho.di.core.Const;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.util.OsgiBundleUtils;
 import org.pentaho.di.job.JobMeta;
@@ -648,8 +647,16 @@ public class SPSqoopImport extends SqoopConfig implements EntryParameter {
 			}
 		}
 		
+		DatabaseMeta dbMeta = (DatabaseMeta) OsgiBundleUtils.invokeOsgiMethod(entryMetaInterface, "getDatabaseMeta");
+		if( dbMeta != null ) {
+			sPSqoopImport.setDatabase(dbMeta.getDisplayName());
+		}
+		
 		//获取SchemaId
-		sPSqoopImport.setSchemaId(Long.valueOf(Const.NVL(getToAttribute(jobEntryCopy, "schemaId"), "-1") ) );
+		sPSqoopImport.setSchemaId(getToAttributeLong(jobEntryCopy, "schemaId"));
+		sPSqoopImport.setTableId(getToAttributeLong(jobEntryCopy, "tableId"));
+		sPSqoopImport.setDatabaseId(getToAttributeLong(jobEntryCopy, "databaseId"));
+		sPSqoopImport.setTableType(getToAttribute(jobEntryCopy, "tableType"));
 		
 		return sPSqoopImport;
 	}
@@ -680,6 +687,9 @@ public class SPSqoopImport extends SqoopConfig implements EntryParameter {
 		if (dbMeta != null) {
 			//保存SchemaId
 			setToAttribute(jobEntryCopy, "schemaId", sPSqoopImport.getSchemaId());
+			setToAttribute(jobEntryCopy, "databaseId", sPSqoopImport.getDatabaseId());
+			setToAttribute(jobEntryCopy, "tableId", sPSqoopImport.getTableId());
+			setToAttribute(jobEntryCopy, "tableType", sPSqoopImport.getTableType());
 			
 			//sqoopImportJobEntry.getJobConfig().setConnectionInfo(dbMeta.getName(), dbMeta.getUrl(),	dbMeta.getUsername(), dbMeta.getPassword());
 			OsgiBundleUtils.invokeOsgiMethod(config,"setConnectionInfo",dbMeta.getName(), dbMeta.getURL(), dbMeta.getUsername(), dbMeta.getPassword());

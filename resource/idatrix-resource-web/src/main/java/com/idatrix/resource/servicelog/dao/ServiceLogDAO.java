@@ -8,5 +8,7 @@ import java.util.Map;
 public interface ServiceLogDAO {
     List<ServiceLogPO> getServiceLogInfoByCondition(Map<String, Object> condition);
 
+    List<ServiceLogPO> getLastestServiceLog(Long num);
+
     ServiceLogPO getServiceLogById(Long id);
 }

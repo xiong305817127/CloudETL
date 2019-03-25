@@ -47,8 +47,8 @@ public class PostgreSqlImpl extends RdbDDLWrapper {
 
 
     @Override
-    public List<String> getDropDatabaseCommands(String dbName) {
-        String dropCommand = MessageFormat.format(DROP_DB_SQL, dbName);
+    public List<String> getDropDatabaseCommands(RdbDropDatabase database) {
+        String dropCommand = MessageFormat.format(DROP_DB_SQL, database.getDatabase());
         return ImmutableList.of(dropCommand);
     }
 

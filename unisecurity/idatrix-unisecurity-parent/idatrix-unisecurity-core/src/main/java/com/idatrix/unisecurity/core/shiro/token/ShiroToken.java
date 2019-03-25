@@ -24,7 +24,6 @@ public class ShiroToken extends UsernamePasswordToken implements java.io.Seriali
         return pswd;
     }
 
-
     public void setPswd(String pswd) {
         this.pswd = pswd;
     }

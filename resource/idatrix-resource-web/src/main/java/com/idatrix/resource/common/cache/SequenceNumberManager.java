@@ -46,16 +46,12 @@ public class SequenceNumberManager {
     @PostConstruct
     public void init(){
         Long seqInLib = dataUploadDAO.getMaxTaskSeq();
-        Long value = seqInLib==null?0:seqInLib;
-        setNX(SEQ_PREFIX, value.toString());
+        setNX(SEQ_PREFIX, seqInLib.toString());
 
         //TODO 第三方系统接入时候：申请的数据库信息在资源里面不能显示，则都暂存在 rc_exchange_task,生成任务 id需要获取最大数据
         Long subscirbeSeqMax = subscribeDAO.getMaxSubscribeSeq();
-        subscirbeSeqMax = subscirbeSeqMax==null?0L:subscirbeSeqMax;
         Long exchangeSeqMax = exchangeDAO.getMaxSubscribeSeq();
-        exchangeSeqMax = exchangeSeqMax==null?0L:exchangeSeqMax;
         Long subscribeValue = subscirbeSeqMax>exchangeSeqMax?subscirbeSeqMax:exchangeSeqMax;
-//        Long subscribeValue = subscirbeSeqMax==null?0:subscirbeSeqMax;
         setNX(SUBSCRIBE_PREFIX, subscribeValue.toString());
 
     }

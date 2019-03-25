@@ -5,6 +5,8 @@ import com.idatrix.resource.basedata.vo.SystemConfigVO;
 import com.idatrix.resource.common.controller.BaseController;
 import com.idatrix.resource.common.utils.Result;
 import com.idatrix.resource.common.utils.UserUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +23,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/sysconfig")
+@Api(value = "/sysconfig" , tags="基础功能-系统配置")
 public class SystemConfigController extends BaseController {
 
     @Autowired
@@ -30,18 +33,21 @@ public class SystemConfigController extends BaseController {
     private UserUtils userUtils;
 
     /*获取系统配置*/
+    @ApiOperation(value = "获取系统配置", notes="获取系统配置", httpMethod = "GET")
     @RequestMapping("/getConfig")
     @ResponseBody
     public Result getConfig() {
 
-        String user = getUserName();
-        SystemConfigVO scVO = systemConfigService.getSystemConfig(user);
+       //String user = getUserName();
+       Long rentId  = userUtils.getCurrentUserRentId();
+       SystemConfigVO scVO = systemConfigService.getSystemConfig(rentId);
        return Result.ok(scVO);
     }
 
     /*
     *  存储系统配置
     */
+    @ApiOperation(value = "存储系统配置", notes="存储系统配置", httpMethod = "POST")
     @RequestMapping(value = "/save", method = RequestMethod.POST)
     @ResponseBody
     public Result save(@RequestBody SystemConfigVO sysconfigVO) {
@@ -53,14 +59,15 @@ public class SystemConfigController extends BaseController {
 //        return Result.ok(attach);
 
         //配置时候需要处理异常：源路径和目标路径一致时ETL会报错，配置时候过滤掉。
-        String user = userUtils.getCurrentSaveUserInfo(); //getUserName();
+        String user = getUserName();
+        Long rentId = userUtils.getCurrentUserRentId();
 
         Long id = 0L;
         try {
-            id = systemConfigService.save(user, sysconfigVO);
+            id = systemConfigService.save(rentId, user, sysconfigVO);
         } catch (Exception e) {
             e.printStackTrace();
-            return Result.error(6001000, e.getMessage());
+            return Result.error(e.getMessage());
         }
 
         Map<String, Object> attach = new HashMap<String, Object>();

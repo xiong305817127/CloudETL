@@ -5,7 +5,7 @@ import org.apache.log4j.Level;
 /**
  * 自定义log等级
  * @ClassName LogLevel
- * @Description TODO
+ * @Description
  * @Author ouyang
  * @Date 2018/9/17 13:55
  * @Version 1.0

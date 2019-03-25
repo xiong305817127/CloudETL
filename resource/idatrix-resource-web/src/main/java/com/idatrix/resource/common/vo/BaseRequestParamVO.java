@@ -1,6 +1,7 @@
 package com.idatrix.resource.common.vo;
 
-import com.alibaba.fastjson.JSON;
+import lombok.Data;
+
 import java.io.Serializable;
 
 /**
@@ -8,6 +9,8 @@ import java.io.Serializable;
  *
  * @author wzl
  */
+
+@Data
 public class BaseRequestParamVO implements Serializable {
 
     /**
@@ -24,24 +27,4 @@ public class BaseRequestParamVO implements Serializable {
         this.pageSize = 10;
     }
 
-    public Integer getPage() {
-        return page;
-    }
-
-    public void setPage(Integer page) {
-        this.page = page;
-    }
-
-    public Integer getPageSize() {
-        return pageSize;
-    }
-
-    public void setPageSize(Integer pageSize) {
-        this.pageSize = pageSize;
-    }
-
-    @Override
-    public String toString() {
-        return JSON.toJSONString(this);
-    }
 }

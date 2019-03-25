@@ -1,0 +1,62 @@
+.retrievalModel{
+	padding: 10px;
+
+	.searchBtn{
+		padding: 20px 0px 0px 10px;
+	}
+
+	.rowType{
+		padding: 30px 10px 0px 10px;
+
+		.colRight{
+			height: 27px;
+			line-height: 27px;
+			text-align: right;
+		}
+	}
+
+	.item{
+		border: 1px solid #f0f0f0;
+		margin-top: 10px;
+		padding:10px 20px;
+
+		:global{
+			.font_highlight{
+				color: red;
+			}
+
+			.ant-list-item-content{
+				display: block;
+			}
+		}
+
+		.upPart{
+			.title{
+				color:#2592D0;
+				font-size: 16px;
+				width: 100%;
+				padding-bottom: 10px;
+				cursor: pointer;
+			}
+
+			.info{
+				width: 100%;
+				padding-bottom: 10px;
+				border-bottom: 1px solid #f0f0f0;
+			}
+
+			.downPart{
+				overflow : hidden;
+				text-overflow: ellipsis;
+				display:-webkit-box;
+				-webkit-line-clamp:5;
+				-webkit-box-orient: vertical;
+				padding-top: 10px;
+				color: #8D8D8D;
+			}
+		}
+	}
+	.item:first-child{
+		margin-top: 0;
+	}
+}

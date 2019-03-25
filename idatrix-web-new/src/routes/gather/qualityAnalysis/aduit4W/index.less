@@ -1,0 +1,119 @@
+//边框颜色
+@borderColor:#e8e8e8;
+@bgColor:#42B9FB;
+
+.aduit4W{
+	width: 100%;
+	box-sizing: border-box;
+	padding: 20px 10px;
+
+	.leftItem{
+		box-sizing: border-box;
+		height: 100%;
+		padding-right: 40px;
+		:global{
+			.tableCenter{
+				text-align: center;
+			}
+			.selectedRow{
+				background: #DFF6FC;
+			}
+		}
+
+		.pathStyle{
+			color: @bgColor;
+			span{
+				cursor: pointer;
+			}
+		}
+	}	
+
+	.rightItem{
+		box-sizing: border-box;
+		height: 100%;
+		border: 1px solid @borderColor;
+		
+
+		.upPart{
+			padding: 10px 15px;
+			border-bottom: 1px dashed @borderColor;
+
+			.header{
+				font-size: 16px;
+				height: 20px;
+				display: flex;
+				align-items: center;
+				margin-bottom: 20px;
+	
+				.banner{
+					width: 4px;
+					height: 15px;
+					background: @bgColor;
+					margin-right: 10px;
+				}
+			}
+
+			.content{
+				font-size: 16px;
+				div{
+					margin-bottom: 15px;
+					height: 30px;
+					line-height: 30px;
+					overflow: hidden;
+					text-overflow:ellipsis;
+					white-space: nowrap;
+					width: 640px;
+
+					span{
+						display: inline-block;
+						width: 500px;
+					}
+					span:first-child{
+						width: 150px;
+					}
+				}
+				div:last-child{
+					margin-bottom: 0px;
+				}
+			}
+		}
+
+
+		.downPart{
+			height: calc(~"100% - 226px");
+			box-sizing: border-box;
+			padding: 10px 15px;
+
+			.prePart{
+				height: 100%;
+				color: #C23531;
+			}
+		}
+
+		
+
+		.squareImg{
+			width:0;
+			height:0;
+			border-top:20px solid transparent;
+			border-bottom:20px solid transparent;
+			border-right:20px solid @borderColor;
+
+			position:absolute;
+			left:-20px;
+			top:10px;
+		}
+
+		.squareImg1{
+			width:0;
+			height:0;
+			border-top:20px solid transparent;
+			border-bottom:20px solid transparent;
+			border-right:20px solid white;
+
+			position:absolute;
+			left:-18px;
+			top:10px;
+		}
+	}
+}

@@ -1,79 +1,36 @@
 package com.idatrix.resource.catalog.vo;
 
-import org.springframework.web.bind.annotation.RequestParam;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 /**
  * Created by Robin Wing on 2018-6-13.
  */
+@Data
+@ApiModel("查询请求")
 public class QueryRequestVO {
 
+    @ApiModelProperty("资源名称")
     private String name;
 
+    @ApiModelProperty("资源代码")
     private String code;
 
+    @ApiModelProperty("部门名称")
     private String deptName;
 
+    @ApiModelProperty("部门代码")
     private String deptCode;
 
+    @ApiModelProperty("处理状态")
     private String status;
 
+    @ApiModelProperty("分页起始页")
     private Integer page;
 
+    @ApiModelProperty("分页每页面大小")
     private Integer pageSize;
 
-    public String getStatus() {
-        return status;
-    }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getDeptName() {
-        return deptName;
-    }
-
-    public void setDeptName(String deptName) {
-        this.deptName = deptName;
-    }
-
-    public String getDeptCode() {
-        return deptCode;
-    }
-
-    public void setDeptCode(String deptCode) {
-        this.deptCode = deptCode;
-    }
-
-    public Integer getPage() {
-        return page;
-    }
-
-    public void setPage(Integer page) {
-        this.page = page;
-    }
-
-    public Integer getPageSize() {
-        return pageSize;
-    }
-
-    public void setPageSize(Integer pageSize) {
-        this.pageSize = pageSize;
-    }
 }

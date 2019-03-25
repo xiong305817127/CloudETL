@@ -1,0 +1,19 @@
+/*:global(#ResourceList) .Sider{
+  align-items: stretch;
+  background: #e9f0f3;
+}*/
+
+:global(#ResourceList)   .Content{
+  padding: 10px;
+  background: white;
+  overflow: hidden;
+}
+
+:global(.AStyle){
+  font-size: 16px;
+  color: #199ed8
+}
+:global(#ResourceList #common-sidebar .ant-layout-sider-children){
+    margin-top: 40px;
+}
+

@@ -3,6 +3,7 @@ package com.idatrix.unisecurity.auditLog.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.idatrix.unisecurity.auditLog.service.AuditLogService;
+import com.idatrix.unisecurity.auditLog.vo.LogSearchVO;
 import com.idatrix.unisecurity.common.dao.AuditLogMapper;
 import com.idatrix.unisecurity.common.domain.AuditLog;
 import com.idatrix.unisecurity.common.domain.UUser;
@@ -32,12 +33,11 @@ public class AuditLogServiceImpl implements AuditLogService {
     }
 
     @Override
-    public PageInfo<AuditLog> findPage(Integer page, Integer size) {
+    public PageInfo<AuditLog> findPage(LogSearchVO search) {
         UUser user = (UUser) SecurityUtils.getSubject().getPrincipal();// 获取当前用户信息
-        AuditLog auditLog = new AuditLog();// 封装查询参数
-        auditLog.setRenterId(user.getRenterId());
-        PageHelper.startPage(page, size);// 分页
-        List<AuditLog> list = auditLogMapper.findPage(auditLog);
+        search.setRenterId(user.getRenterId());
+        PageHelper.startPage(search.getPage(), search.getSize());// 分页
+        List<AuditLog> list = auditLogMapper.findPage(search);
         PageInfo<AuditLog> pageInfo = new PageInfo<>(list);
         return pageInfo;
     }

@@ -6,7 +6,7 @@ import org.apache.log4j.spi.LoggingEvent;
 /**
  * 自定义log拦截器
  * @ClassName SecurityLogFilter
- * @Description TODO
+ * @Description
  * @Author ouyang
  * @Date 2018/9/17 13:59
  * @Version 1.0

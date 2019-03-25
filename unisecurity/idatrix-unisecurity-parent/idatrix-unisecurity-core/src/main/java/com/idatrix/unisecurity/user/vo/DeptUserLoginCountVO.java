@@ -12,12 +12,12 @@ import lombok.Data;
 @Data
 public class DeptUserLoginCountVO {
 
+    @ApiModelProperty("所属组织ID")
+    private Long deptId;
+
     @ApiModelProperty("所属组织名")
     private String deptName;
 
-    @ApiModelProperty("登录用户数量")
-    private String loginUserCount;
-
-    public DeptUserLoginCountVO() {
-    }
+    @ApiModelProperty("用户登录次数")
+    private String userLoginCount;
 }

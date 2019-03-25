@@ -19,8 +19,8 @@ import com.idatrix.unisecurity.properties.EmailProperties;
 import com.idatrix.unisecurity.ranger.usersync.process.LdapMgrUserGroupBuilder;
 import com.idatrix.unisecurity.renter.service.RenterService;
 import com.idatrix.unisecurity.user.Config;
-import com.idatrix.unisecurity.user.manager.UserManager;
-import com.idatrix.unisecurity.user.service.SynchUserToBbs;
+import com.idatrix.unisecurity.user.service.SyncUserToBbs;
+import com.idatrix.unisecurity.user.service.SyncUserToBeijing;
 import com.idatrix.unisecurity.user.service.UUserService;
 import com.ys.idatrix.metacube.api.service.MetadataDatabaseService;
 import org.apache.commons.lang.StringUtils;
@@ -35,10 +35,6 @@ import java.util.*;
  */
 @Service
 public class RenterServiceImpl extends BaseMybatisDao<URenterMapper> implements RenterService {
-
-
-    @Autowired(required = false)
-    private MetadataDatabaseService metadataDatabaseService;
 
     @Autowired
     private OrganizationService organizationService;
@@ -86,7 +82,10 @@ public class RenterServiceImpl extends BaseMybatisDao<URenterMapper> implements 
     private UUserService userService;
 
     @Autowired
-    private SynchUserToBbs synchUserToBbs;
+    private SyncUserToBbs syncUserToBbs;
+
+    @Autowired
+    private SyncUserToBeijing syncUserToBeijing;
 
     @Autowired
     private EmailProperties emailProperties;
@@ -209,9 +208,6 @@ public class RenterServiceImpl extends BaseMybatisDao<URenterMapper> implements 
                 mailLogMapper.update(mailLog);
             }
         }
-
-        // 新增租户后，通知元数据注册或修改平台数据库信息
-        metadataDatabaseService.registerOrUpdatePlatformDatabaseInfo(renter.getId());
         return count;
     }
 
@@ -262,11 +258,9 @@ public class RenterServiceImpl extends BaseMybatisDao<URenterMapper> implements 
         uUser.setLastUpdatedDate(date);
         userMapper.updateByPrimaryKeySelective(uUser);
         // 用户修改同步到bbs中
-        synchUserToBbs.updateUser(uUser.getUsername(), uUser.getPswd(), uUser.getPhone(), uUser.getEmail(), true);
-
-        // 修改租户后，通知元数据注册或修改平台数据库信息
-        metadataDatabaseService.registerOrUpdatePlatformDatabaseInfo(renter.getId());
-
+        syncUserToBbs.updateUser(uUser.getUsername(), uUser.getPswd(), uUser.getPhone(), uUser.getEmail(), true);
+        // 用户修改同步到北京，租户修改并不会修改到密码
+        syncUserToBeijing.updateUser(uUser.getUsername(), null, uUser.getRealName(), uUser.getEmail());
         return count;
     }
 
@@ -347,7 +341,6 @@ public class RenterServiceImpl extends BaseMybatisDao<URenterMapper> implements 
         }
         // 重置密码为123456
         user.setPswd("123456");
-        UserManager.md5Pswd(user);
         // 并且将用户操作次数清空
         user.setVisitTimes(0l);
         int count = userService.updateByPrimaryKeySelective(user);
@@ -367,6 +360,14 @@ public class RenterServiceImpl extends BaseMybatisDao<URenterMapper> implements 
 
         // 禁用租户下的所有的用户，包括租户管理员
         userService.updateUserStatusByRenterIds(idArray, status);
+    }
+
+    @Autowired
+    private MetadataDatabaseService metadataDatabaseService;
+
+    @Override
+    public void registerOrUpdatePlatformDatabaseInfo(Long id) {
+        metadataDatabaseService.registerOrUpdatePlatformDatabaseInfo(id);
     }
 
 }

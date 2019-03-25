@@ -12,7 +12,9 @@ import com.idatrix.resource.catalog.po.ResourceConfigPO;
 import com.idatrix.resource.catalog.service.ICatalogClassifyService;
 import com.idatrix.resource.catalog.vo.CatalogNodeVO;
 import com.idatrix.resource.common.utils.BatchTools;
+import com.idatrix.resource.common.utils.ExcelUtils;
 import com.idatrix.resource.common.utils.FileUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,12 +52,12 @@ public class CatalogClassifyServiceImpl implements ICatalogClassifyService {
     private ISystemConfigService systemConfigService;
 
     @Override
-    public Long saveCatalogNode(String user, CatalogNodeVO node) throws Exception {
+    public Long saveCatalogNode(Long rentId, String user, CatalogNodeVO node) throws Exception {
 
         Long id = node.getId();
         //考虑查重，原则是 统一节点下方不能有名字或者编码相同数据项
-        if (ownSameNameOrCode(node)) {
-            throw new RuntimeException("在同一资源目录下面配置了相同的节点名称或者编码");
+        if (ownSameNameOrCode(rentId, node)) {
+           ;// throw new Exception("和同一资源分类下面配置的其它节点名称或者编码冲突");
         }
         //页面配置的时候 catalogFullName 里面没有内容，自行处理往里面添加内容
         Long parentId = node.getParentId();
@@ -71,7 +73,7 @@ public class CatalogClassifyServiceImpl implements ICatalogClassifyService {
         node.setParentFullCode(parentFullCode);
 
         if (id == null || id == 0L) {
-            id = addCatalogNode(user, node);
+            id = addCatalogNode(rentId, user, node);
         } else {
             id = updateCatalogNode(user, node);
         }
@@ -79,56 +81,229 @@ public class CatalogClassifyServiceImpl implements ICatalogClassifyService {
     }
 
     @Override
-    public int deleteCatalogNode(String user, Long id) throws Exception {
-        List<CatalogResourcePO> crPOList = new ArrayList<CatalogResourcePO>();
-        crPOList = catalogResourceDAO.getByCatalogId(id);
-
+    public int deleteCatalogNode(Long rentId, String user, Long id) throws Exception {
         CatalogNodePO cnPO = catalogNodeDAO.getCatalogNodeById(id);
-        if (!StringUtils.equals(user, cnPO.getCreator())) {
-            throw new RuntimeException("该用户没有权限删除。");
+        if(StringUtils.equalsAnyIgnoreCase(cnPO.getResourceName(),"基础类") ||
+                StringUtils.equalsAnyIgnoreCase(cnPO.getResourceName(),"主题类") ||
+                StringUtils.equalsAnyIgnoreCase(cnPO.getResourceName(),"部门类")){
+            throw new Exception("该节点不能删除");
         }
+        deleteCatalogNode(rentId, cnPO);
 
-        if (crPOList != null && crPOList.size() > 0) {
-            throw new RuntimeException("该信息资源分类下存在节点，请先删除信息资源细目后再处理。");
-        } else {
-            catalogNodeDAO.deleteByNodeId(id);
-        }
+//        List<CatalogResourcePO> crPOList = catalogResourceDAO.getByCatalogId(id);
+
+//        CatalogNodePO cnPO = catalogNodeDAO.getCatalogNodeById(id);
+//        if (!StringUtils.equals(user, cnPO.getCreator())) {
+//            throw new Exception("该用户没有权限删除。");
+//        }
+
+
+//        if (crPOList != null && crPOList.size() > 0) {
+//            throw new Exception("该信息资源分类下存在节点，请先删除信息资源目录后再处理。");
+//        } else {
+//
+//            //删除节点需要测试该节点是否作为父节点
+//            List<CatalogNodePO> childrenNodeList = catalogNodeDAO.getCatalogByParentId(rentId, id);
+//            if(childrenNodeList==null || childrenNodeList.size()==0){
+//                catalogNodeDAO.deleteByNodeId(id);
+//            }else{
+//                for(CatalogNodePO cnPO:childrenNodeList) {
+//                    List<CatalogResourcePO> childrenCRList = catalogResourceDAO.getByCatalogId(cnPO.getId());
+//                    if (childrenCRList != null && childrenCRList.size() > 0) {
+//                        throw new Exception("该信息资源分类下存在子节点，并且已经被信息资源使用，请先删除信息资源目录后再处理,"
+//                        +"节点名称为 "+cnPO.getResourceName()+ " 节点编码为 "+cnPO.getResourceEncode());
+//                    }else{
+//                        catalogNodeDAO.deleteByNodeId(cnPO.getId());
+//                    }
+//                }
+//            }
+//        }
         return 0;
     }
 
-    @Override
-    public List<CatalogNodeVO> getAllCatalogNode() {
+    @Transactional(rollbackFor = Exception.class)
+    private void deleteCatalogNode(Long rentId, CatalogNodePO cnPO)throws Exception{
+        List<CatalogResourcePO> crPOList = catalogResourceDAO.getByCatalogId(cnPO.getId());
+        if (CollectionUtils.isNotEmpty(crPOList)) {
+            throw new Exception("该信息资源分类下存在节点，请先删除信息资源目录后再处理。节点名称为 "
+                    +cnPO.getResourceName()+ " 节点编码为 "+cnPO.getResourceEncode());
+        } else {
 
-        List<CatalogNodePO> catalogPOList = catalogNodeDAO.getAllCatalogNodes();
+            //删除节点需要测试该节点是否作为父节点
+            List<CatalogNodePO> childrenNodeList = catalogNodeDAO.getCatalogByParentId(rentId, cnPO.getId());
+            if(CollectionUtils.isNotEmpty(childrenNodeList)){
+                for(CatalogNodePO tmpCNPO:childrenNodeList) {
+                    deleteCatalogNode(rentId, tmpCNPO);
+                }
+            }
+            catalogNodeDAO.deleteByNodeId(cnPO.getId());
+        }
+    }
+
+    private void InitCatalogNode(Long rentId, String user){
+        List<CatalogNodePO> initCatalogNode = new ArrayList<>();
+        initCatalogNode.add(new CatalogNodePO("基础类","1", rentId, user));
+        initCatalogNode.add(new CatalogNodePO("主题类","2", rentId, user));
+        initCatalogNode.add(new CatalogNodePO("部门类","3", rentId, user));
+        catalogNodeDAO.insertList(initCatalogNode);
+    }
+
+    @Override
+    public List<CatalogNodeVO> getAllCatalogNode(Long rentId, String user) {
+
+        List<CatalogNodePO> catalogPOList = catalogNodeDAO.getAllCatalogNodesByRentId(rentId);
+
+        //如果数据库未初始化，在代码中根据租户信息，自动初始化
+        if(CollectionUtils.isEmpty(catalogPOList)) {
+            InitCatalogNode(rentId, user);
+            catalogPOList = catalogNodeDAO.getAllCatalogNodesByRentId(rentId);
+        }
+
         List<CatalogNodeVO> catalogVOList = transferPOToVO(catalogPOList);
-        if (catalogPOList != null) {
+        if (CollectionUtils.isNotEmpty(catalogPOList)) {
 //            catalogVOList = bulidTreeNetwork(catalogVOList);
             catalogVOList = buildByRecursive(catalogVOList);
         }
         return catalogVOList;
     }
 
-    //为方便判断需要查看节点是否继续有子节点，方便前段做处理
+    /**
+     * 构建特定节点为子节点的分类树
+     * @param rentId
+     * @param id
+     * @return
+     */
     @Override
-    public List<CatalogNodeVO> getCatalogNodeSubtree(Long id) {
+    public List<CatalogNodeVO> getCatalogNodeSubtree(Long rentId, String user, Long id) {
 
-        List<CatalogNodePO> catalogPOList = catalogNodeDAO.getCatalogByParentId(id);
-        List<CatalogNodeVO> catalogVOList = transferPOToVO(catalogPOList);
-        List<Long> idList = catalogNodeDAO.getCatalogParentList();
+//        List<CatalogNodePO> catalogPOList = getCatalogSubNode(rentId, id);
+//        catalogPOList.add(catalogNodeDAO.getCatalogNodeById(id));
+//        List<CatalogNodeVO> catalogVOList = transferPOToVO(catalogPOList);
+//        if (catalogPOList != null) {
+////            catalogVOList = bulidTreeNetwork(catalogVOList);
+//            catalogVOList = buildByRecursive(id, catalogVOList);
+//        }
+//        return catalogVOList;
 
-        List<CatalogNodeVO> catalogNodeChildList = new ArrayList<CatalogNodeVO>();
-        for (CatalogNodeVO catalog : catalogVOList) {
-            CatalogNodeVO catalogNode = catalog;
-            if (idList.contains(catalog.getId())) {
-                catalogNode.setHasChildFlag(true);
+
+        CatalogNodePO catalogNode = catalogNodeDAO.getCatalogNodeById(id);
+        List<CatalogNodePO> catalogPOList = catalogNodeDAO.getAllCatalogNodesByRentId(rentId);
+
+        List<CatalogNodeVO> catalogVOList = null;
+        List<CatalogNodePO> catalogFinalList = new ArrayList<>();
+        if(catalogNode!=null) {
+            catalogFinalList.add(catalogNode);
+            for (CatalogNodePO cnPO : catalogPOList) {
+                if (cnPO.getDept() > catalogNode.getDept()) {
+                    catalogFinalList.add(cnPO);
+                }
             }
-            catalogNodeChildList.add(catalog);
+            catalogVOList = transferPOToVO(catalogFinalList);
+            if (catalogVOList != null) {
+                catalogVOList = buildByRecursive(catalogNode.getParentId(), catalogVOList);
+            }
+        }else{
+            catalogFinalList.addAll(catalogPOList);
+            List<CatalogNodeVO> catalogAllVO = transferPOToVO(catalogFinalList);
+            if (catalogAllVO != null) {
+                catalogVOList = buildByRecursive(catalogAllVO);
+            }
         }
-//        CatalogNodePO parentNodePO =  catalogNodeDAO.getCatalogNodeById(id);
-//        CatalogNodeVO parentNodeVO = transferPOToVO(parentNodePO);//
-//        parentNodeVO.setChildren(catalogVOList);
 
-        return catalogNodeChildList;
+        return catalogVOList;
+    }
+
+    /**
+     * 构建特定节点为子节点的分类树
+     * @param rentId
+     * @param id
+     * @return
+     */
+    @Override
+    public List<CatalogNodeVO> getCatalogNodeSubtree(Long rentId, String user, Long id, Long depth) {
+
+        List<CatalogNodeVO> catalogVOList = null;
+        List<CatalogNodePO> catalogPOList = new ArrayList<>();
+        if(id==null || id.equals(0L)){
+            catalogPOList = catalogNodeDAO.getByParentFullCodeByRentId(rentId, "0");
+            if(CollectionUtils.isEmpty(catalogPOList)){
+                InitCatalogNode(rentId, user);
+                catalogPOList = catalogNodeDAO.getByParentFullCodeByRentId(rentId, "0");
+            }
+            if(CollectionUtils.isNotEmpty(catalogPOList)){
+                catalogVOList = transferPOToVO(catalogPOList);
+                for(CatalogNodePO cPO:catalogPOList){
+                    List<CatalogNodePO> cnList =  catalogNodeDAO.getByParentFullCodeByRentId(rentId, cPO.getResourceEncode());
+                    if(CollectionUtils.isNotEmpty(cnList)){
+                        catalogVOList.addAll(transferPOToVO(cnList));
+                    }
+                }
+            }
+            if (catalogVOList != null) {
+                catalogVOList = getCatalogTree(0L, catalogVOList);
+            }
+        }else{
+            CatalogNodePO cnPO = catalogNodeDAO.getCatalogNodeById(id);
+            String fullCode = null;
+            if(cnPO.getParentFullCode().equals("0")){
+                fullCode = cnPO.getResourceEncode();
+            }else{
+                fullCode = cnPO.getParentFullCode()+cnPO.getResourceEncode();
+            }
+            catalogPOList.add(cnPO);
+            List<CatalogNodePO> cPOList = catalogNodeDAO.getObscureByParentFullCodeAndRentId(rentId, fullCode, cnPO.getDept()+depth);
+            if(CollectionUtils.isNotEmpty(cPOList)){
+                catalogPOList.addAll(cPOList);
+            }
+            catalogVOList = transferPOToVO(catalogPOList);
+            if (catalogVOList != null) {
+                catalogVOList = getCatalogTree(cnPO.getId(), catalogVOList); //buildByRecursive(cnPO.getId(), catalogVOList);
+            }
+        }
+        return catalogVOList;
+    }
+
+    private List<CatalogNodeVO> getCatalogTree(Long parentId, List<CatalogNodeVO> originList){
+        List<CatalogNodeVO> goalList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(originList)){
+            return null;
+        }
+
+        boolean ownParentFlag = false;
+        for(CatalogNodeVO nodeVO :originList){
+            if(nodeVO.getParentId().equals(parentId)){
+                goalList.add(nodeVO);
+                ownParentFlag = true;
+            }
+        }
+        if(!ownParentFlag){
+            return null;
+        }
+
+        for(CatalogNodeVO vo:goalList){
+           for(CatalogNodeVO son: originList){
+                if(son.getParentId().equals(vo.getId())){
+                   vo.setHasChildFlag(true);
+                   break;
+                }
+           }
+        }
+        return goalList;
+    }
+
+    private List<CatalogNodePO> getCatalogSubNode(Long rentId, Long id){
+        List<CatalogNodePO> nodeList = new ArrayList<>();
+        List<CatalogNodePO> catalogPOList = catalogNodeDAO.getCatalogByParentId(rentId, id);
+        if(CollectionUtils.isEmpty(catalogPOList)){
+            return null;
+        }
+        for(CatalogNodePO nodePO:catalogPOList){
+            List<CatalogNodePO> poList=getCatalogSubNode(rentId, nodePO.getId());
+            if(poList!=null&&poList.size()>0) {
+               nodeList.addAll(poList);
+            }
+        }
+        return nodeList;
     }
 
 
@@ -158,7 +333,7 @@ public class CatalogClassifyServiceImpl implements ICatalogClassifyService {
         }
 
         String fileOriginName = multiPartFile.getOriginalFilename();
-        if (!batchTools.verifyExcel(fileOriginName)) {
+        if (!ExcelUtils.verifyExcel(fileOriginName)) {
             throw new Exception("上传文件格式不符合要求");
         }
         //文件大小过滤
@@ -181,19 +356,21 @@ public class CatalogClassifyServiceImpl implements ICatalogClassifyService {
     }
 
     @Override
-    public void processExcel(String user, String fileName) throws Exception {
+    public void processExcel(Long rentId, String user, String fileName) throws Exception {
         if (StringUtils.isEmpty(fileName)) {
             throw new Exception("文件名为空");
         }
+
         String filePath = FileUtils.getFileDirByType("excel") + File.separator + fileName;
         List<CatalogNodeVO> cnList = batchTools.readExcelCatalogValue(new File(filePath));
-        batchTools.saveExcelCatalogNode(user, cnList);
+        LOG.info("Excel批量导入资源分类数量 {}", cnList.size());
+        batchTools.saveExcelCatalogNode(rentId, user, cnList);
         FileUtils.deletefile(filePath);
     }
 
 
     @Transactional(rollbackFor = Exception.class)
-    public void saveExcelCatalogNode(String user, List<CatalogNodeVO> cnVOList) throws Exception {
+    public void saveExcelCatalogNode(Long rentId, String user, List<CatalogNodeVO> cnVOList) throws Exception {
 
         //Code 和 Id 的映射关系
         Map<String, Long> codeIdMap = new HashMap<String, Long>();
@@ -214,7 +391,7 @@ public class CatalogClassifyServiceImpl implements ICatalogClassifyService {
             //去重
             String catalogCode = cnVO.getResourceEncode();
             List<CatalogNodePO> libNodeList = catalogNodeDAO
-                    .getCatalogByParentId(cnVO.getParentId());
+                    .getCatalogByParentId(rentId, cnVO.getParentId());
             CatalogNodePO sameNode = null;
             for (CatalogNodePO libNode : libNodeList) {
                 if (StringUtils.equals(libNode.getResourceEncode(), catalogCode)) {
@@ -236,21 +413,36 @@ public class CatalogClassifyServiceImpl implements ICatalogClassifyService {
         }
     }
 
+    /**
+     * 根据租户和分类名称获取分类列表
+     *
+     * @param rentId
+     * @param catalogName
+     * @return
+     */
+    @Override
+    public List<CatalogNodePO> getCatalogNodeByCatalogName(Long rentId, String catalogName, Long depth) {
+        return catalogNodeDAO.getCatalogNodeByCatalogName(rentId, catalogName, depth);
+    }
+
     /*判断同一节点下面是否有 相同名字或资源编码的节点*/
-    private Boolean ownSameNameOrCode(CatalogNodeVO node) {
+    private Boolean ownSameNameOrCode(Long rentId, CatalogNodeVO node) throws Exception {
 
         Long nodeId = node.getId();
-        if (nodeId != null && nodeId != 0) {
-            return false;
-        }
+//        if (nodeId != null && nodeId != 0) {
+//            return false;
+//        }
         Long parentId = node.getParentId();
-        List<CatalogNodePO> catalogPOList = catalogNodeDAO.getCatalogByParentId(parentId);
+        List<CatalogNodePO> catalogPOList = catalogNodeDAO.getCatalogByParentId(rentId, parentId);
 
         if (catalogPOList != null) {
             for (CatalogNodePO nodePo : catalogPOList) {
-                if (StringUtils.equals(nodePo.getResourceName(), node.getResourceName()) ||
+                if(nodePo.getId().equals(nodeId)){
+                    continue;
+                }else if(StringUtils.equals(nodePo.getResourceName(), node.getResourceName()) ||
                         StringUtils.equals(nodePo.getResourceEncode(), node.getResourceEncode())) {
-                    return true;
+                    throw new Exception("和同一资源分类下其它节点名称或者编码冲突，节点名称 "+
+                            nodePo.getResourceName()+"，编码 "+ nodePo.getResourceEncode());
                 }
             }
         }
@@ -319,7 +511,7 @@ public class CatalogClassifyServiceImpl implements ICatalogClassifyService {
             }
 
             for (CatalogNodeVO it : treeNodes) {
-                if (it.getParentId() == treeNode.getId()) {
+                if (it.getParentId().equals(treeNode.getId())) {
                     if (treeNode.getChildren() == null) {
                         treeNode.setChildren(new ArrayList<CatalogNodeVO>());
                     }
@@ -343,6 +535,20 @@ public class CatalogClassifyServiceImpl implements ICatalogClassifyService {
         return trees;
     }
 
+
+    /**
+     * 构建特定节点为根节点字数
+     */
+    private List<CatalogNodeVO> buildByRecursive(Long parentId, List<CatalogNodeVO> treeNodes) {
+        List<CatalogNodeVO> trees = new ArrayList<CatalogNodeVO>();
+        for (CatalogNodeVO treeNode : treeNodes) {
+            if (treeNode.getParentId().equals(parentId)) {
+                trees.add(findChildren(treeNode, treeNodes));
+            }
+        }
+        return trees;
+    }
+
     /**
      * 递归查找子节点
      */
@@ -353,13 +559,16 @@ public class CatalogClassifyServiceImpl implements ICatalogClassifyService {
                     treeNode.setChildren(new ArrayList<CatalogNodeVO>());
                 }
                 treeNode.getChildren().add(findChildren(it, treeNodes));
+                if(treeNode.getChildren()!=null){
+                    treeNode.setHasChildFlag(true);
+                }
             }
         }
         return treeNode;
     }
 
 
-    private Long addCatalogNode(String user, CatalogNodeVO node) {
+    private Long addCatalogNode(Long rentId, String user, CatalogNodeVO node) {
 
         CatalogNodePO catalogNodePO = new CatalogNodePO();
         Long parentId = node.getParentId();
@@ -372,6 +581,7 @@ public class CatalogClassifyServiceImpl implements ICatalogClassifyService {
             parentNode = catalogNodeDAO.getCatalogNodeById(parentId);
             depth = parentNode.getDept() + 1;
         }
+        catalogNodePO.setRentId(rentId);
         catalogNodePO.setParentFullCode(node.getParentFullCode());
         catalogNodePO.setDept(depth);
         catalogNodePO.setResourceEncode(node.getResourceEncode());
@@ -400,7 +610,7 @@ public class CatalogClassifyServiceImpl implements ICatalogClassifyService {
 
     private List<CatalogNodeVO> transferPOToVO(List<CatalogNodePO> catalogNodePOList) {
         List<CatalogNodeVO> catalogVOList = new ArrayList<CatalogNodeVO>();
-        if (catalogNodePOList == null) {
+        if (CollectionUtils.isEmpty(catalogNodePOList)) {
             return null;
         }
         for (CatalogNodePO catalogNodePO : catalogNodePOList) {

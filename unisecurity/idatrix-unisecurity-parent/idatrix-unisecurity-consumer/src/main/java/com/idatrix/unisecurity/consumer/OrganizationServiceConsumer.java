@@ -6,6 +6,8 @@ import com.idatrix.unisecurity.common.utils.GsonUtil;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.util.List;
+
 /**
  * @ClassName OrganizationServiceConsumer
  * @Description TODO
@@ -23,7 +25,7 @@ public class OrganizationServiceConsumer {
         /*OrganizationService organizationService = (OrganizationService) applicationContext.getBean("userInfoSyncService");
         List<Long> ids = organizationService.findByName(null, "部门");
         System.out.println(ids.toString());*/
-        findAscriptionDeptByUserId();
+        findByCodes();
     }
 
     public static void findById() {
@@ -45,6 +47,11 @@ public class OrganizationServiceConsumer {
     public static void findAscriptionDeptByUserId() {
         Organization organization = organizationService.findAscriptionDeptByUserId(1287l);
         System.out.println(GsonUtil.toJson(organization));
+    }
+
+    public static void findByCodes() {
+        List<Organization> list = organizationService.findByCodes("651984161291");
+        System.out.println(GsonUtil.toJson(list));
     }
 
 }

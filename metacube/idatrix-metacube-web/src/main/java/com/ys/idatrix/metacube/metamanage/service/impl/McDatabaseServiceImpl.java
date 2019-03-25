@@ -1,9 +1,12 @@
 package com.ys.idatrix.metacube.metamanage.service.impl;
 
-import com.ys.idatrix.graph.service.api.def.DatabaseType;
+import com.ys.idatrix.db.api.common.RespResult;
+import com.ys.idatrix.db.api.rdb.dto.RdbLinkDto;
+import com.ys.idatrix.db.api.rdb.service.RdbService;
 import com.ys.idatrix.graph.service.api.dto.node.DatabaseNodeDto;
 import com.ys.idatrix.metacube.api.beans.DatabaseTypeEnum;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
+import com.ys.idatrix.metacube.common.helper.GraphDatabaseTypeConvert;
 import com.ys.idatrix.metacube.common.utils.UserUtils;
 import com.ys.idatrix.metacube.dubbo.consumer.GraphConsumer;
 import com.ys.idatrix.metacube.metamanage.domain.McDatabasePO;
@@ -11,7 +14,7 @@ import com.ys.idatrix.metacube.metamanage.domain.McServerPO;
 import com.ys.idatrix.metacube.metamanage.mapper.McDatabaseMapper;
 import com.ys.idatrix.metacube.metamanage.service.McDatabaseService;
 import com.ys.idatrix.metacube.metamanage.service.McServerService;
-import com.ys.idatrix.metacube.metamanage.service.SystemSettingsService;
+import com.ys.idatrix.metacube.sysmanage.service.SystemSettingsService;
 import com.ys.idatrix.metacube.metamanage.vo.request.DatabaseServerAggregationVO;
 import java.sql.SQLException;
 import java.util.List;
@@ -38,6 +41,9 @@ public class McDatabaseServiceImpl implements McDatabaseService {
 
     @Autowired
     private GraphConsumer graphConsumer;
+
+    @Autowired
+    private RdbService rdbService;
 
     private McServerPO getServerById(Long serverId) {
         return serverService.getServerById(serverId);
@@ -71,7 +77,7 @@ public class McDatabaseServiceImpl implements McDatabaseService {
     @Override
     public McDatabasePO insert(McDatabasePO databasePO) {
         McServerPO serverPO = getServerById(databasePO.getServerId());
-        checkUniqueness(databasePO.getType(), serverPO.getIp(), databasePO.getRenterId());
+        checkUniqueness(databasePO.getType(), serverPO.getIp(), serverPO.getRenterId());
         databasePO.setRenterId(serverPO.getRenterId());
         databaseMapper.insert(databasePO);
 
@@ -79,35 +85,14 @@ public class McDatabaseServiceImpl implements McDatabaseService {
         if (databasePO.getType() != DatabaseTypeEnum.ELASTICSEARCH.getCode()) {
             DatabaseNodeDto nodeDto = new DatabaseNodeDto();
             nodeDto.setDatabaseId(databasePO.getId());
-            nodeDto.setDatabaseType(getGraphDatabaseType(databasePO.getType()));
+            nodeDto.setDatabaseType(
+                    GraphDatabaseTypeConvert.getGraphDatabaseType(databasePO.getType()));
             nodeDto.setRenterId(serverPO.getRenterId());
             nodeDto.setServerId(serverPO.getId());
             graphConsumer.createDatabaseNode(nodeDto);
         }
 
         return databasePO;
-    }
-
-    private DatabaseType getGraphDatabaseType(int type) {
-        if (type == DatabaseTypeEnum.MYSQL.getCode()) {
-            return DatabaseType.MySQL;
-        }
-        if (type == DatabaseTypeEnum.ORACLE.getCode()) {
-            return DatabaseType.Oracle;
-        }
-        if (type == DatabaseTypeEnum.POSTGRESQL.getCode()) {
-            return DatabaseType.PostgreSQL;
-        }
-        if (type == DatabaseTypeEnum.HDFS.getCode()) {
-            return DatabaseType.HDFS;
-        }
-        if (type == DatabaseTypeEnum.HIVE.getCode()) {
-            return DatabaseType.Hive;
-        }
-        if (type == DatabaseTypeEnum.HBASE.getCode()) {
-            return DatabaseType.Hbase;
-        }
-        return null;
     }
 
     /**
@@ -173,10 +158,10 @@ public class McDatabaseServiceImpl implements McDatabaseService {
         if (databasePO == null) {
             return;
         }
-        if (databasePO.getType() != DatabaseTypeEnum.MYSQL.getCode()
-                && databasePO.getType() != DatabaseTypeEnum.ORACLE.getCode()) {
-            throw new MetaDataException("非法操作,不支持注销该类型的数据库");
-        }
+//        if (databasePO.getType() != DatabaseTypeEnum.MYSQL.getCode()
+//                && databasePO.getType() != DatabaseTypeEnum.ORACLE.getCode()) {
+//            throw new MetaDataException("非法操作,不支持注销该类型的数据库");
+//        }
         databasePO.setIsDeleted(1).fillModifyInfo(databasePO, username);
         databaseMapper.update(databasePO);
 
@@ -202,15 +187,6 @@ public class McDatabaseServiceImpl implements McDatabaseService {
         return getDatabaseById(databasePO.getId());
     }
 
-    /**
-     * 获取数据库列表
-     *
-     * @param orgCode 用户所属组织
-     */
-    @Override
-    public List<McDatabasePO> list(String orgCode) {
-        return null;
-    }
 
     /**
      * 获取数据库列表
@@ -218,7 +194,20 @@ public class McDatabaseServiceImpl implements McDatabaseService {
      * @param dbIds 数据库id列表
      */
     @Override
-    public List<DatabaseServerAggregationVO> list(List<Long> dbIds) {
-        return databaseMapper.listDatabaseByDbIds(dbIds);
+    public List<DatabaseServerAggregationVO> list(List<Long> dbIds, Long renterId,
+            List<Integer> dbTypes) {
+        return databaseMapper.listDatabaseByDbIds(dbIds, renterId, dbTypes);
+    }
+
+    /**
+     * 测试连接
+     */
+    @Override
+    public RespResult<Boolean> testDbLink(RdbLinkDto dto) {
+        RespResult<Boolean> result = rdbService.testDBLink(dto);
+        if (!result.isSuccess()) {
+            throw new MetaDataException(result.getMsg());
+        }
+        return result;
     }
 }

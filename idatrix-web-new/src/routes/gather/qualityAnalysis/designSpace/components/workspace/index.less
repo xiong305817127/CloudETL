@@ -1,0 +1,72 @@
+.workspace{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .spaceheader{
+        background: #F4F5F7;
+        margin-left:-1px;
+
+        :global{
+            .ant-tabs-bar{
+                padding: 0px;
+                margin: 0px;
+                margin-bottom: 0;
+                border-top-left-radius: 10px;
+                border-top-right-radius: 10px;
+            }
+            .ant-tabs-tabpane{
+                display: none;
+            }
+            .anticon-close:before{
+                top:1px;
+                right: 1px;
+            }
+            .ant-tabs.ant-tabs-card > .ant-tabs-bar .ant-tabs-nav-container{
+                max-width: 850px;
+            }
+        }
+    }
+
+    .spacecontent{
+        height: 100%;
+
+        .fucBtn{
+            padding-top: 20px;
+    
+            :global{
+                .ant-btn-group{
+                    margin-left: 20px;
+                }
+            }
+        }
+    }
+}
+
+
+@media (min-width: 1440px) {
+    .workspace{
+        :global{
+            .ant-tabs.ant-tabs-card > .ant-tabs-bar .ant-tabs-nav-container{ max-width: 1100px; }
+        }
+    }
+}
+  
+@media (min-width: 1680px) {
+    .workspace{
+        :global{
+            .ant-tabs.ant-tabs-card > .ant-tabs-bar .ant-tabs-nav-container{ max-width: 1250px; }
+        }
+    }
+}
+  
+@media (min-width: 1920px) {
+    .workspace{
+        :global{
+            .ant-tabs.ant-tabs-card > .ant-tabs-bar .ant-tabs-nav-container{ max-width: 1450px; }
+        }
+    }
+}
+  
+  

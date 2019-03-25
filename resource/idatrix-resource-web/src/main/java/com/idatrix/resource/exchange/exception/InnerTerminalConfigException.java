@@ -5,11 +5,11 @@ package com.idatrix.resource.exchange.exception;
  */
 public class InnerTerminalConfigException extends Exception {
 
-    private Integer errorCode = 6002001;
+    private String errorCode = "6002003";
 
     private String message ;
 
-    public InnerTerminalConfigException(Integer errorCode, String message) {
+    public InnerTerminalConfigException(String errorCode, String message) {
         super(message);
         this.errorCode = errorCode;
         this.message = message;
@@ -20,11 +20,11 @@ public class InnerTerminalConfigException extends Exception {
         this.message = message;
     }
 
-    public Integer getErrorCode() {
+    public String getErrorCode() {
         return errorCode;
     }
 
-    public void setErrorCode(Integer errorCode) {
+    public void setErrorCode(String errorCode) {
         this.errorCode = errorCode;
     }
 
