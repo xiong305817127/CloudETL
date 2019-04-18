@@ -498,6 +498,7 @@ class frontlist extends React.Component {
     const { setFieldsValue } = this.props.form;
     getDeptServer(parseInt(label[label.length - 1].value)).then(res => {
       const { code, data } = res.data;
+      console.log(data,"data=====================");
       if (code === "200") {
         setFieldsValue({
           tmName: "",
@@ -693,7 +694,7 @@ class frontlist extends React.Component {
                   placeholder="请选择部门"
                   displayRender={displayRender}
                   options={departmentsTree}
-                  onChange={this.onChange}
+                  onChange={this.onChange.bind(this)}
                   expandTrigger="hover"
                   style={{ width: "100%" }}
                 />
@@ -712,14 +713,14 @@ class frontlist extends React.Component {
                   onChange={this.handleChange}
                   style={{ width: "100%" }}
                 >
-                  {dataServer.map((index, text) => (
+                  {dataServer?dataServer.map((index, text) => (
                     <Option
                       key={index.id}
                       value={index.serverName + "," + index.serverIp}
                     >
                       {index.serverName}
                     </Option>
-                  ))}
+                  )):[]}
                 </Select>
               )}
             </FormItem>

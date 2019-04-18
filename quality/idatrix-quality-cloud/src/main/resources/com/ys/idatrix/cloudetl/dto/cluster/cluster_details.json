@@ -1,0 +1,13 @@
+{
+    "name": "cluster schema name",
+    "port": "port number, default 40000",
+    "buffer": "default 2000",
+    "rows": "default 5000",
+    "compress": true,
+    "dynamic": false,
+    "servers": [
+        {
+            "serverName": "server name"
+        }
+    ]
+}

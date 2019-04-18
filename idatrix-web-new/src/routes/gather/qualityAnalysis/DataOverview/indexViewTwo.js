@@ -1,10 +1,11 @@
 import React from 'react'
-import { Table, Form, Button,Select,Icon,Tooltip,DatePicker } from 'antd';
+import { Table, Popover, Button,Select,Icon,Tooltip,DatePicker } from 'antd';
 import { connect } from 'dva';
 import styles from "./style.less";
 import Modal from 'components/Modal';
 const Option = Select.Option;
 import moment from 'moment';
+import { select } from 'redux-saga/effects';
 
 const { MonthPicker, RangePicker } = DatePicker;
 const dateFormat = 'YYYY-MM';
@@ -13,7 +14,12 @@ class index extends React.Component {
    constructor(props) {
        super(props);
        this.state = {
-           optionBor:[]
+           optionBor:[],
+           status:"",
+           visible: false,
+           visible1: false,
+           visible2: false,
+           visible3: false
        };
    }
     //注册量详情表
@@ -219,91 +225,67 @@ class index extends React.Component {
       dispatch({ type: "DataOverviewModel/getresources", payload: { resourceType:2 }  });
   }
     //接口调用次数
-    expandedRowRenderServer = (record, index, indent, expanded) => {
-         const {ServicesList} =this.props.DataOverviewModel;
-         const columns = [
-         { title: '通用时间', dataIndex: 'callTime', key: 'callTime' },
-         { title: '客户端IP', dataIndex: 'ip', key: 'ip' },
-         { title: '是否成功', dataIndex: 'success', key: 'success' },
-         { title: '返回数据量', dataIndex: 'count', key: 'count' } ];
-         return (
-         <Table columns={columns}  dataSource={ServicesList ?ServicesList:[]}  pagination={false} />
-         );
-   };
-   //接口调用次数 调用子组件接口
-   onExpandServer=(expanded, record)=>{  const {dispatch}=this.props;dispatch({ type: "DataOverviewModel/getServicesList",payload:{serviceCode:record.serviceCode}})}
+    expandedRowRenderServer = [
+         { title: '通用时间', dataIndex: 'callTime', key: 'callTime',width:"30%" },
+         { title: '客户端IP', dataIndex: 'ip', key: 'ip',width:"30%" },
+         { title: '是否成功', dataIndex: 'success', key: 'success',width:"20%" },
+         { title: '返回数据量', dataIndex: 'count', key: 'count',width:"20%" } 
+        ];
+
+   expandedRowRenderServerBind=(res)=>{
+      const {dispatch}=this.props;
+      dispatch({ type: "DataOverviewModel/save",payload:{visible:true}});
+      dispatch({ type: "DataOverviewModel/getServicesList",payload:{serviceCode:res.serviceCode}})
+      this.setState({
+        status:"expandedRowRenderServerBind"
+      })
+   }
 
      //数据调用量
-    RenderServer = (record, index, indent, expanded) => {
-       console.log(record, index, indent, expanded,"record, index, indent, expanded");
-      const {ServicesListData} =this.props.DataOverviewModel;
-      const columns = [
-         { title: '通用时间', dataIndex: 'callTime', key: 'callTime' },
-         { title: '客户端IP', dataIndex: 'ip', key: 'ip' },
-         { title: '是否成功', dataIndex: 'success', key: 'success' },
-         { title: '返回数据量', dataIndex: 'count', key: 'count' } ];
-      return (
-      <Table columns={columns}  dataSource={ServicesListData?ServicesListData:[]}  pagination={false} />
-      );
-   };
-
-   //数据调用量 调用子组件接口
-   onExpandServerData=(expanded, record)=>{  const {dispatch}=this.props;dispatch({ type: "DataOverviewModel/getServicesListData",payload:{serviceCode:record.serviceCode}})}
-
+    RenderServer = [
+         { title: '通用时间', dataIndex: 'callTime', key: 'callTime',width:"30%" },
+         { title: '客户端IP', dataIndex: 'ip', key: 'ip',width:"30%" },
+         { title: '是否成功', dataIndex: 'success', key: 'success',width:"20%" },
+         { title: '返回数据量', dataIndex: 'count', key: 'count',width:"20%" }
+    ];
+    RenderServerBind=(res)=>{
+        const {dispatch}=this.props;
+        dispatch({ type: "DataOverviewModel/save",payload:{visible:true}});
+        dispatch({ type: "DataOverviewModel/getServicesListData",payload:{serviceCode:res.serviceCode}})
+        this.setState({
+          status:"RenderServerBind"
+        })
+    }
 
   //上报任务数据量
-   expandedRowRender = () => {
-      const {ReportListData} =this.props.DataOverviewModel;
-      const columns = [
-      { title: '作业名称', dataIndex: 'taskName', key: 'taskName' },
-      { title: '创建时间', dataIndex: 'createTime', key: 'createTime' } ];
-      return (
-      <Table columns={columns}  dataSource={ReportListData?ReportListData:[]}  pagination={false} />
-      );
-   };
- //上报任务数据量 调用子组件接口
- onExpandedExpanded=(expanded, record)=>{  const {dispatch}=this.props;dispatch({ type: "DataOverviewModel/getreportList",payload:{deptCode:record.deptCode}})}
-
-
-     //上报数据量
-   //   expandedRowRenderCount = () => {
-   //    const {CountByTheAmountOfData} =this.props.DataOverviewModel;
-   //    const columns = [
-   //    { title: '作业名称', dataIndex: 'date', key: 'date' },
-   //    { title: '创建事件', dataIndex: 'name', key: 'name' } ];
-   //    return (
-   //    <Table columns={columns}  dataSource={CountByTheAmountOfData}  pagination={false} />
-   //    );
-   // };
+  expandedRowRender=[
+    { title: '作业名称', dataIndex: 'taskName', key: 'taskName' },
+    { title: '创建时间', dataIndex: 'createTime', key: 'createTime' }
+   ];
+    expandedRowRenderBind=(res)=>{
+      const {dispatch}=this.props;
+        dispatch({ type: "DataOverviewModel/save",payload:{visible:true}});
+        dispatch({ type: "DataOverviewModel/getreportList",payload:{deptCode:res.deptCode}});
+        this.setState({
+          status:"expandedRowRenderBind"
+        })
+    }
 
         //交换作业量
-     expandedRowRenderTask = () => {
-         const {ExchangeListData} =this.props.DataOverviewModel;
-         const columns = [
-         { title: '执行开始时间', dataIndex: 'startTime', key: 'startTime' },
-         { title: '是否成功', dataIndex: 'status', key: 'status' },
-         { title: '处理数据量', dataIndex: 'count', key: 'count' } ];
-         return (
-         <Table columns={columns}  dataSource={ExchangeListData}  pagination={false} />
-         );
-      };
+     expandedRowRenderTask =[
+         { title: '执行开始时间', dataIndex: 'startTime', key: 'startTime',width:"40%" },
+         { title: '是否成功', dataIndex: 'status', key: 'status',width:"30%" },
+         { title: '处理数据量', dataIndex: 'count', key: 'count',width:"30%" } ];
 
-       //上报任务数据量 调用子组件接口
- onExpandExpanded=(expanded, record)=>{  const {dispatch}=this.props;dispatch({ type: "DataOverviewModel/getExchangeList",payload:{deptId:record.deptId}})}
+     expandedRowRenderTaskBind=(record)=>{
+          const {dispatch}=this.props;
+          dispatch({ type: "DataOverviewModel/save",payload:{visible:true}});
+          dispatch({ type: "DataOverviewModel/getExchangeList",payload:{deptId:record.deptId}})
+          this.setState({
+            status:"expandedRowRenderTaskBind"
+          })
+      }
 
-
-
-      //交换数据量
-      // RenderTask = () => {
-      //    const {NumberOfTasksData} =this.props.DataOverviewModel;
-      //    const columns = [
-      //    { title: '执行开始时间', dataIndex: 'date', key: 'date' },
-      //    { title: '是否成功', dataIndex: 'name', key: 'name' },
-      //    { title: '处理数据量', dataIndex: 'names', key: 'names' } ];
-      //    return (
-      //    <Table columns={columns}  dataSource={NumberOfTasksData}  pagination={false} />
-      //    );
-      // };
 
       onChange=(date, dateString)=>{
          const {dispatch}=this.props;
@@ -316,11 +298,21 @@ class index extends React.Component {
          dispatch({ type: "DataOverviewModel/getNumberOfTasks",payload:{startTime:dateString}});
       }
 
+      handleCancel=(e)=>{
+        const {dispatch}=this.props;
+        dispatch({ type: "DataOverviewModel/save",payload:{visible:false}});
+      }
+
+      handleVisibleChange = (visible) => { this.setState({ visible });}
+      handleVisibleChange1 = (visible1) => { this.setState({ visible1 });}
+      handleVisibleChange2 = (visible2) => { this.setState({ visible2 });}
+      handleVisibleChange3 = (visible3) => { this.setState({ visible3 });}
+
 
    render(){
       const {countList,resourcesData,ServerNumberOfCallsData,ServerNumberOfCalls,ServerByTheAmountOfData,ServerByTheAmountOf,ReptByNumberOfTasksData,ReptByNumberOfTasks,
-             CountByTheAmountOfData,CountByTheAmountOf,CountByNumberOfTasksData,CountByNumberOfTasks,NumberOfTasksData,NumberOfTasks} =this.props.DataOverviewModel;
-           
+             CountByTheAmountOfData,CountByTheAmountOf,CountByNumberOfTasksData,CountByNumberOfTasks,NumberOfTasksData,NumberOfTasks,visible,ServicesListData,ExchangeListData,
+             ReportListData,ServicesList } =this.props.DataOverviewModel;
       return(
          <div> 
              
@@ -330,42 +322,59 @@ class index extends React.Component {
                   </div>
                     <div className={styles.bordColor}  onClick={this.resourOnclick.bind(this)}>
                          <div >
-                              <Tooltip arrowPointAtCenter={true} trigger="click" placement="right"  overlayClassName="viweSpan" title={
-                                 <Table className={styles.loginlist} bordered dataSource={resourcesData} pagination={false} columns={this.columnslist}/>
-                              }>
+                           <Popover
+                              content={<Table bordered dataSource={resourcesData} pagination={false} columns={this.columnslist}/>}
+                              title="详情"
+                              trigger="click"
+                              visible={this.state.visible}
+                              onVisibleChange={this.handleVisibleChange.bind(this)}
+                            >
                               <p className={styles.bordTitle}>注册量</p>
                               <p className={styles.bordTitleColor}>{countList.registerCount}</p>
-                         </Tooltip>
+                            </Popover>     
                         </div>
                     </div>
                     <div className={styles.bordColor1} onClick={this.frequencyOnclick.bind(this)}>
                           <div>
-                              <Tooltip style={{width:500}} trigger="click" placement="right" title={
-                                 <span style={{width:500}}> <Table bordered dataSource={resourcesData} pagination={false} scroll={{y: 160}} columns={this.columnslist1} style={{width:500}}/></span>
-                              }>
+                          <Popover
+                              content={<Table bordered dataSource={resourcesData} pagination={false} scroll={{y: 160}} columns={this.columnslist1} style={{width:500}}/>}
+                              title="资源使用频率详情"
+                              trigger="click"
+                              visible={this.state.visible1}
+                              onVisibleChange={this.handleVisibleChange1.bind(this)}
+                            >
                               <p className={styles.bordTitle}>资源使用频率</p>
                               <p className={styles.bordTitleColor}>{countList.frequencyCount}</p>
-                         </Tooltip>
+                            </Popover>     
                          </div>
                     </div>
                     <div className={styles.bordColor2} onClick={this.releaseOnclick.bind(this)}>
                         <div>
-                              <Tooltip style={{width:500}} trigger="click" placement="right" title={
-                                 <span style={{width:500}}> <Table bordered dataSource={resourcesData} pagination={false} scroll={{y: 160}} columns={this.columnslist2} style={{width:500}}/></span>
-                              }>
-                              <p className={styles.bordTitle}>发布量</p>
-                              <p className={styles.bordTitleColor}>{countList.publicationCount}</p>
-                           </Tooltip>
+                          <Popover
+                              content={<Table bordered dataSource={resourcesData} pagination={false} scroll={{y: 160}} columns={this.columnslist2} style={{width:500}}/>}
+                              title="发布量详情"
+                              trigger="click"
+                              visible={this.state.visible2}
+                              onVisibleChange={this.handleVisibleChange2.bind(this)}
+                            >
+                               <p className={styles.bordTitle}>发布量</p>
+                               <p className={styles.bordTitleColor}>{countList.publicationCount}</p>
+                            </Popover>     
                          </div>
                     </div>
                     <div className={styles.bordColor3} onClick={this.subscriptionOnclick.bind(this)}>
                        <div>
-                           <Tooltip style={{width:500}} trigger="click" placement="right" title={
-                               <span style={{width:500}}> <Table bordered dataSource={resourcesData} pagination={false} scroll={{y: 160}} columns={this.columnslist3} style={{width:500}}/></span>
-                           }>
-                              <p className={styles.bordTitle}>订阅量</p>
-                              <p className={styles.bordTitleColor}>{countList.subscriptionCount}</p>
-                           </Tooltip>
+                       <Popover
+                              content={<Table bordered dataSource={resourcesData} pagination={false} scroll={{y: 160}} columns={this.columnslist3} style={{width:500}}/>}
+                              title="订阅量详情"
+                              trigger="click"
+                              visible={this.state.visible3}
+                              onVisibleChange={this.handleVisibleChange3.bind(this)}
+                            >
+                               <p className={styles.bordTitle}>订阅量</p>
+                               <p className={styles.bordTitleColor}>{countList.subscriptionCount}</p>
+                            </Popover>     
+                          
                         </div>
                         
                     </div>
@@ -376,18 +385,19 @@ class index extends React.Component {
                <div className={styles.leftTwoLeft}>
                         <div className={styles.leftRile}>
                             <h3 className={styles.leftTitleImg}>接口调用次数 &nbsp;&nbsp;<p className={styles.leftColor}><Icon type="copy" /> {ServerNumberOfCalls.total}</p> </h3>
-                            <Table className="components-table-demo-nested" columns={this.columnsInfo} expandedRowRender={this.expandedRowRenderServer}  rowKey="key" 
+                            <Table className="components-table-demo-nested" columns={this.columnsInfo}  onRowClick={(record)=>{this.expandedRowRenderServerBind(record)}} rowKey="key" 
                                 dataSource={ServerNumberOfCallsData}  scroll={{y: 160}} pagination={false} onExpand={this.onExpandServer}/>
                         </div>
                         <div className={styles.leftRile}>
                           <h3 className={styles.leftTitleImg}>数据调用量 &nbsp;&nbsp;<p className={styles.leftColor}><Icon type="project" /> {ServerByTheAmountOf.total}</p> </h3>
-                           <Table className="components-table-demo-nested" columns={this.columnsInfoCount} expandedRowRender={this.RenderServer} dataSource={ServerByTheAmountOfData} 
+                           <Table className="components-table-demo-nested" columns={this.columnsInfoCount} onRowClick={(record)=>{this.RenderServerBind(record)}} dataSource={ServerByTheAmountOfData} 
                                scroll={{y: 160}} pagination={false} onExpand={this.onExpandServerData} rowKey="key" />
                         </div>
                         <div className={styles.leftRile}>
                            <h3 className={styles.leftTitleImg}>上报任务数量 &nbsp;&nbsp;<p className={styles.leftColor}><Icon type="file-text" /> {ReptByNumberOfTasks.total}</p> </h3>
-                           <Table className="components-table-demo-nested" columns={this.columnsExit} expandedRowRender={this.expandedRowRender} dataSource={ReptByNumberOfTasksData} 
-                                    scroll={{y: 160}} pagination={false} onExpand={this.onExpandedExpanded} rowKey="key"/>
+                           <Table className="components-table-demo-nested" columns={this.columnsExit} dataSource={ReptByNumberOfTasksData} 
+                                    scroll={{y: 160}} pagination={false} onExpand={this.onExpandedExpanded} rowKey="key"  onRowClick={(record)=>{this.expandedRowRenderBind(record)}}/> 
+                                    {/* onRowClick={(record)=>this.expandedRowRenderBind(record)}  */}
                         </div>
                         <div className={styles.leftRile}>
                            <h3 className={styles.leftTitleImg}>上报数据量 &nbsp;&nbsp;<p className={styles.leftColor}><Icon type="laptop" /> {CountByTheAmountOf.total}</p> </h3>  {/** expandedRowRender={this.expandedRowRenderCount} */}
@@ -395,7 +405,7 @@ class index extends React.Component {
                         </div>
                         <div className={styles.leftRile}>
                            <h3 className={styles.leftTitleImg}>交换作业量 &nbsp;&nbsp;<p className={styles.leftColor}><Icon type="swap" /> {CountByNumberOfTasks.total}</p> </h3>
-                           <Table className="components-table-demo-nested" columns={this.columnsExchange} expandedRowRender={this.expandedRowRenderTask} 
+                           <Table className="components-table-demo-nested" columns={this.columnsExchange}  onRowClick={(record)=>{this.expandedRowRenderTaskBind(record)}}
                                dataSource={CountByNumberOfTasksData}  scroll={{y: 160}} pagination={false} onExpand={this.onExpandExpanded} rowKey="key"/>
                         </div>
                         <div className={styles.leftRile}>
@@ -405,13 +415,32 @@ class index extends React.Component {
                         
                </div>
                
-               {/* <Modal
-                  title={serverModelList}
+                <Modal
+                  title={"查看详情"}
                   visible={visible}
                   width={600}
                   footer={null}
                   onCancel={this.handleCancel.bind(this)} >
-               </Modal> */}
+                  {/* 接口调用次数 */}
+                   { this.state.status === "expandedRowRenderServerBind"?(
+                      <Table rowKey="key" columns={this.expandedRowRenderServer} dataSource={ServicesList ?ServicesList :[]} scroll={{y: 300}} pagination={false} />
+                    ):null }
+                  {/* 数据调用量 */}
+                   { this.state.status === "RenderServerBind"?(
+                       <Table rowKey="key" columns={this.RenderServer} dataSource={ServicesListData?ServicesListData:[]} scroll={{y: 300}} pagination={false} />
+                    ):null }
+                     {/* 上报任务数据量 */}
+                   { this.state.status === "expandedRowRenderBind"?(
+                     <Table rowKey="key" columns={this.expandedRowRender} dataSource={ReportListData?ReportListData:[]} scroll={{y: 300}} pagination={false} />
+                    ):null }
+                    {/* 交换作业量 */}
+                   { this.state.status === "expandedRowRenderTaskBind"?(
+                    <Table rowKey="key" columns={this.expandedRowRenderTask} dataSource={ExchangeListData?ExchangeListData:[]} scroll={{y: 300}} pagination={false} />
+                    ):null }
+                  
+                 
+                  
+               </Modal> 
         
                
           </div>

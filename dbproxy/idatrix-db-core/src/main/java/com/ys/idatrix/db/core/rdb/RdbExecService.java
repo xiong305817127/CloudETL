@@ -26,24 +26,24 @@ public class RdbExecService extends BaseExecService {
     /**
      * 查询并返回结果
      *
-     * @param select
      * @param linkDto
+     * @param select
      * @return
      */
-    public SqlQueryRespDto executeQuery(String select, RdbLinkDto linkDto) throws Exception {
-        return query(select, linkDto);
+    public SqlQueryRespDto executeQuery(RdbLinkDto linkDto, String select) throws Exception {
+        return query(linkDto, select);
     }
 
 
     /**
      * 批量更新
      *
-     * @param commands
      * @param linkDto
+     * @param commands
      * @return
      */
-    public List<SqlExecRespDto> batchExecuteUpdate(List<String> commands, RdbLinkDto linkDto) throws Exception {
-        return batchUpdate(commands, linkDto, false, true);
+    public List<SqlExecRespDto> batchExecuteUpdate(RdbLinkDto linkDto, String... commands) throws Exception {
+        return batchUpdate(linkDto, false, true, commands);
     }
 
 

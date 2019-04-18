@@ -45,7 +45,7 @@ public class PermissionController {
             @ApiImplicitParam(name = "findContent", value = "查询条件", dataType = "String", paramType = "query")
     })
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public ResultVo list(@RequestParam(required = false, defaultValue = "1") Integer pageNo,
+    public ResultVo<Pagination<UPermission>> list(@RequestParam(required = false, defaultValue = "1") Integer pageNo,
                          @RequestParam(required = false, defaultValue = "10") Integer pageSize,
                          @RequestParam(required = false, defaultValue = "") String findContent, ModelMap modelMap) {
         log.debug("pageNo:{}，pageSize:{}，findContent:{}", pageNo, pageSize, findContent);

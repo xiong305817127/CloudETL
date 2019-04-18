@@ -1,6 +1,6 @@
 .idea/
 */target/
-*.iml
+**.iml
 */logs/*
 .settings
 .classpath

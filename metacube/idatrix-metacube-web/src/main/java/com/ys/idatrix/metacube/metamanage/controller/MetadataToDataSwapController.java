@@ -123,9 +123,12 @@ public class MetadataToDataSwapController {
                 return ResultBean.error("查询参数缺少rentID");
             }
             Long rentId = Long.valueOf(hdfsFileDirectory.getRenterId());
-            List<Metadata> dirList = metaDefHDFSService.getAllDirByRentId(rentId, searchKey);
-            dirList = dirList.stream().filter(p->!p.getStatus().equals(2)).collect(Collectors.toList());
             List<HdfsFileDirectory> hdfsDirList = new ArrayList<>();
+            List<Metadata> dirList = metaDefHDFSService.getAllDirByRentId(rentId, searchKey);
+            if(CollectionUtils.isEmpty(dirList)){
+                return ResultBean.ok(hdfsDirList);
+            }
+            dirList = dirList.stream().filter(p->!p.getStatus().equals(2)).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(dirList)) {
                 dirList.stream().forEach(p -> {
                     HdfsFileDirectory dfs = new HdfsFileDirectory();

@@ -1,0 +1,22 @@
+{
+    "isFileField": false,
+    "filenameField": "",
+    "wildcardField": "",
+    "excludeWildcardField": "",
+    "isIncludeSubfolders": false,
+    "filterFileType": "",
+    "includeRowNumber": false,
+    "rowNumberField": "",
+    "doNotFailIfNoFile": false,
+    "limit": 0,
+    "isAddResult": false,
+    "selectedFiles": [
+        {
+            "fileName": "",
+            "fileMask": "",
+            "excludeFileMask": "",
+            "fileRequired": "",
+            "includeSubfolders": ""
+        }
+    ]
+}

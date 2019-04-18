@@ -12,10 +12,12 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -31,11 +33,11 @@ public abstract class BaseExecService {
     /**
      * 查询
      *
-     * @param select
      * @param connParam
+     * @param select
      * @return
      */
-    protected SqlQueryRespDto query(String select, Object connParam) throws Exception {
+    protected SqlQueryRespDto query(Object connParam, String select) throws Exception {
         if (StringUtils.isBlank(select)) {
             throw new DbProxyException("query sql commands is null");
         }
@@ -45,22 +47,13 @@ public abstract class BaseExecService {
             // 创建QueryRunner执行器对象
             QueryRunner queryRunner = new QueryRunner(true);
 
-            //先获取列名
-            List<String> cols;
-            try (PreparedStatement stmt = conn.prepareStatement(select);
-                 ResultSet rs = stmt.executeQuery()) {
-                ResultSetMetaData metaData = rs.getMetaData();
-                int columns = metaData.getColumnCount();
-                cols = new ArrayList<>();
-                for (int i = 1; i <= columns; i++) {
-                    cols.add(metaData.getColumnName(i));
-                }
-            } catch (SQLException e) {
-                throw e;
-            }
-
             //获取值
             List<Map<String, Object>> data = queryRunner.query(conn, select, new MapListHandler());
+
+            List<String> cols = null;
+            if (CollectionUtils.isNotEmpty(data)) {
+                cols = Lists.newArrayList(data.get(0).keySet());
+            }
             log.info("execute sql:{} query success!", select);
             return new SqlQueryRespDto(select, data, cols);
         } catch (Exception e) {
@@ -74,16 +67,17 @@ public abstract class BaseExecService {
     /**
      * 批量修改
      *
-     * @param commands
      * @param connParam
      * @param autoCommit
      * @param hasRollback
+     * @param commands
      * @return
+     * @throws Exception
      */
-    protected List<SqlExecRespDto> batchUpdate(List<String> commands, Object connParam,
-                                               boolean autoCommit, boolean hasRollback) throws Exception {
+    protected List<SqlExecRespDto> batchUpdate(Object connParam, boolean autoCommit,
+                                               boolean hasRollback, String... commands) throws Exception {
 
-        if (CollectionUtils.isEmpty(commands)) {
+        if (ArrayUtils.isEmpty(commands)) {
             throw new DbProxyException("update sql commands is null");
         }
 
@@ -96,7 +90,7 @@ public abstract class BaseExecService {
             conn = getConnection(connParam);
             // hive 不能设置 autoCommit（不支持）。RDB及Phoenix支持
             if (!autoCommit) {
-                conn.setAutoCommit(autoCommit);
+                conn.setAutoCommit(false);
             }
 
             // 创建QueryRunner执行器对象
@@ -111,7 +105,7 @@ public abstract class BaseExecService {
             if (!autoCommit) {
                 conn.commit();
             }
-            log.info("execute commands:{} batchUpdate success!", commands.toString());
+            log.info("execute commands:{} batchUpdate success!", Arrays.asList(commands));
         } catch (Exception e) {
             if (hasRollback) {
                 try {

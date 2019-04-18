@@ -21,7 +21,6 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -42,7 +41,7 @@ public class SqlExecWorker implements Runnable {
 
     private String executionType;
 
-    private RdbLinkDto config;
+    private RdbLinkDto linkDto;
 
     private SqlTaskExecService sqlTaskExecService;
 
@@ -53,14 +52,14 @@ public class SqlExecWorker implements Runnable {
     private long startTimeStamp;
 
     public SqlExecWorker(RdbExecService rdbExecService, SparkExecService sparkExecService, PhoenixExecService phoenixExecService,
-                         String executionType, RdbLinkDto config,
+                         String executionType, RdbLinkDto linkDto,
                          SqlTaskExecService sqlTaskExecService, DbSqlResult sqlResult, String userId) {
         super();
         this.rdbExecService = rdbExecService;
         this.sparkExecService = sparkExecService;
         this.phoenixExecService = phoenixExecService;
         this.executionType = executionType;
-        this.config = config;
+        this.linkDto = linkDto;
         this.sqlTaskExecService = sqlTaskExecService;
         this.sqlResult = sqlResult;
         this.userId = userId;
@@ -73,27 +72,25 @@ public class SqlExecWorker implements Runnable {
             //查询操作
             if (Constants.SQL_EXEC_TYPE_Q.equalsIgnoreCase(executionType)) {
                 SqlQueryRespDto queryResult;
-                if (DatabaseTypeEnum.HBASE.getName().equalsIgnoreCase(config.getType())) {
+                if (DatabaseTypeEnum.HBASE.getName().equalsIgnoreCase(linkDto.getType())) {
                     queryResult = phoenixExecService.executeQuery(sqlResult.getSql());
-                } else if (DatabaseTypeEnum.HIVE.getName().equalsIgnoreCase(config.getType())) {
-                    queryResult = sparkExecService.executeQuery(config.getDbName(), sqlResult.getSql());
+                } else if (DatabaseTypeEnum.HIVE.getName().equalsIgnoreCase(linkDto.getType())) {
+                    queryResult = sparkExecService.executeQuery(linkDto.getDbName(), sqlResult.getSql());
                 } else {
                     // 获取存储系统信息
-                    queryResult = rdbExecService.executeQuery(sqlResult.getSql(), config);
+                    queryResult = rdbExecService.executeQuery(linkDto, sqlResult.getSql());
                 }
                 sqlResult.setStatus(Constants.SQL_EXEC_STATUS_SUCCESS);
                 String result = JSON.toJSONString(convertDateToString(queryResult), false);
                 sqlResult.setResult(result);
             } else {
-                List<String> commands = new ArrayList<>();
-                commands.add(sqlResult.getSql());
                 List<SqlExecRespDto> executeResults;
-                if (DatabaseTypeEnum.HBASE.getName().equalsIgnoreCase(config.getType())) {
-                    executeResults = phoenixExecService.batchExecuteUpdate(commands);
-                } else if (DatabaseTypeEnum.HIVE.getName().equalsIgnoreCase(config.getType())) {
-                    executeResults = sparkExecService.batchExecuteUpdate(commands);
+                if (DatabaseTypeEnum.HBASE.getName().equalsIgnoreCase(linkDto.getType())) {
+                    executeResults = phoenixExecService.batchExecuteUpdate(sqlResult.getSql());
+                } else if (DatabaseTypeEnum.HIVE.getName().equalsIgnoreCase(linkDto.getType())) {
+                    executeResults = sparkExecService.batchExecuteUpdate(sqlResult.getSql());
                 } else {
-                    executeResults = rdbExecService.batchExecuteUpdate(commands, config);
+                    executeResults = rdbExecService.batchExecuteUpdate(linkDto, sqlResult.getSql());
                 }
 
                 int updatedRows = 0;
@@ -111,7 +108,7 @@ public class SqlExecWorker implements Runnable {
                 sqlResult.setResult(null != errorMsg ? errorMsg : "执行成功，影响行数： " + updatedRows);
             }
         } catch (Exception e) {
-            log.error("存储系统:" + config.getType() + "sql执行:" + executionType);
+            log.error("存储系统:" + linkDto.getType() + "sql执行:" + executionType);
             sqlResult.setStatus(Constants.SQL_EXEC_STATUS_FAILED);
             sqlResult.setResult(e.getMessage());
         } finally {
@@ -145,41 +142,33 @@ public class SqlExecWorker implements Runnable {
      */
     private Map<String, List<Object>> convertDateToString(SqlQueryRespDto queryResult) {
         Map<String, List<Object>> resultList = Maps.newHashMap();
-        if (null != queryResult && CollectionUtils.isNotEmpty(queryResult.getColumns())) {
-            List<Object> cols = new ArrayList<>(queryResult.getColumns());
-            resultList.put("columns", cols);
-        } else {
-            resultList.put("columns", null);
-        }
-
         if (null != queryResult && CollectionUtils.isNotEmpty(queryResult.getData())) {
-            List<Object> allValues = new ArrayList<>();
+
+            List<Object> columnNames = Lists.newArrayList(queryResult.getData().get(0).keySet());
+            resultList.put("columns", columnNames);
+
+            List<Object> columnValues = Lists.newArrayList();
             for (Map<String, Object> data : queryResult.getData()) {
                 List<Object> rowValues = Lists.newArrayList();
-                for (Object colName : resultList.get("columns")) {
-                    Object colValue = null;
-                    if (data.keySet().contains(colName)) {
-                        colValue = data.get(colName);
-                        Object newColValue = null;
-                        if (null != colValue) {
-                            if (colValue instanceof Timestamp) {
-                                newColValue = DateFormatUtils.format(((Timestamp) colValue).getTime(), "yyyy-MM-dd HH:mm:ss");
-                            }
-                            if (colValue instanceof java.sql.Date) {
-                                newColValue = DateFormatUtils.format(((java.sql.Date) colValue).getTime(), "yyyy-MM-dd HH:mm:ss");
-                            }
-                            if (colValue instanceof Time) {
-                                newColValue = DateFormatUtils.format(((Time) colValue).getTime(), "HH:mm:ss");
-                            }
+                for (Object colValue : data.values()) {
+                    if (null != colValue) {
+                        if (colValue instanceof Timestamp) {
+                            colValue = DateFormatUtils.format(((Timestamp) colValue).getTime(), "yyyy-MM-dd HH:mm:ss");
                         }
-                        colValue = null == newColValue ? colValue : newColValue;
+                        if (colValue instanceof java.sql.Date) {
+                            colValue = DateFormatUtils.format(((java.sql.Date) colValue).getTime(), "yyyy-MM-dd HH:mm:ss");
+                        }
+                        if (colValue instanceof Time) {
+                            colValue = DateFormatUtils.format(((Time) colValue).getTime(), "HH:mm:ss");
+                        }
                     }
                     rowValues.add(colValue);
                 }
-                allValues.add(rowValues);
+                columnValues.add(rowValues);
             }
-            resultList.put("values", allValues);
+            resultList.put("values", columnValues);
         } else {
+            resultList.put("columns", null);
             resultList.put("values", null);
         }
         return resultList;

@@ -164,7 +164,7 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
             }
 
             // 拼装字段其他属性
-            defineColumnSyntax(sb, column);
+            defineColumnSyntax(sb, column, true);
             // 拼装分隔符
             sb.append(SEPARATOR);
         }
@@ -1375,7 +1375,8 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
 
         // 拼装字段其他属性
         StringBuilder replenish = new StringBuilder();
-        defineColumnSyntax(replenish, add);
+        // 其他参数
+        defineColumnSyntax(replenish, add, false);
 
         // alter table tableName add column columnType(length)
         String addColumnSql = String
@@ -1410,7 +1411,7 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
         // 拼装字段其他属性
         StringBuilder replenish = new StringBuilder();
 
-        defineColumnSyntax(replenish, newColumn);
+        defineColumnSyntax(replenish, newColumn, false);
 
         // ALTER TABLE user10 CHANGE test test1 CHAR(32) NOT NULL DEFAULT '123';
         String alterColumnSql = String.format(CHANGE_COLUMN, addBackQuote(tableName),
@@ -1445,7 +1446,7 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
 
         // 拼装字段其他属性
         StringBuilder replenish = new StringBuilder();
-        defineColumnSyntax(replenish, newColumn);
+        defineColumnSyntax(replenish, newColumn, false);
         // 判断是否是自增, mysql可以使用AUTO_INCREMENT关键字
         if (isAutoIncrement) {
             replenish.append(" AUTO_INCREMENT ");
@@ -1583,7 +1584,7 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
      * <p>
      * 数据类型为timestamp、datetime、date、time 为了兼容mysql的不同版本，统一设置默认可为空，不设置 default value
      */
-    private void defineColumnSyntax(StringBuilder sb, TableColumn column) {
+    private void defineColumnSyntax(StringBuilder sb, TableColumn column, Boolean isCreate) {
         switch (DBEnum.MysqlTableDataType.valueOf(column.getColumnType().toUpperCase())) {
             case TIMESTAMP:
                 sb.append(" NULL ");
@@ -1610,9 +1611,11 @@ public class MySqlDDLServiceImpl implements MySqlDDLService {
                 }
 
                 // 判断是否是自增,mysql可以使用AUTO_INCREMENT关键字,oracle特殊处理
-/*                if (column.getIsAutoIncrement()) {
-                    sb.append(" AUTO_INCREMENT ");
-                }*/
+                if(isCreate) {
+                    if (column.getIsAutoIncrement()) {
+                        sb.append(" AUTO_INCREMENT ");
+                    }
+                }
                 break;
         }
         // 是否有注释

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.2.1" name="idatrix-features">
+
+    <feature name="idatrix-metadata-feature" version="1.0" description="idatrix-features">
+        <details>idatrix  metadata features</details>
+        <feature>pentaho-big-data-plugin-base</feature>
+        <bundle>mvn:com.ys/idatrix-cloudetl-osgi-metadata/0.0.1-SNAPSHOT</bundle>
+    </feature>
+
+</features>

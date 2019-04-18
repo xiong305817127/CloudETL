@@ -971,7 +971,19 @@ public abstract class RdbDDLWrapper implements IRdbDDL {
     /************************************ 适配方法。适配类包装方法（默认实现接口方法），子类可选择性实现 ************************************/
 
     @Override
-    public List<String> getCreateUserCommands() {
+    public String getCreateUserCommands(String username, String password) {
+        return null;
+    }
+
+
+    @Override
+    public String getDropUserCommands(String username) {
+        return null;
+    }
+
+
+    @Override
+    public List<String> getGrantOptionToUser(String database, String username) {
         return null;
     }
 
@@ -983,19 +995,13 @@ public abstract class RdbDDLWrapper implements IRdbDDL {
 
 
     @Override
-    public List<String> getGrantOptionToUser() {
+    public String getCreateDatabaseCommands(String database) {
         return null;
     }
 
 
     @Override
-    public List<String> getCreateDatabaseCommands(RdbCreateDatabase database) {
-        return null;
-    }
-
-
-    @Override
-    public List<String> getDropDatabaseCommands(RdbDropDatabase database) {
+    public String getDropDatabaseCommands(String database) {
         return null;
     }
 

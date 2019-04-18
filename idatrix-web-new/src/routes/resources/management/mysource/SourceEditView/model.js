@@ -7,7 +7,7 @@ import {
   getProcess,
   getDatabaseListByRentId
 } from "services/catalog";
-import { getSchemasByDsId } from "services/metadataCommon";
+import { getRentTablesBySchemaId } from "services/metadataCommon";
 import {
   getResourceShareDict,
   getResourceTypeDict
@@ -34,14 +34,14 @@ const getType = num => {
 
 // 2019年3月20日修改的类型
 const typeToCode = {
-	mysql: 1,
-	oracle: 2,
-	dm: 3,
-	postgresql: 4,
-	hive: 5,
-	hbase: 6,
-	hdfs: 7,
-	elasticsearch: 8
+  mysql: 1,
+  oracle: 2,
+  dm: 3,
+  postgresql: 4,
+  hive: 5,
+  hbase: 6,
+  hdfs: 7,
+  elasticsearch: 8
 };
 const arrayToString = args => {
   return args.map(index => index + "");
@@ -177,9 +177,9 @@ export default {
     },
     *getTable({ payload }, { call, select, put }) {
       const { account } = yield select(state => state);
-	  const { dsType } = payload;
+      const { dsType } = payload;
 
-	  const dbType = typeToCode[dsType.toLowerCase()];
+      const dbType = typeToCode[dsType.toLowerCase()];
       const { bindTableId } = payload;
       const dataDataBase = yield call(getDatabaseListByRentId, {
         dsType: dbType,
@@ -208,21 +208,28 @@ export default {
           }
         }
 
-		// 不用获取此schema
-		// 修改时间2019-03-22
-        // const databaseIndex = args.findIndex(
-        //   val => val.value === bindTableId[0]
-        // );
-        // const DsId = args[databaseIndex].dsId;
-
-        // 获取到对应的schema
-        // const dataSchema = yield call(getSchemasByDsId, DsId);
-        // args[databaseIndex].children = dataSchema.data.data.map(val => ({
-        //   value: val.name,
-        //   valuelist: val.id,
-        //   label: val.name,
-        //   isLeaf: false
-        // }));
+        // 不用获取此schema
+        // 修改时间2019-03-22
+        const databaseIndex = args.findIndex(
+          val => val.value === bindTableId[0]
+        );
+        const DsId = args[databaseIndex].dsId;
+        if (typeof DsId !== "undefined") {
+          //获取到对应的schema
+          const dataSchema = yield call(getRentTablesBySchemaId, {
+            rentId: account.renterId,
+            schemaId: DsId
+          });
+          if (dataSchema.data.code === "200") {
+            args[databaseIndex].children = dataSchema.data.data.tableList.map(
+              val => ({
+                value: val.id,
+                label: val.name,
+                isLeaf: false
+              })
+            );
+          }
+        }
 
         yield put({ type: "save", payload: { bindTables: args } });
       }
@@ -263,7 +270,7 @@ export default {
         let dataSource = [];
         if (config.libTableId) {
           const tempIds = config.libTableId.split(",");
-          tempIds.splice(2, 1, tempIds[2] ? parseInt(tempIds[2]) : "");
+          tempIds.splice(1, 1, tempIds[1] ? parseInt(tempIds[1]) : "");
           config.bindTableId = tempIds;
           yield put({
             type: "getTable",
@@ -281,7 +288,7 @@ export default {
         config.deptNameIdArray = config.deptNameIdArray.split(",");
         let controlVisible = getType(config.formatType);
         config.formatType && args.push(config.formatType + "");
-        config.formatInfo && args.push(config.formatInfo.toUpperCase());
+        config.formatInfo && args.push(config.formatInfo);
         config.formatType = args;
         let catalogCode = config.catalogCode + "/";
         config.shareType = config.shareType + "";
@@ -299,6 +306,8 @@ export default {
             });
           }
         }
+
+        console.log(config, "配置");
 
         yield put({
           type: "save",

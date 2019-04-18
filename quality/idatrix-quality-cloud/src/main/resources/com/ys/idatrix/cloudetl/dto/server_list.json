@@ -1,0 +1,7 @@
+[
+    {
+        "name": "slave server name",
+        "master": false,
+        "status": "connected|disconnected"
+    }
+]

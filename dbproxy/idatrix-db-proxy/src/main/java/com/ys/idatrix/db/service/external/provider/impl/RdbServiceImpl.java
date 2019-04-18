@@ -2,6 +2,8 @@ package com.ys.idatrix.db.service.external.provider.impl;
 
 import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.ys.idatrix.db.api.common.RespResult;
 import com.ys.idatrix.db.api.rdb.dto.*;
 import com.ys.idatrix.db.api.rdb.service.RdbService;
@@ -15,6 +17,7 @@ import com.ys.idatrix.db.service.internal.IRdbDDL;
 import com.ys.idatrix.db.util.SqlExecuteUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -64,16 +67,41 @@ public class RdbServiceImpl extends DbServiceAware implements RdbService {
             //根据DB类型获取实际的处理类
             IRdbDDL actualDBDDL = getActualDBDDL(rdbLink);
 
-            //获取执行sql
-            List<String> processCommands = actualDBDDL.getCreateDatabaseCommands(database);
-            log.info("create database, sql is: {},username:{}", processCommands, username);
+            //获取建库执行sql
+            String createDbCmd = actualDBDDL.getCreateDatabaseCommands(database.getDatabase());
+            //执行建库结果
+            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(rdbLink, createDbCmd);
 
-            //执行结果
-            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(processCommands, rdbLink);
+            //创建用户、授权、刷新
+            List<String> grantPrivilegeCmd = actualDBDDL.getGrantOptionToUser(database.getDatabase(), database.getUserName());
+            List<String> userGrantCmds = Lists.newArrayList();
+            if (!database.isUserReusing()) {
+                String createUserCmd = actualDBDDL.getCreateUserCommands(database.getUserName(), database.getPassword());
+                userGrantCmds.add(createUserCmd);
+            }
+            userGrantCmds.addAll(grantPrivilegeCmd);
 
-            return wrapExecuteResult(results, processCommands);
+            //执行建用户、授权结果
+            results.addAll(rdbExecService.batchExecuteUpdate(rdbLink, userGrantCmds.toArray(new String[0])));
+
+            return wrapExecuteResult(results, ListUtils.sum(Lists.newArrayList(createDbCmd), userGrantCmds));
+
         } catch (Exception e) {
             log.error("createDatabase 执行异常:{}", e.getMessage());
+            if (e instanceof DbProxyException) {
+                DbProxyException dbExe = (DbProxyException) e;
+                String sql = dbExe.getSqlCommand();
+                if (StringUtils.startsWithIgnoreCase(sql, "create user")) {
+                    String dropDbCmd = getActualDBDDL(rdbLink).getDropDatabaseCommands(database.getDatabase());
+                    try {
+                        rdbExecService.batchExecuteUpdate(rdbLink, dropDbCmd);
+                        log.info("建库 -> 创建用户失败 -> 删库成功");
+                    } catch (Exception e1) {
+                        log.error("建库 -> 创建用户失败 -> 删库失败:{}", e1.getMessage());
+                        e1.printStackTrace();
+                    }
+                }
+            }
             return wrapExecuteResultWithException(e);
         }
 
@@ -110,11 +138,13 @@ public class RdbServiceImpl extends DbServiceAware implements RdbService {
             IRdbDDL actualDBDDL = getActualDBDDL(rdbLink);
 
             //获取执行sql
-            List<String> processCommands = actualDBDDL.getDropDatabaseCommands(database);
+            String dropUserCmd = actualDBDDL.getDropUserCommands(database.getUserName());
+            String dropDbCmd = actualDBDDL.getDropDatabaseCommands(database.getDatabase());
+            List<String> processCommands = Lists.newArrayList(dropUserCmd, dropDbCmd);
             log.info("drop database, processCommands is : {},username:{}", processCommands, username);
 
             //执行结果
-            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(processCommands, rdbLink);
+            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(rdbLink, processCommands.toArray(new String[0]));
 
             return wrapExecuteResult(results, processCommands);
         } catch (Exception e) {
@@ -162,7 +192,7 @@ public class RdbServiceImpl extends DbServiceAware implements RdbService {
             log.info("create table, processCommands is : {},username:{}", processCommands, username);
 
             //执行结果
-            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(processCommands, rdbLink);
+            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(rdbLink, processCommands.toArray(new String[0]));
 
             return wrapExecuteResult(results, processCommands);
         } catch (Exception e) {
@@ -210,7 +240,7 @@ public class RdbServiceImpl extends DbServiceAware implements RdbService {
             }
 
             //执行结果
-            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(processCommands, rdbLink);
+            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(rdbLink, processCommands.toArray(new String[0]));
             return wrapExecuteResult(results, processCommands);
         } catch (Exception e) {
             log.error("alterTable 执行异常:{}", e.getMessage());
@@ -257,7 +287,7 @@ public class RdbServiceImpl extends DbServiceAware implements RdbService {
             log.info("drop table, processCommands is : {},username:{}", processCommands, username);
 
             //执行结果
-            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(processCommands, rdbLink);
+            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(rdbLink, processCommands.toArray(new String[0]));
             return wrapExecuteResult(results, processCommands);
         } catch (Exception e) {
             log.error("dropTable 执行异常:{}", e.getMessage());
@@ -302,7 +332,7 @@ public class RdbServiceImpl extends DbServiceAware implements RdbService {
             log.info("create sequence, processCommands is : {},username:{}", processCommands, username);
 
             //执行结果
-            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(processCommands, rdbLink);
+            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(rdbLink, processCommands.toArray(new String[0]));
 
             return wrapExecuteResult(results, processCommands);
         } catch (Exception e) {
@@ -348,7 +378,7 @@ public class RdbServiceImpl extends DbServiceAware implements RdbService {
             log.info("drop sequence, processCommands is : {},username:{}", processCommands, username);
 
             //执行结果
-            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(processCommands, rdbLink);
+            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(rdbLink, processCommands.toArray(new String[0]));
 
             return wrapExecuteResult(results, processCommands);
         } catch (Exception e) {
@@ -385,7 +415,7 @@ public class RdbServiceImpl extends DbServiceAware implements RdbService {
             log.info("check db-user exists, processCommands is : {},username:{}", processCommands);
 
             //执行结果
-            SqlQueryRespDto resp = rdbExecService.executeQuery(processCommands, rdbLink);
+            SqlQueryRespDto resp = rdbExecService.executeQuery(rdbLink, processCommands);
 
             return RespResult.buildSuccessWithData(CollectionUtils.isEmpty(resp.getData()) ? Boolean.FALSE : Boolean.TRUE);
 
@@ -427,7 +457,7 @@ public class RdbServiceImpl extends DbServiceAware implements RdbService {
             log.info("check db-user exists, processCommands is : {},username:{}", processCommands);
 
             //执行结果
-            SqlQueryRespDto resp = rdbExecService.executeQuery(processCommands, rdbLink);
+            SqlQueryRespDto resp = rdbExecService.executeQuery(rdbLink, processCommands);
             if (CollectionUtils.isEmpty(resp.getData())) {
                 return RespResult.buildSuccessWithData(Boolean.FALSE);
             } else {
@@ -483,7 +513,7 @@ public class RdbServiceImpl extends DbServiceAware implements RdbService {
      */
     private void checkDropTable(String tableName, RdbLinkDto rdbLink) throws Exception {
         String queryRecords = "select count(1) from " + (getDBType(rdbLink) == RdbEnum.DBType.MYSQL ? addBackquote(tableName) : tableName);
-        SqlQueryRespDto rt = rdbExecService.executeQuery(queryRecords, rdbLink);
+        SqlQueryRespDto rt = rdbExecService.executeQuery(rdbLink, queryRecords);
         if (CollectionUtils.isNotEmpty(rt.getData())) {
             long cnt = rt.getData().get(0).values().stream().filter(rts -> Integer.parseInt(rts + "") > 0).count();
             if (cnt > 0L) {

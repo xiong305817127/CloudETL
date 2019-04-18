@@ -18,10 +18,14 @@
     <!-- 事物通知 -->
     <tx:advice id="txAdvice" transaction-manager="transactionManager">
         <tx:attributes>
-            <!-- 传播行为
-                REQUIRED：如果当前存在事务，则加入该事务；如果当前没有事务，则创建一个新的事务。这是默认值
-                SUPPORTS：如果当前存在事务，则加入该事务；如果当前没有事务，则以非事务的方式继续运行。
-             -->
+            <!--
+				propagation	:传播行为
+				isolation	:隔离级别
+				read-only	:是否只读
+				timeout		:超时信息
+				rollback-for:发生哪些异常回滚.
+				no-rollback-for:发生哪些异常不回滚.
+		 	-->
             <tx:method name="save*" propagation="REQUIRED" />
             <tx:method name="insert*" propagation="REQUIRED" />
             <tx:method name="add*" propagation="REQUIRED" />

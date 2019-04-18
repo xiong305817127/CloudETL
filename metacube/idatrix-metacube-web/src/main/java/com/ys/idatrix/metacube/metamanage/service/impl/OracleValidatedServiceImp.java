@@ -127,7 +127,7 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
             throw new MetaDataException("500", "当前表英文名已经被视图占用（视图已创建或在草稿箱中）");
         }
 
-        // 判断表中文名是否重复
+        /*// 判断表中文名是否重复
         if (StringUtils.isNotBlank(oracleTable.getIdentification())) {
             metadata.setResourceType(1); // 当前为表
             metadata.setName(null);
@@ -135,7 +135,7 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
             if (metadataService.findByMetadata(metadata) > 0) {
                 throw new MetaDataException("500", "当前表中文名已经被占用（表已创建或在草稿箱中）");
             }
-        }
+        }*/
 
         // 如果为直采或草稿，则不需要去实体数据库校验
         if (oracleTable.getIsGather() || oracleTable.getStatus().equals(DataStatusEnum.DRAFT.getValue())) {
@@ -1061,18 +1061,18 @@ public class OracleValidatedServiceImp implements OracleValidatedService {
         metadata.setDatabaseType(DatabaseTypeEnum.ORACLE.getCode()); // oracle 类型
         metadata.setResourceType(2); // 2:视图
 
-        // 判断实体名是否重复
+        // 判断视图名是否重复
         metadata.setName(view.getName());
         if (metadataService.findByMetadata(metadata) > 0) {
             throw new MetaDataException("500", "当前视图英文名已经被占用（视图已创建或在草稿箱中）");
         }
 
-        // 判断表中文名是否重复
+        /*// 判断表中文名是否重复
         metadata.setName(null);
         metadata.setIdentification(view.getIdentification());
         if (metadataService.findByMetadata(metadata) > 0) {
             throw new MetaDataException("500", "当前视图英文中文名已经被占用（视图已创建或在草稿箱中）");
-        }
+        }*/
 
         ViewDetail viewDetail = view.getViewDetail();
         if (viewDetail == null) {

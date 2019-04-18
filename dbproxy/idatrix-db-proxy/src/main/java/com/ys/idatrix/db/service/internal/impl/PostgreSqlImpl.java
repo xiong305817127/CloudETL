@@ -1,8 +1,9 @@
 package com.ys.idatrix.db.service.internal.impl;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.ys.idatrix.db.api.rdb.dto.*;
+import com.ys.idatrix.db.api.rdb.dto.RdbColumn;
+import com.ys.idatrix.db.api.rdb.dto.RdbEnum;
+import com.ys.idatrix.db.api.rdb.dto.RdbIndex;
+import com.ys.idatrix.db.api.rdb.dto.RdbPrimaryKey;
 import com.ys.idatrix.db.service.internal.RdbDDLWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -40,16 +41,14 @@ public class PostgreSqlImpl extends RdbDDLWrapper {
 
 
     @Override
-    public List<String> getCreateDatabaseCommands(RdbCreateDatabase database) {
-        List<String> commands = Lists.newArrayList(MessageFormat.format(CREATE_DB_SQL, database.getDatabase()));
-        return commands;
+    public String getCreateDatabaseCommands(String database) {
+        return MessageFormat.format(CREATE_DB_SQL, database);
     }
 
 
     @Override
-    public List<String> getDropDatabaseCommands(RdbDropDatabase database) {
-        String dropCommand = MessageFormat.format(DROP_DB_SQL, database.getDatabase());
-        return ImmutableList.of(dropCommand);
+    public String getDropDatabaseCommands(String database) {
+        return MessageFormat.format(DROP_DB_SQL, database);
     }
 
 

@@ -213,7 +213,7 @@ public class MetadataToDataSwapServiceImpl implements MetadataToDataSwapService 
      * @return
      */
     @Override
-//    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public ResultBean<SubscribeCrtTbResult> createTableBySubscribe(String userName, MetadataTable changedMetadataTable, List<MetadataField> metadataFields) {
 
         if (null == changedMetadataTable) {

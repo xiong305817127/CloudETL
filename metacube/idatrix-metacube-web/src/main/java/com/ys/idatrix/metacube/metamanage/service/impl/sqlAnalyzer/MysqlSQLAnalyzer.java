@@ -29,6 +29,9 @@ import com.ys.idatrix.metacube.metamanage.service.impl.sqlAnalyzer.dto.TablesDep
 import com.ys.idatrix.metacube.metamanage.vo.request.DBViewVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.MetadataBaseVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.MySqlTableVO;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -38,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
 
@@ -93,8 +97,8 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
                 md.setIsGather(true);
                 md.setStatus(1);
                 md.setResourceType(2);
-                md.setViewDetail(new ViewDetail());
-                md.getViewDetail().setViewSql(getViewSelectSqlFromDB(dbInfo, mb.getName()));
+//                md.setViewDetail(new ViewDetail());
+//                md.getViewDetail().setViewSql(getViewSelectSqlFromDB(dbInfo, mb.getName()));
                 md.setVersion(1);
                 res.add(md);
             });
@@ -318,7 +322,19 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
                 if( element instanceof MySqlKey) {
                     String type = ((MySqlKey)element ).getIndexType()  ;
                     if( !StringUtils.isEmpty(type)) {
-                        tim.setIndexMethod(type);
+                    	try {
+                    		//如果是方法
+                    		if( DBEnum.MysqlIndexMethodEnum.valueOf(type) != null ) {
+                    			 tim.setIndexMethod(type);
+                        	}
+                    	}catch(Exception ignore1) { }
+                    	try {
+                    		//如果是类型
+                    		if( DBEnum.MysqlIndexTypeEnum.valueOf(type) != null ) {
+                    			 tim.setIndexType(type);
+                        	}
+                    	}catch(Exception ignore1) { }
+                    	
                     }
                 }
                 result.add(tim);
@@ -435,7 +451,7 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
      */
     protected String getCreateTableSqlFromDB(DatabaseConnect dbInfo, String tableName) {
 
-        String sql = "show create table "+ tableName ;
+        String sql = "SHOW CREATE TABLE "+ tableName ;
         
         StringBuffer result = new StringBuffer();
         execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
@@ -458,7 +474,7 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
      */
     public String getViewSelectSqlFromDB(DatabaseConnect dbInfo, String viewName) {
 
-        String sql = "SELECT  view_definition  FROM  information_schema.views where table_name='"+ viewName+"'" ;
+        String sql = "SELECT  VIEW_DEFINITION  FROM  information_schema.views where table_name='"+ viewName+"'" ;
         
         StringBuffer result = new StringBuffer();
         execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {
@@ -466,6 +482,10 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
 			@Override
 			public void dealRow(int index, Map<String, Object> map, List<String> columnNames) throws MetaDataException {
 				String key = columnNames.get(0);
+				if( StringUtils.isEmpty(key) || map == null || map.get(key) == null  ) {
+					log.error("处理数据为空sql["+sql+"],map["+map+"],columns["+columnNames+"]");
+					return ;
+				}
 				result.append( map.get(key).toString() );
 			}
         	
@@ -490,6 +510,10 @@ public class MysqlSQLAnalyzer extends BaseSQLAnalyzer {
 			@Override
 			public void dealRow(int index, Map<String, Object> map, List<String> columnNames) throws MetaDataException {
 				String key = columnNames.get(1);
+				if( StringUtils.isEmpty(key) || map == null || map.get(key) == null  ) {
+					log.error("从dbproxy查询数据为空sql["+sql+"]");
+					return ;
+				}
 				result.append( map.get(key).toString() );
 			}
         	

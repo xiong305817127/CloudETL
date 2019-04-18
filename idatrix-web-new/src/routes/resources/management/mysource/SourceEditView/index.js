@@ -21,6 +21,7 @@ import {
   getRentTablesBySchemaId
 } from "services/metadataCommon";
 import { hashHistory } from "react-router";
+import _ from "lodash";
 
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -97,7 +98,9 @@ class index extends React.Component {
   constructor() {
     super();
     this.state = {
-      canEdit: false
+      canEdit: false,
+      wuliEdit: false,
+      sourceEdit: false
     };
   }
 
@@ -385,7 +388,7 @@ class index extends React.Component {
     const { renterId } = this.props.account;
     const { bindTables } = sourceEditView;
 
-    //   // 第二层数据
+    // 第二层数据
     const newDsId = selectedOptions[0].dsId;
     const { label } = selectedOptions[0];
 
@@ -537,23 +540,33 @@ class index extends React.Component {
     } = this.props.sourceEditView;
     let resourceColumnVOList = [];
 
-    this.props.form.validateFields((err, values) => {
+    this.props.form.validateFields((err, val) => {
+      const values = _.cloneDeep(val);
+
       if (!err) {
         let args = catalogCode.split("/");
         values.deptCode = deptCode;
         values.deptName = deptName;
         values.catalogCode = args[0];
-        values.formatInfo = values.formatType[1]; //args[args.length-1];
-        values.formatType = values.formatType[0];
         values.shareDeptArray = formatArgsToNumber(values.shareDeptArray);
         values.deptNameIdArray = formatArgsToNumber(
           values.deptNameIdArray
         ).join();
 
-				// 如果没有编辑，则显示原有id
+        // 如果没有编辑，则显示原有id
         values.catalogIdArray = values.catalogIdArray
           ? values.catalogIdArray
           : config.catalogIdArray;
+        values.bindTableId = values.bindTableId
+          ? values.bindTableId
+          : config.bindTableId;
+        values.formatType = val.formatType
+          ? val.formatType[0]
+          : config.formatType[0];
+        values.formatInfo = val.formatType
+          ? val.formatType[1]
+          : config.formatInfo; //args[args.length-1];
+        values.catalogIdArrayFake = null;
         if (values.bindTableId) {
           values.libTableId = values.bindTableId.join();
           values.bindTableId = parseInt(values.bindTableId[1]);
@@ -667,6 +680,19 @@ class index extends React.Component {
   handleEdit = () => {
     this.setState({
       canEdit: true
+    });
+  };
+
+  handleWuliEdit = () => {
+    this.setState({
+      wuliEdit: true
+    });
+  };
+
+  handleSourceEdit = () => {
+    this.setState({
+      sourceEdit: true,
+      wuliEdit: true
     });
   };
 
@@ -799,7 +825,7 @@ class index extends React.Component {
                 ) : (
                   <FormItem label="资源分类" {...formItemLayout}>
                     {getFieldDecorator("catalogIdArray", {
-                      initialValue:  [],
+                      initialValue: [],
                       rules: [
                         { required: true, message: "资源分类不能为空！" },
                         { validator: this.checkId.bind(this) }
@@ -874,25 +900,50 @@ class index extends React.Component {
                   )}
                 </FormItem>
               </Col>
+
               <Col span={12}>
-                <FormItem label="资源格式" {...formItemLayout}>
-                  {getFieldDecorator("formatType", {
-                    initialValue: config.formatType ? config.formatType : [],
-                    rules: [{ required: true, message: "资源格式不能为空！" }]
-                  })(
-                    <Cascader
-                      placeholder="请选择资源格式"
-                      //loadData={this.loadDataType}
-                      fieldNames={{
-                        label: "name",
-                        value: "code",
-                        children: "childrenList"
-                      }}
-                      options={ResourceFormat}
-                      onChange={this.handleFormatTypeChange}
-                    />
-                  )}
-                </FormItem>
+                {!this.state.sourceEdit && (
+                  <FormItem label="资源格式" {...formItemLayout}>
+                    {getFieldDecorator("formatTypeFake")(
+                      <span>
+                        <Input
+                          value={config.formatInfo}
+                          disabled
+                          style={{ width: "70%" }}
+                        />
+                        <span
+                          style={{
+                            cursor: "pointer",
+                            color: "red",
+                            marginLeft: "8px"
+                          }}
+                          onClick={this.handleSourceEdit}
+                        >
+                          点击修改
+                        </span>
+                      </span>
+                    )}
+                  </FormItem>
+                )}
+                {this.state.sourceEdit && (
+                  <FormItem label="资源格式" {...formItemLayout}>
+                    {getFieldDecorator("formatType", {
+                      initialValue: config.formatType ? config.formatType : [],
+                      rules: [{ required: true, message: "资源格式不能为空！" }]
+                    })(
+                      <Cascader
+                        placeholder="请选择资源格式"
+                        fieldNames={{
+                          label: "name",
+                          value: "code",
+                          children: "childrenList"
+                        }}
+                        options={ResourceFormat}
+                        onChange={this.handleFormatTypeChange}
+                      />
+                    )}
+                  </FormItem>
+                )}
               </Col>
               <Col
                 span={12}
@@ -914,7 +965,30 @@ class index extends React.Component {
                     )}
                   </FormItem>
                 ) : null}
-                {controlVisible === "database" ? (
+                {controlVisible === "database" && !this.state.wuliEdit ? (
+                  <FormItem {...formItemLayout} label="物理表名">
+                    {getFieldDecorator("bindTableIdFake")(
+                      <span>
+                        <Input
+                          value={config.libTableId}
+                          disabled
+                          style={{ width: "70%" }}
+                        />
+                        <span
+                          style={{
+                            cursor: "pointer",
+                            color: "red",
+                            marginLeft: "8px"
+                          }}
+                          onClick={this.handleWuliEdit}
+                        >
+                          点击修改
+                        </span>
+                      </span>
+                    )}
+                  </FormItem>
+                ) : null}
+                {controlVisible === "database" && this.state.wuliEdit ? (
                   <FormItem {...formItemLayout} label="物理表名" hasFeedback>
                     {getFieldDecorator("bindTableId", {
                       initialValue: config.bindTableId

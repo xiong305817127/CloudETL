@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<systems>
+    <system id="quality"  name="quality">
+        <baseUrl>http://10.0.0.83:8090/quality</baseUrl>
+        <homeUri>/index.html</homeUri>
+        <innerAddress>http://10.0.0.83:8090</innerAddress>
+    </system>
+</systems>

@@ -72,8 +72,8 @@ public class LoginCountServiceImpl implements LoginCountService {
     public PageResultVo<LoginDetailsInfoVO> searchLoginDetailsInfo(LoginSearchVO search) {
         PageHelper.startPage(search.getPage(), search.getSize());
         List<LoginDetailsInfoVO> list = loginCountMapper.searchLoginDetailsInfo(search);
-        PageInfo<LoginDetailsInfoVO> pageInfo = new PageInfo<>();
-        PageResultVo result = new PageResultVo(pageInfo.getTotal(), list);
+        PageInfo<LoginDetailsInfoVO> pageInfo = new PageInfo<>(list);
+        PageResultVo result = new PageResultVo(pageInfo.getTotal(), list, search.getPage(), search.getSize());
         return result;
     }
 

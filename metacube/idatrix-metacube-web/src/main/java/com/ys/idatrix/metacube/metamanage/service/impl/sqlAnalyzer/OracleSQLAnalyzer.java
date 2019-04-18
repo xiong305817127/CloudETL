@@ -528,7 +528,7 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
     protected String getCreateTableSqlFromDB(DatabaseConnect dbInfo,  String tableName) {
 
         String sql =
-                "SELECT DBMS_LOB.SUBSTR( DBMS_METADATA.GET_DDL('TABLE', TABLE_NAME ),32767) FROM DUAL,USER_TABLES WHERE TABLE_NAME='"
+                "SELECT DBMS_LOB.SUBSTR( DBMS_METADATA.GET_DDL('TABLE', TABLE_NAME ),32767) COL1 FROM DUAL,USER_TABLES WHERE TABLE_NAME='"
                         + tableName + "'; ";
 
         StringBuffer result = new StringBuffer();
@@ -601,7 +601,7 @@ public class OracleSQLAnalyzer extends BaseSQLAnalyzer {
      */
     public String getCreateViewSqlFromDB(DatabaseConnect dbInfo,  String viewName) {
 
-        String sql = "select text from user_views where view_name='" + viewName + "'";
+        String sql = "select TEXT from user_views where view_name='" + viewName + "'";
 
         StringBuffer result = new StringBuffer();
         execSqlCommand(sqlExecService, dbInfo, sql, new dealRowInterface() {

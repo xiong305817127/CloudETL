@@ -1,0 +1,6 @@
+{
+    "name": "trans name",
+    "from": "from step name",
+    "to": "to step name",
+    "enabled": true
+}

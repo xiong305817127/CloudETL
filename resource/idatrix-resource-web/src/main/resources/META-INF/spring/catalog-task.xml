@@ -18,10 +18,10 @@
 
     <!--每隔1分钟触发任务 -->
     <task:scheduled-tasks scheduler="taskScheduler">
-        <task:scheduled ref="exchangeETLTask" method="startTask" cron="0 0/2 * * * ?"/>
-        <task:scheduled ref="exchangeTask" method="startTask" cron="0 0/2 * * * ?"/>
-        <task:scheduled ref="statisticsTask" method="startTask" cron="0 0/10 * * * ?"/>
-        <task:scheduled ref="dailyStaticsTask" method="startTask" cron="0 0 0 * * ?"/>
-        <task:scheduled ref="dataStatisticsTask" method="startTask" cron="0 0 * * * ?"/>
+        <task:scheduled ref="exchangeETLTask" method="startTask" cron="0 0/2 * 1 * ?"/>
+        <task:scheduled ref="exchangeTask" method="startTask" cron="0 0/2 * 1 * ?"/>
+        <task:scheduled ref="statisticsTask" method="startTask" cron="0 0/10 * 1 * ?"/>
+        <task:scheduled ref="dailyStaticsTask" method="startTask" cron="0 0 0 * 1 ?"/>
+        <task:scheduled ref="dataStatisticsTask" method="startTask" cron="0 0 * 1 * ?"/>
     </task:scheduled-tasks>
 </beans>

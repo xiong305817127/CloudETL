@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -53,7 +52,7 @@ public class HiveServiceImpl extends DbServiceAware implements HiveService {
 
         try {
             String sql = MessageFormat.format(createDatabase, database);
-            List<SqlExecRespDto> result = sparkExecService.batchExecuteUpdate(Lists.newArrayList(sql));
+            List<SqlExecRespDto> result = sparkExecService.batchExecuteUpdate(sql);
             return wrapExecuteResult(result);
         } catch (Exception e) {
             log.error("createDatabase 执行异常:{}",e.getMessage());
@@ -69,7 +68,7 @@ public class HiveServiceImpl extends DbServiceAware implements HiveService {
 
         try {
             String sql = MessageFormat.format(dropDatabase, database);
-            List<SqlExecRespDto> result = sparkExecService.batchExecuteUpdate(Lists.newArrayList(sql));
+            List<SqlExecRespDto> result = sparkExecService.batchExecuteUpdate(sql);
             return wrapExecuteResult(result);
         } catch (Exception e) {
             log.error("dropDatabase 执行异常:{}",e.getMessage());
@@ -134,8 +133,7 @@ public class HiveServiceImpl extends DbServiceAware implements HiveService {
             }
 
             log.info("create table commands:{}", sb.toString());
-            List<String> commands = Lists.newArrayList(sb.toString());
-            List<SqlExecRespDto> result = sparkExecService.batchExecuteUpdate(commands);
+            List<SqlExecRespDto> result = sparkExecService.batchExecuteUpdate(sb.toString());
             return wrapExecuteResult(result);
         } catch (Exception e) {
             log.error("createTable 执行异常:{}",e.getMessage());
@@ -163,10 +161,10 @@ public class HiveServiceImpl extends DbServiceAware implements HiveService {
                 }
             }
 
-            List<String> commands = new ArrayList<String>();
+            List<String> commands = Lists.newArrayList();
             commands.add(MessageFormat.format(userDatabase, database));
             commands.add(MessageFormat.format(dropTable, tableName));
-            List<SqlExecRespDto> result = sparkExecService.batchExecuteUpdate(commands);
+            List<SqlExecRespDto> result = sparkExecService.batchExecuteUpdate(commands.toArray(new String[0]));
             return wrapExecuteResult(result);
         } catch (Exception e) {
             log.error("dropTable 执行异常:{}",e.getMessage());

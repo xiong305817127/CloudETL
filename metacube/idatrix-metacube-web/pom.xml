@@ -270,7 +270,7 @@
 
         </plugins>
 
-        <!-- 打包过滤文件，最后读取外部config下配置文件。打包时开启；本地启动运行需注释掉
+        <!-- 打包过滤文件，最后读取外部config下配置文件。打包时开启；本地启动运行需注释掉 -->
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -282,7 +282,6 @@
                 </excludes>
             </resource>
         </resources>
--->
 
     </build>
 

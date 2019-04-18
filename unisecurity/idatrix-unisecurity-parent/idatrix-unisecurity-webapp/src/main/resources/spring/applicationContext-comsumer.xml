@@ -12,6 +12,6 @@
     http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
     <dubbo:reference id="metadataDatabaseService"
-                     interface="com.ys.idatrix.metacube.api.service.MetadataDatabaseService" timeout="6000" />
+                     interface="com.ys.idatrix.metacube.api.service.MetadataDatabaseService" timeout="6000" check="false" />
 
 </beans>

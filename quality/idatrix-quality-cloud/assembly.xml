@@ -1,0 +1,89 @@
+<assembly>
+	<!-- 项目打成Zip包的Id -->
+	<id>QUALITY-V01R02-C001</id>
+	<formats>
+		<!-- 包的后缀 -->
+		<format>zip</format>
+	</formats>
+
+	<fileSets>
+
+		<!-- 项目一些说明的资源输出的目录，下面为当前目录 -->
+		<fileSet>
+			<directory>${project.build.directory}</directory>
+			<outputDirectory>/lib</outputDirectory>
+			<!-- 指定那些文件需要复制进该目录下 -->
+			<excludes>
+				<exclude>original*.jar</exclude>
+			</excludes>
+			<includes>
+				<include>*.jar</include>
+			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>${project.basedir}/product/classes</directory>
+			<outputDirectory>/classes</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>${project.basedir}/product/${config.dir.name}</directory>
+			<outputDirectory>/config</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>${project.build.directory}/system</directory>
+			<outputDirectory>/system</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>${project.build.directory}/plugins</directory>
+			<outputDirectory>/plugins</outputDirectory>
+			<excludes>
+				<exclude>**/cdh512/</exclude>
+				<exclude>**/emr58/</exclude>
+				<exclude>**/mapr520/</exclude>
+			</excludes>
+		</fileSet>
+		<fileSet>
+			<directory>${project.basedir}/web</directory>
+			<outputDirectory>/web</outputDirectory>
+			<excludes>
+				<exclude>**/${web.exexclude}/</exclude>
+			</excludes>
+		</fileSet>
+		<fileSet>
+			<directory>${project.build.directory}/lib</directory>
+			<outputDirectory>/lib</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>${project.build.directory}/launcher</directory>
+			<outputDirectory>/launcher</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>${project.build.directory}/</directory>
+			<outputDirectory>/</outputDirectory>
+			<includes>
+				<include>version*</include>
+			</includes>
+		</fileSet>
+	</fileSets>
+
+	<files>
+		<file>
+			<source>${project.basedir}/product/script/start.sh</source>
+			<outputDirectory>/</outputDirectory>
+			<destName>start.sh</destName>
+			<fileMode>755</fileMode>
+		</file>
+		<file>
+			<source>${project.basedir}/product/script/start.bat</source>
+			<outputDirectory>/</outputDirectory>
+			<destName>start.bat</destName>
+			<fileMode>755</fileMode>
+		</file>
+		<file>
+			<source>${project.basedir}/product/script/stop.sh</source>
+			<outputDirectory>/</outputDirectory>
+			<destName>stop.sh</destName>
+			<fileMode>755</fileMode>
+		</file>
+	</files>
+
+</assembly>

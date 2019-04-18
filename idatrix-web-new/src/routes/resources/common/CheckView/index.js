@@ -1,77 +1,76 @@
-import React from 'react';
-import { Form, Cascader, Input, Select, Button, Row, Col, Table } from 'antd';
+import React from "react";
+import { Form, Cascader, Input, Select, Button, Row, Col, Table } from "antd";
 import Modal from "components/Modal";
-import { connect } from 'dva';
-import { colTypeArgs } from '../../constants';
-import { API_BASE_CATALOG } from 'constants';
+import { connect } from "dva";
+import { colTypeArgs } from "../../constants";
+import { API_BASE_CATALOG } from "constants";
 import TableList from "components/TableList";
-import { downloadFile } from 'utils/utils';
+import { downloadFile } from "utils/utils";
 const FormItem = Form.Item;
 const Option = Select.Option;
 const { TextArea } = Input;
 const Search = Input.Search;
 
 const getItemById = (id, args) => {
-	if (args && args.length > 0) {
-		for (let index of args) {
-			if (id === index.id) {
-				return index;
-			}
-		}
-	}
-	return "";
+  if (args && args.length > 0) {
+    for (let index of args) {
+      if (id === index.id) {
+        return index;
+      }
+    }
+  }
+  return "";
 };
 
 //获得共享类型
-const getShareType = (str) => {
-	switch (str) {
-		case 1:
-			return "无条件共享"; 
-		case 2:
-			return "有条件共享"; 
-		case 3:
-			return "不予共享"; 
-		default:
-			return "无条件共享"; 
-	}
-}
+const getShareType = str => {
+  switch (str) {
+    case 1:
+      return "无条件共享";
+    case 2:
+      return "有条件共享";
+    case 3:
+      return "不予共享";
+    default:
+      return "无条件共享";
+  }
+};
 
 //获得共享类型
-const getShareMethod = (str) => {
-	switch (str) {
-		case 1:
-			return "数据库"; 
-		case 2:
-			return "文件下载"; 
-		case 3:
-			return "服务方式"; 
-		default:
-			return "数据库"; 
-	}
-}
+const getShareMethod = str => {
+  switch (str) {
+    case 1:
+      return "数据库";
+    case 2:
+      return "文件下载";
+    case 3:
+      return "服务方式";
+    default:
+      return "数据库";
+  }
+};
 
 //获得分享时间
-const getShareTime = (str) => {
-	switch (str) {
-		case 1:
-			return "实时";
-		case 2:
-			return "每日";
-		case 3:
-			return "每周";
-		case 4:
-			return "每月";
-		case 5:
-			return "每季度";
-		case 6:
-			return "每半年";
-		case 7:
-			return "每年";
-		default:
-			return "每月";
-	}
-}
-
+const getShareTime = str => {
+  switch (str) {
+    case 1:
+      return "实时";
+    case 2:
+      return "每日";
+    case 3:
+      return "每周";
+    case 4:
+      return "每月";
+    case 5:
+      return "每季度";
+    case 6:
+      return "每半年";
+    case 7:
+      return "每年";
+    default:
+      return "每月";
+  }
+};
 
 class index extends React.Component {
 
@@ -466,14 +465,14 @@ class index extends React.Component {
 					{
 						controlVisible === "database" ? (
 							<div style={{ margin: "0px 5%" }}>
-								<Table size={"small"} pagination={false} columns={this.columns} dataSource={dataSource} scroll={{ y: 140 }} />
+								<Table size={"small"} rowKey="id" pagination={false} columns={this.columns} dataSource={dataSource} scroll={{ y: 140 }} />
 							</div>
 						) : null
 					}
 					{
 						controlVisible !== "database" ? (
 							<div style={{ margin: "0px 5%" }}>
-								<Table size={"small"} pagination={false} columns={this.columns1} dataSource={dataSource} scroll={{ y: 140 }} />
+								<Table size={"small"} rowKey="id" pagination={false} columns={this.columns1} dataSource={dataSource} scroll={{ y: 140 }} />
 							</div>
 						) : null
 					}
@@ -532,4 +531,7 @@ class index extends React.Component {
 	}
 }
 
-export default connect(({ resourcesCommon, checkview }) => ({ resourcesCommon, checkview }))(Form.create()(index))
+export default connect(({ resourcesCommon, checkview }) => ({
+  resourcesCommon,
+  checkview
+}))(Form.create()(index));

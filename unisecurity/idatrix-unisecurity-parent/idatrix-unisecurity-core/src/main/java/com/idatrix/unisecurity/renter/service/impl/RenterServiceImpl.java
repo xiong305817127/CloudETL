@@ -90,6 +90,9 @@ public class RenterServiceImpl extends BaseMybatisDao<URenterMapper> implements 
     @Autowired
     private EmailProperties emailProperties;
 
+    @Autowired(required = false)
+    private MetadataDatabaseService metadataDatabaseService;
+
     @Override
     public Pagination<URenter> findPage(Map<String, Object> resultMap, Integer pageNo, Integer pageSize) {
         return super.findPage(resultMap, pageNo, pageSize);
@@ -361,9 +364,6 @@ public class RenterServiceImpl extends BaseMybatisDao<URenterMapper> implements 
         // 禁用租户下的所有的用户，包括租户管理员
         userService.updateUserStatusByRenterIds(idArray, status);
     }
-
-    @Autowired
-    private MetadataDatabaseService metadataDatabaseService;
 
     @Override
     public void registerOrUpdatePlatformDatabaseInfo(Long id) {

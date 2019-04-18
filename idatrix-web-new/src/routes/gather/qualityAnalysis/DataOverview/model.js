@@ -81,6 +81,12 @@ export default {
        StatisticsUserOptian:{},  //活跃信息的查询
        StatisticsOption:{},    //本月登陆用户排行Top10
        SchemaInfo:{},     //BI新增模型数据
+       pagination: {
+        //分页
+        page: 1,
+        pageSize: 10
+      },
+      total:0,
 
        SchemaclickInfo:{},  //BI报表分析
        SchemaclickData:[],   //BI报表分析
@@ -219,7 +225,6 @@ export default {
            //数据质量分析成功不成功图表
            *getTaskExecTimesByMonth({ payload },{ select,call,put }){
             const { data } = yield call(getTaskExecTimesByMonth, {...payload });
-            console.log(data.data.length,"getTaskExecTimesByMonth");
             const datalist=[];
             if(data.code==="200"){
                 data.data.length===0?datalist.push({value:"0", name:"成功"},{ value:"0", name:"失败"}):data.data.map((key)=>{ datalist.push({ value:key.successTotal, name:"成功"},{ value:key.failTotal, name:"失败" }) });
@@ -448,7 +453,14 @@ export default {
             if(data.code==="200"){
                     yield put({
                         type: "save",
-                        payload: { getDetailsLIst:data.data.rows}
+                        payload: { 
+                            getDetailsLIst:data.data.rows,
+                            pagination:{
+                                page:1,
+                                size:10
+                            },
+                            total:data.data.total,
+                        }
                     });
             }
         },

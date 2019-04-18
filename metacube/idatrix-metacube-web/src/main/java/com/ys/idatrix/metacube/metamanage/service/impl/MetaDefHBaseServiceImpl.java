@@ -311,7 +311,7 @@ public class MetaDefHBaseServiceImpl implements IMetaDefHBaseService {
 
         HBaseTable hBaseTable = new HBaseTable();
         PrimaryKey pk = null;
-        hBaseTable.setNamespace(baseVO.getDbDatabasename());
+        hBaseTable.setNamespace(baseVO.getDatabaseName());
         hBaseTable.setTableName(baseVO.getName());
         List<TableColumn> columnList = baseVO.getColumnList();
 

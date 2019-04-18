@@ -98,7 +98,7 @@ public class MySqlSchemaServiceImpl implements McSchemaService {
 
     @Override
     public McSchemaPO update(McSchemaPO schemaPO) {
-        testDbLink(buildRdbLinkDTO(schemaPO));
+        testDbLink(buildRdbLinkDTO(getSchemaById(schemaPO.getId())));
         schemaMapper.update(schemaPO);
         return schemaPO;
     }

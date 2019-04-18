@@ -14,6 +14,7 @@ public interface IRdbDDL {
 
     /**
      * 获取数据库类型
+     *
      * @return
      */
     RdbEnum.DBType getDBType();
@@ -21,13 +22,23 @@ public interface IRdbDDL {
 
     /**
      * 创建用户（oracle、dm 必须是管理员用户操作，mysql 必须是root用户操作）
+     *
      * @return
      */
-    List<String> getCreateUserCommands();
+    String getCreateUserCommands(String username, String password);
+
+
+    /**
+     * 删除用户（oracle、dm 必须是管理员用户操作，mysql 必须是root用户操作）
+     *
+     * @return
+     */
+    String getDropUserCommands(String username);
 
 
     /**
      * 创建表空间
+     *
      * @return
      */
     List<String> getCreateTablespace();
@@ -35,25 +46,28 @@ public interface IRdbDDL {
 
     /**
      * 赋予操作权限给用户
+     *
      * @return
      */
-    List<String> getGrantOptionToUser();
+    List<String> getGrantOptionToUser(String database, String username);
 
 
     /**
      * 创建数据库sql
+     *
      * @param database
      * @return
      */
-    List<String> getCreateDatabaseCommands(RdbCreateDatabase database);
+    String getCreateDatabaseCommands(String database);
 
 
     /**
      * 删除数据库sql
+     *
      * @param database
      * @return
      */
-    List<String> getDropDatabaseCommands(RdbDropDatabase database);
+    String getDropDatabaseCommands(String database);
 
 
     /**
@@ -83,6 +97,7 @@ public interface IRdbDDL {
 
     /**
      * 删除表sql
+     *
      * @param tableName
      * @return
      */
@@ -90,7 +105,7 @@ public interface IRdbDDL {
 
 
     /**
-     *  修改表
+     * 修改表
      *
      * @param alterTable
      * @return

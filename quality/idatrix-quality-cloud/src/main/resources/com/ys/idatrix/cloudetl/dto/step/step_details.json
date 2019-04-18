@@ -1,0 +1,10 @@
+{
+    "transName": "trans name",
+    "stepName": "step name",
+    "newName": "new step name",
+    "type": "step type",
+    "description": "step description",
+    "stepParams": {
+        
+    }
+}

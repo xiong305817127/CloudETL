@@ -1,0 +1,5 @@
+{
+    "retCode": "return code",
+    "executionId": "trans execution id",
+    "message": "information or error message"
+}

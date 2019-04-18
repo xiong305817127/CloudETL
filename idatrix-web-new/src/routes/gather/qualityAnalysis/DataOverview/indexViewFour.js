@@ -5,14 +5,15 @@ import styles from "./style.less";
 import ReactEcharts from 'echarts-for-react';
 import moment from 'moment';
 const { MonthPicker, RangePicker } = DatePicker;
-const dateFormat = 'YYYY-MM';
+const dateFormat = 'YYYY';
 import _ from "lodash";
 const Option = Select.Option;
 class index extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            visible:false
+            visible:false,
+            show:false
         };
     }
 
@@ -219,17 +220,17 @@ class index extends React.Component {
             },
         }
     };
-    onChange=(date, dateString)=>{
-       
-        let data =dateString.split("-")[0];
-        let time =dateString.split("-")[1];
-        
+    onChange=(date)=>{
+        // let data =dateString.split("-")[0];
+        // let time =dateString.split("-")[1];
          const {dispatch}=this.props;
          const list = [];
-          list.push({data:data,time:time});
-          dispatch({ type: "DataOverviewModel/save",payload:{argelist:"alisa",dataTime:list}});
-         dispatch({ type: "DataOverviewModel/getStatistics",payload:{year:data,month:time}});
-         
+         // list.push({data:data,time:time});
+          dispatch({ type: "DataOverviewModel/save",payload:{argelist:"alisa",dataTime:date}});
+         dispatch({ type: "DataOverviewModel/getStatistics",payload:{year:date}});
+         dispatch({ type: "DataOverviewModel/getCountByNumberOfTimes",payload:{year:date}});
+         dispatch({ type: "DataOverviewModel/getCountByServer"});
+         dispatch({ type: "DataOverviewModel/getStatisticsInfo"});
     }
 
     componentDidMount(){
@@ -272,51 +273,65 @@ class index extends React.Component {
       //登陆用户月度统计
       clickEchartsPieLogin=(e)=>{
         const {dispatch}=this.props;
-        const {argelist,dataTime} =this.props.DataOverviewModel;
+        const {argelist,dataTime,StatisticsDataOptian} =this.props.DataOverviewModel;
+        console.log(argelist,dataTime,"argelist,dataTime======",StatisticsDataOptian.StatisticsName[5]);
         var myDate = new Date();
         if(argelist === "alisa"){
             if(e.dataIndex === 0){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:dataTime.time}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:StatisticsDataOptian.StatisticsName[0]}});
             }else if(e.dataIndex === 1){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:dataTime.time}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:StatisticsDataOptian.StatisticsName[1]}});
             }else if(e.dataIndex === 2){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:dataTime.time}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:StatisticsDataOptian.StatisticsName[2]}});
             }else if(e.dataIndex === 3){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:dataTime.time}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:StatisticsDataOptian.StatisticsName[3]}});
             }else if(e.dataIndex === 4){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:dataTime.time}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:StatisticsDataOptian.StatisticsName[4]}});
             }else if(e.dataIndex === 5){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:dataTime.time}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:StatisticsDataOptian.StatisticsName[5]}});
             }else if(e.dataIndex === 6){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:dataTime.time}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:StatisticsDataOptian.StatisticsName[6]}});
             }else if(e.dataIndex === 7){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:dataTime.time}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:StatisticsDataOptian.StatisticsName[7]}});
             }else if(e.dataIndex === 8){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:dataTime.time}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:StatisticsDataOptian.StatisticsName[8]}});
             }else if(e.dataIndex === 9){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:dataTime.time}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:StatisticsDataOptian.StatisticsName[9]}});
+            }else if(e.dataIndex === 10){
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:StatisticsDataOptian.StatisticsName[10]}});
+            }else if(e.dataIndex === 11){
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:StatisticsDataOptian.StatisticsName[11]}});
+            }else if(e.dataIndex === 12){
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:dataTime.data,month:StatisticsDataOptian.StatisticsName[12]}});
             }
-        }else{
+        }
+        else{
             if(e.dataIndex === 0){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:myDate.getMonth()+1}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:StatisticsDataOptian.StatisticsName[0]}});
             }else if(e.dataIndex === 1){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:myDate.getMonth()+1}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:StatisticsDataOptian.StatisticsName[1]}});
             }else if(e.dataIndex === 2){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:myDate.getMonth()+1}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:StatisticsDataOptian.StatisticsName[2]}});
             }else if(e.dataIndex === 3){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:myDate.getMonth()+1}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:StatisticsDataOptian.StatisticsName[3]}});
             }else if(e.dataIndex === 4){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:myDate.getMonth()+1}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:StatisticsDataOptian.StatisticsName[4]}});
             }else if(e.dataIndex === 5){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:myDate.getMonth()+1}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:StatisticsDataOptian.StatisticsName[5]}});
             }else if(e.dataIndex === 6){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:myDate.getMonth()+1}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:StatisticsDataOptian.StatisticsName[6]}});
             }else if(e.dataIndex === 7){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:myDate.getMonth()+1}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:StatisticsDataOptian.StatisticsName[7]}});
             }else if(e.dataIndex === 8){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:myDate.getMonth()+1}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:StatisticsDataOptian.StatisticsName[8]}});
             }else if(e.dataIndex === 9){
-                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:myDate.getMonth()+1}});
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:StatisticsDataOptian.StatisticsName[9]}});
+            }else if(e.dataIndex === 10){
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:StatisticsDataOptian.StatisticsName[10]}});
+            }else if(e.dataIndex === 11){
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:StatisticsDataOptian.StatisticsName[11]}});
+            }else if(e.dataIndex === 12){
+                dispatch({ type: "DataOverviewModel/getDetails",payload:{year:myDate.getFullYear(),month:StatisticsDataOptian.StatisticsName[12]}});
             }
         }
        
@@ -370,8 +385,13 @@ class index extends React.Component {
         key: 'username',
       }]
 
+      onChangeTotal(rest) {
+        const { dispatch } = this.props;
+        dispatch({ type: "DataOverviewModel/getDetails",payload:{ page: rest[0],size: rest[1]}});
+      }
+
     render(){
-        const {StatisticsDataOptian,optionFour,serverDataOption,visible,getDetailsLIst} = this.props.DataOverviewModel;
+        const {pagination,total,serverDataOption,visible,getDetailsLIst} = this.props.DataOverviewModel;
         console.log( this.props.DataOverviewModel,"visible====",getDetailsLIst);
         const optionServer = _.cloneDeep(this.optionServer().option);
         const optionServerData = _.cloneDeep(this.optionServerData().option);
@@ -399,7 +419,16 @@ class index extends React.Component {
                            <Row>
                                <Col style={{margin:'20px' ,fontSize:"18"}} span={16}>登陆用户月度统计</Col>
                                <Col span={6} style={{margin:'20px'}} >
-                                 <MonthPicker  format={dateFormat} defaultValue={moment()} onChange={this.onChange.bind(this)}/>
+                                 {/* <MonthPicker  format={dateFormat} defaultValue={moment()} onChange={this.onChange.bind(this)}/> */}
+                                 <Select  style={{ width: 200 }}  onChange={this.onChange.bind(this)}  defaultValue="2019" >
+                                    <Option value="2019">2019</Option>
+                                    <Option value="2018">2018</Option>
+                                    <Option value="2017">2017</Option>
+                                    <Option value="2016">2016</Option>
+                                    <Option value="2015">2015</Option>
+                                    <Option value="2014">2014</Option>
+                                    <Option value="2013">2013</Option>
+                                </Select>
                                  
                               </Col>
                             </Row>
@@ -475,8 +504,17 @@ class index extends React.Component {
                     visible={visible}
                     width={600}
                     footer={null}
-                    onCancel={this.handleCancel.bind(this)} >
-                   <Table dataSource={getDetailsLIst} columns={this.columns} />
+                    onCancel={this.handleCancel.bind(this)} 
+                    destroyOnClose>
+                  
+                      <Table dataSource={getDetailsLIst} columns={this.columns} 
+                            pagination={{
+                                total:total,
+                                onChange: (...rest) => this.onChangeTotal(rest)
+                                }}
+                      />
+                   
+                   
                 </Modal>
             </div>
      )

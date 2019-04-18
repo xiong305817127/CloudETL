@@ -75,7 +75,7 @@ public class OracleServiceImpl extends DbServiceAware implements OracleService {
             // 重构RDBConfiguration
             SqlExecuteUtils.rebuildRdbLink(linkDto);
             // 执行sql
-            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(commands, linkDto);
+            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(linkDto, commands.toArray(new String[0]));
             return wrapExecuteResult(results, commands);
         } catch (Exception e) {
             log.error("batchExecuteUpdate 执行异常:{}", e.getMessage());
@@ -174,7 +174,7 @@ public class OracleServiceImpl extends DbServiceAware implements OracleService {
             SqlExecuteUtils.rebuildRdbLink(linkDto);
 
             // 执行查询
-            SqlQueryRespDto respDto = rdbExecService.executeQuery(sql, linkDto);
+            SqlQueryRespDto respDto = rdbExecService.executeQuery(linkDto, sql);
             return RespResult.buildSuccessWithData(respDto);
         } catch (Exception e) {
             log.error("selectSequenceList 执行异常:{}", e.getMessage());
@@ -201,7 +201,7 @@ public class OracleServiceImpl extends DbServiceAware implements OracleService {
             SqlExecuteUtils.rebuildRdbLink(linkDto);
 
             // 执行查询
-            SqlQueryRespDto respDto = rdbExecService.executeQuery(sql, linkDto);
+            SqlQueryRespDto respDto = rdbExecService.executeQuery(linkDto, sql);
             return RespResult.buildSuccessWithData(respDto);
         } catch (Exception e) {
             log.error("selectSequenceList 执行异常:{}", e.getMessage());
@@ -262,7 +262,7 @@ public class OracleServiceImpl extends DbServiceAware implements OracleService {
             SqlExecuteUtils.rebuildRdbLink(linkDto);
 
             //执行结果
-            SqlQueryRespDto rt = rdbExecService.executeQuery(sql, linkDto);
+            SqlQueryRespDto rt = rdbExecService.executeQuery(linkDto, sql);
             if (CollectionUtils.isEmpty(rt.getData())) {
                 return RespResult.buildSuccessWithData(Boolean.FALSE);
             } else {

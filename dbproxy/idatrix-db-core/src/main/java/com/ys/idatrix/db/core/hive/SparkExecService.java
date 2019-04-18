@@ -20,38 +20,38 @@ import java.util.List;
 @Service
 public class SparkExecService extends BaseExecService {
 
-	@Autowired(required = false)
-	private HadoopSecurityManager hadoopSecurityManager;
+    @Autowired(required = false)
+    private HadoopSecurityManager hadoopSecurityManager;
 
 
-	/**
-	 * 执行select查询语句
-	 *
-	 * @param select
-	 * @return
-	 * @throws Exception
-	 */
-	public SqlQueryRespDto executeQuery(String database, String select) throws Exception  {
-		return query(select,database);
-	}
+    /**
+     * 执行select查询语句
+     *
+     * @param select
+     * @return
+     * @throws Exception
+     */
+    public SqlQueryRespDto executeQuery(String database, String select) throws Exception {
+        return query(select, database);
+    }
 
 
-	/**
-	 * 批量执行更新语句
-	 *
-	 * @param commands ddl语句列表
-	 * @return
-	 */
-	public List<SqlExecRespDto> batchExecuteUpdate(List<String> commands) throws Exception  {
-		return batchUpdate(commands,"",true,false);
-	}
+    /**
+     * 批量执行更新语句
+     *
+     * @param commands ddl语句列表
+     * @return
+     */
+    public List<SqlExecRespDto> batchExecuteUpdate(String... commands) throws Exception {
+        return batchUpdate("", true, false, commands);
+    }
 
-	@Override
-	protected Connection getConnection(Object connParam) throws HadoopSecurityManagerException {
-		if(connParam instanceof String ){
-			return hadoopSecurityManager.getSparkJdbcConnection(String.valueOf(connParam));
-		}
-		return null;
-	}
+    @Override
+    protected Connection getConnection(Object connParam) throws HadoopSecurityManagerException {
+        if (connParam instanceof String) {
+            return hadoopSecurityManager.getSparkJdbcConnection(String.valueOf(connParam));
+        }
+        return null;
+    }
 
 }

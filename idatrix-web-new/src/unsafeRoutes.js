@@ -63,5 +63,10 @@ export default [
     path: "/logAnalysis",
     name: "logAnalysis",
     component: resolve => require(["./routes/framePage/logAnalysis/"],resolve),
+	},
+	{
+    path: "/dataViewTools",
+    name: "dataViewTools",
+    component: resolve => require(["./routes/framePage/dataViewTools/"],resolve),
   }
 ];

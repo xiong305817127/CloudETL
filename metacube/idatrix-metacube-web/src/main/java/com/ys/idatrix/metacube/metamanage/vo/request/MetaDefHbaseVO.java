@@ -22,7 +22,7 @@ public class MetaDefHbaseVO extends MetadataBaseVO  {
      * 数据库名称（oracle/dm 数据库实例名）
      */
     @ApiModelProperty("HBase数据库实际名称")
-    private String dbDatabasename;
+    private String databaseName;
 
    @ApiModelProperty("Hbase有column family概念，存储在字段description里面")
    private List<TableColumn> columnList;

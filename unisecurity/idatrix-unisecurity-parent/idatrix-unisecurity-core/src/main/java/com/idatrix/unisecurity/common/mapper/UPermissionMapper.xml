@@ -8,6 +8,7 @@
         <result column="client_system_id" property="clientSystemId" jdbcType="VARCHAR"/>
         <result column="type" property="type" jdbcType="VARCHAR"/>
         <result column="url" property="url" jdbcType="VARCHAR"/>
+        <result column="redirect_url" property="redirectUrl" jdbcType="VARCHAR" />
         <result column="name" property="name" jdbcType="VARCHAR"/>
         <result column="is_show" property="isShow" jdbcType="TINYINT"/>
         <result column="show_order" property="showOrder" jdbcType="INTEGER"/>
@@ -15,7 +16,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,parent_id,client_system_id,type,url,name,is_show,show_order,url_desc
+        id,parent_id,client_system_id,type,url, redirect_url,name,is_show,show_order,url_desc
     </sql>
 
     <sql id="limit_sql">
@@ -84,15 +85,18 @@
     </select>
 
     <select id="selectPermByUserIdAndCid" resultMap="BaseResultMap" parameterType="java.util.HashMap">
-        	 select p.id,p.parent_id,p.type,p.url,p.name,p.is_show,p.show_order,p.client_system_id from idatrix_unisecurity_permission p ,
-         idatrix_unisecurity_role_permission rp, idatrix_unisecurity_user_role ur,idatrix_unisecurity_role r
+        select
+          p.id,p.parent_id,p.type,p.url,p.redirect_url,p.name,p.is_show,p.show_order,p.client_system_id
+        from idatrix_unisecurity_permission p, idatrix_unisecurity_role_permission rp, idatrix_unisecurity_user_role ur,idatrix_unisecurity_role r
         where ur.uid =#{userId,jdbcType=BIGINT} and p.client_system_id=#{cid,jdbcType=VARCHAR} and p.id = rp.pid and rp.rid = ur.rid
         and r.id= ur.rid and p.is_show=1 and r.is_active=1
     </select>
 
     <select id="selectPermByCid" resultMap="BaseResultMap" parameterType="java.lang.String">
-        select p.id,p.parent_id,p.type,p.url,p.name,p.is_show,p.show_order,p.client_system_id from idatrix_unisecurity_permission p 
-        where p.client_system_id=#{cid,jdbcType=VARCHAR} and p.is_show=1
+        select
+          <include refid="Base_Column_List" />
+        from idatrix_unisecurity_permission
+        where client_system_id=#{cid,jdbcType=VARCHAR} and is_show=1
     </select>
 
     <!--
@@ -105,6 +109,7 @@
             p.parent_id,
             p.type,
             p.url,
+            p.redirect_url,
             p.NAME,
             p.is_show,
             p.show_order,
@@ -186,6 +191,9 @@
             <if test="url != null">
                 url,
             </if>
+            <if test="redirectUrl != null">
+                redirect_url,
+            </if>
             <if test="name != null">
                 name,
             </if>
@@ -215,6 +223,9 @@
             <if test="url != null">
                 #{url,jdbcType=VARCHAR},
             </if>
+            <if test="redirectUrl != null">
+                #{redirectUrl,jdbcType=VARCHAR},
+            </if>
             <if test="name != null">
                 #{name,jdbcType=VARCHAR},
             </if>
@@ -238,6 +249,9 @@
             </if>
             <if test="url != null">
                 url = #{url,jdbcType=VARCHAR},
+            </if>
+            <if test="redirectUrl != null">
+                redirect_url = #{redirectUrl,jdbcType=VARCHAR},
             </if>
             <if test="name != null">
                 name = #{name,jdbcType=VARCHAR},
@@ -268,6 +282,7 @@
         update idatrix_unisecurity_permission
         set type = #{type,jdbcType=VARCHAR},
              url = #{url,jdbcType=VARCHAR},
+             redirect_url = #{redirectUrl,jdbcType=VARCHAR},
              name = #{name,jdbcType=VARCHAR},
              is_show = #{isShow,jdbcType=TINYINT},
              show_order = #{showOrder,jdbcType=INTEGER},

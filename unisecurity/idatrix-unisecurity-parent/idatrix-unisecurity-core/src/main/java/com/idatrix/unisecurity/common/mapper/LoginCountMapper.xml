@@ -254,14 +254,12 @@
         LEFT JOIN (
             SELECT
                     o.id dept_id,
+                    IFNULL(o.ascription_dept_id, o.id) ascription_dept_id,
                     o.dept_name,
                     IFNULL(ad.dept_name, o.dept_name) ascription_dept_name
             FROM
                     idatrix_unisecurity_organization o
             LEFT JOIN idatrix_unisecurity_organization ad ON o.ascription_dept_id = ad.id
-            <if test="deptId != null">
-              WHERE o.ascription_dept_id = #{deptId}
-            </if>
         ) o ON u.dept_id = o.dept_id
         WHERE u.status = 1 AND ulc.renter_id = #{renterId}
         <if test="year != null">
@@ -269,6 +267,9 @@
         </if>
         <if test="month != null">
           AND MONTH(ulc.login_time) = #{month}
+        </if>
+        <if test="deptId != null">
+          AND o.ascription_dept_id = #{deptId}
         </if>
         ORDER BY ulc.login_time DESC
     </select>

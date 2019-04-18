@@ -77,7 +77,7 @@ public class SqlExecServiceImpl implements SqlExecService {
             sqlParserService.validateAndRebuildParseResult(parseResults, sqlExecReqDto, username, "select");
             // 获取存储系统信息
             RdbLinkDto linkDto = SqlExecuteUtils.generateRdbLink(sqlExecReqDto);
-            SqlQueryRespDto respDto = rdbExecService.executeQuery(sqlExecReqDto.getCommand(), linkDto);
+            SqlQueryRespDto respDto = rdbExecService.executeQuery(linkDto,sqlExecReqDto.getCommand());
             return RespResult.buildSuccessWithData(respDto);
         } catch (ParserException e) {
             log.error("输入SQL:{} 语法错误:{}", sqlExecReqDto.getCommand(), e.getMessage());

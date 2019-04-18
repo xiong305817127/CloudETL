@@ -35,9 +35,9 @@ public class MetadataToDataSwapServiceTest {
     public void testDataSwap(){
         String userName = "robin";
         MetadataTable metadataTable = new MetadataTable();
-        metadataTable.setMetaid(324);
-        metadataTable.setSchemeId(40L);
-        metadataTable.setPreviousMetaid(79);
+        metadataTable.setMetaid(332);
+        metadataTable.setSchemeId(143L);
+//        metadataTable.setPreviousMetaid(79);
 
         List< MetadataField > metadataFields = Arrays.asList(
                 new MetadataField("asdasd", "float"),

@@ -1,0 +1,24 @@
+{
+    "connection": "db connection name",
+    "schema": "",
+    "table": "",
+    "commit": "",
+    "use_batch": false,
+    "skip_lookup": false,
+    "error_ignored": false,
+    "ignore_flag_field": "",
+    "searchFields": [
+        {
+            "keyLookup": "",
+            "keyCondition": "",
+            "keyStream1": "",
+            "keyStream2": ""
+        }
+    ],
+    "updateFields": [
+        {
+            "updateLookup": "",
+            "updateStream": ""
+        }
+    ]
+}

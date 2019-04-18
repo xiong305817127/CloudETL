@@ -1,0 +1,22 @@
+{
+    "connection": "db connection name",
+    "schema": "",
+    "table": "",
+    "commit": "",
+    "update_bypassed": false,
+    "searchFields": [
+        {
+            "keyLookup": "",
+            "keyCondition": "",
+            "keyStream1": "",
+            "keyStream2": ""
+        }
+    ],
+    "updateFields": [
+        {
+            "updateLookup": "",
+            "updateStream": "",
+            "update": ""
+        }
+    ]
+}

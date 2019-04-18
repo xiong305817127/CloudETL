@@ -42,8 +42,8 @@ public class PhoenixExecService extends BaseExecService {
      * @param commands ddl语句列表
      * @return
      */
-    public List<SqlExecRespDto> batchExecuteUpdate(List<String> commands) throws Exception {
-        return batchUpdate(commands, null, false, true);
+    public List<SqlExecRespDto> batchExecuteUpdate(String... commands) throws Exception {
+        return batchUpdate(null, false, true, commands);
     }
 
 

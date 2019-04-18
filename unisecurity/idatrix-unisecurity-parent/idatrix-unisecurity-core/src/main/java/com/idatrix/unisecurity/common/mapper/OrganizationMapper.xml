@@ -69,7 +69,7 @@
         FROM
         idatrix_unisecurity_organization
         WHERE
-        dept_code = #{deptCode,jdbcType=VARCHAR} and renter_id=#{renterId,jdbcType=BIGINT} and is_active=1
+        dept_code = #{deptCode,jdbcType=VARCHAR} and is_active=1
         <if test="id!=null">
             and id!=#{id,jdbcType=BIGINT}
         </if>
@@ -298,8 +298,7 @@
         FROM
         idatrix_unisecurity_organization
         WHERE
-        unified_credit_code = #{unifiedCreditCode, jdbcType=VARCHAR}
-        AND renter_id = #{renterId,jdbcType=BIGINT} and is_active=1
+        unified_credit_code = #{unifiedCreditCode, jdbcType=VARCHAR} and is_active=1
         <if test="id!=null">
             and id != #{id,jdbcType=BIGINT}
         </if>

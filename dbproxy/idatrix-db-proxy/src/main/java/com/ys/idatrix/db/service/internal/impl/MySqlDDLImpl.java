@@ -42,6 +42,11 @@ public class MySqlDDLImpl extends RdbDDLWrapper {
     private final String DROP_USER_SQL = "drop user {0}{1}{2}";
 
     /**
+     * 用户和权限数据修改后，使生效
+     */
+    private final String FLUSH_PRIVILEGE = "flush privileges";
+
+    /**
      * 用户赋权
      */
     //private final String GRANT_SQL = "grant select,insert,update,delete,create,alter,index,drop on `{0}`.* to {1}{2}{3}@{4}%{5} with grant option";
@@ -101,36 +106,42 @@ public class MySqlDDLImpl extends RdbDDLWrapper {
 
 
     @Override
-    public List<String> getCreateDatabaseCommands(RdbCreateDatabase database) {
-        List<String> commands = Lists.newArrayList(MessageFormat.format(CREATE_DB_SQL, database.getDatabase()));
+    public String getCreateDatabaseCommands(String database) {
         //验证用户是否已经创建。是-跳过创建用户，否-创建新用户
-        if (!database.isUserReusing()) {
-            commands.add(MessageFormat.format(CREATE_USER_SQL,
-                    QUOTATION, database.getUserName(), QUOTATION,
-                    QUOTATION, QUOTATION,
-                    QUOTATION, database.getPassword(), QUOTATION));
-        }
-        commands.add(MessageFormat.format(GRANT_SQL,
-                database.getDatabase(),
-                QUOTATION, database.getUserName(), QUOTATION,
-                QUOTATION, QUOTATION));
-        commands.add("flush  privileges");
-        return commands;
+        return MessageFormat.format(CREATE_DB_SQL, database);
     }
 
 
     @Override
-    public List<String> getDropDatabaseCommands(RdbDropDatabase database) {
-        //删除用户
-        String dropUser = MessageFormat.format(DROP_USER_SQL, QUOTATION, database.getUserName(), QUOTATION);
-        //删除库
-        String dropCommand = MessageFormat.format(DROP_DB_SQL, database.getDatabase());
-        return ImmutableList.of(dropUser,dropCommand);
+    public String getDropDatabaseCommands(String database) {
+        return MessageFormat.format(DROP_DB_SQL, database);
     }
 
 
     @Override
-    public List<String> getCreateTableCommands(RdbCreateTable rct){
+    public String getCreateUserCommands(String username, String password) {
+        String createUser = MessageFormat.format(CREATE_USER_SQL,
+                QUOTATION, username, QUOTATION,
+                QUOTATION, QUOTATION,
+                QUOTATION, password, QUOTATION);
+        return createUser;
+    }
+
+    @Override
+    public String getDropUserCommands(String username) {
+        return MessageFormat.format(DROP_USER_SQL, QUOTATION, username, QUOTATION);
+    }
+
+    @Override
+    public List<String> getGrantOptionToUser(String database, String username) {
+        String grantUser = MessageFormat.format(GRANT_SQL,
+                database, QUOTATION, username, QUOTATION,
+                QUOTATION, QUOTATION);
+        return Lists.newArrayList(grantUser, FLUSH_PRIVILEGE);
+    }
+
+    @Override
+    public List<String> getCreateTableCommands(RdbCreateTable rct) {
 
         // 取出所有列
         ArrayList<RdbColumn> rdbColumns = rct.getRdbColumns();

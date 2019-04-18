@@ -1,0 +1,7 @@
+[
+    {
+            "name": "job name",
+            "status": "open|running|passed|failed",
+            "lastExecTime": "YYYY-MM-DD hh:mm:ss"
+    }
+]

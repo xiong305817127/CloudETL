@@ -17,7 +17,7 @@ if(CUSTOM_PARAMS && CUSTOM_PARAMS.DATAVIEW_URL){
 
 
 const index = ()=>{
-
+	
 	return(
 		<Iframe  config={config} url={DATAVIEW_URL}  styles={{
 			top:-36

@@ -46,7 +46,7 @@ public class MysqlServiceImpl extends DbServiceAware implements MysqlService {
             SqlExecuteUtils.rebuildRdbLink(linkDto);
 
             // 执行sql
-            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(commands, linkDto);
+            List<SqlExecRespDto> results = rdbExecService.batchExecuteUpdate(linkDto,commands.toArray(new String[0]));
 
             return wrapExecuteResult(results, commands);
         } catch (Exception e) {
@@ -59,7 +59,7 @@ public class MysqlServiceImpl extends DbServiceAware implements MysqlService {
     @Override
     public RespResult<SqlQueryRespDto> executeQuery(String selectSql, RdbLinkDto linkDto) {
         try {
-            SqlQueryRespDto respDto = rdbExecService.executeQuery(selectSql, linkDto);
+            SqlQueryRespDto respDto = rdbExecService.executeQuery(linkDto,selectSql);
             return RespResult.buildSuccessWithData(respDto);
         } catch (Exception e) {
             log.error("executeQuery 执行异常:{}", e.getMessage());

@@ -1,0 +1,25 @@
+{
+    "connection": "db connection name",
+    "schema": "",
+    "table": "",
+    "commit": "",
+    "truncate": false,
+    "ignoreErrors": false,
+    "useBatch": false,
+    "specifyFields": false,
+    "partitioningEnabled": false,
+    "partitioningField": "",
+    "partitioningDaily": false,
+    "partitioningMonthly": false,
+    "tablenameInField": false,
+    "tablenameField": "",
+    "tablenameInTable": false,
+    "returnKeys": false,
+    "returnField": "",
+    "fields": [
+        {
+            "columnName": "",
+            "streamName": ""
+        }
+    ]
+}

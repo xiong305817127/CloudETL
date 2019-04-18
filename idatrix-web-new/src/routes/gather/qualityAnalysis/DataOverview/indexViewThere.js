@@ -66,8 +66,8 @@ class index extends React.Component {
           let list =SchemaclickInfo.schemaClickDetails?SchemaclickInfo.schemaClickDetails:{};
           let listStatement =SchemaclickInfo.statementClickDetails?SchemaclickInfo.statementClickDetails:{};  
           let listDashBoard =SchemaclickInfo.dashBoardClickDetails?SchemaclickInfo.dashBoardClickDetails:{};
-
-          console.log(schemaInfo,"schemaInfo====");
+         
+          console.log(list," &&", listStatement==={} ,"&&", listDashBoard,"schemaInfo====");
           return (
                <div> 
                   
@@ -101,38 +101,63 @@ class index extends React.Component {
                          </div>
                          
                     </div>
+             
+
                     
                     {schemaInfo === "SchemaClickDetails" ?(
                           <div className={styles.leftTwoLeft}>
                               <h3>数据模型</h3>
-                              <Tabs tabPosition="left">
-                                 {Object.keys(list).map((key, index)=>{
-                                      return(
-                                      <TabPane tab={key} key={index}><Table rowKey="key" bordered scroll={{x:200,y:500}} className={styles.bordered} columns={this.columns} dataSource={list[key]} pagination={false}/> </TabPane>
-                                       )  }) }
-                              </Tabs>
+                              {
+                                   JSON.stringify(list) == "{}"?(
+                                        <h2>暂无数据</h2>  
+                                   ):(
+                                        <Tabs tabPosition="left">
+                                        {Object.keys(list).map((key, index)=>{
+                                             return(
+                                             <TabPane tab={key} key={index}><Table rowKey="key" bordered scroll={{x:200,y:500}} className={styles.bordered} columns={this.columns} dataSource={list[key]} pagination={false}/> </TabPane>
+                                             )  })
+                                                  }
+                                        </Tabs>
+                                   )
+                              }
+                              
                          </div>
                     ):null}
  
                     {schemaInfo === "statementClickDetails" ?(
+                         
                           <div className={styles.leftTwoLeft}>
                             <h3>报表分析</h3>
-                            <Tabs tabPosition="left">
-                              {Object.keys(listStatement).map((key, index)=>{return (
-                                     <TabPane tab={key} key={index}><Table rowKey="key" bordered className={styles.bordered} scroll={{x:200,y:500}} columns={this.columns} dataSource={listStatement[key]} pagination={false}/></TabPane>
-                               ) })  }
-                            </Tabs>
+                            {
+                                JSON.stringify(listStatement) == "{}"?(
+                                   <h2>暂无数据 </h2>  
+                                ):(
+                                   <Tabs tabPosition="left">
+                                        {Object.keys(listStatement).map((key, index)=>{return (
+                                             <TabPane tab={key} key={index}><Table rowKey="key" bordered className={styles.bordered} scroll={{x:200,y:500}} columns={this.columns} dataSource={listStatement[key]} pagination={false}/></TabPane>
+                                        ) })  }
+                                   </Tabs>
+                                ) 
+                            }
+                            
                          </div>
                     ):null}
 
                     {schemaInfo === "dashBoardClickDetails" ?(
                           <div className={styles.leftTwoLeft}>
                             <h3>仪表盘</h3>
-                            <Tabs tabPosition="left">
-                            {Object.keys(listDashBoard).map((key, index)=>{ return ( 
-                                  <TabPane tab={key} key={index}> <Table rowKey="key" bordered className={styles.bordered} scroll={{x:200,y:500}} columns={this.columns} dataSource={listDashBoard[key]} pagination={false}/> </TabPane>
-                           )  })  }
-                          </Tabs>
+                            {
+                                 JSON.stringify(listDashBoard) == "{}"?(
+                                   <h2>暂无数据 </h2>  
+                                 ):(
+                                   <Tabs tabPosition="left">
+                                        {Object.keys(listDashBoard).map((key, index)=>{ return ( 
+                                             <TabPane tab={key} key={index}> <Table rowKey="key" bordered className={styles.bordered} scroll={{x:200,y:500}} columns={this.columns} dataSource={listDashBoard[key]} pagination={false}/> </TabPane>
+                                   )  })  }
+                                   </Tabs>
+                                 )
+                            }
+                           
                          </div>
                     ):null}
                     

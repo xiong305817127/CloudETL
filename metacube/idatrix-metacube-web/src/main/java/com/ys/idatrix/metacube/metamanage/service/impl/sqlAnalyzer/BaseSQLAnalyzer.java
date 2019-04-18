@@ -17,9 +17,12 @@ import com.ys.idatrix.metacube.metamanage.service.impl.sqlAnalyzer.dto.TablesDep
 import com.ys.idatrix.metacube.metamanage.vo.request.TableVO;
 import com.ys.idatrix.metacube.metamanage.vo.request.ViewVO;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public abstract class BaseSQLAnalyzer {
 	
 	/**
@@ -89,13 +92,17 @@ public abstract class BaseSQLAnalyzer {
 	
 	
 	protected boolean execSqlCommand( SqlExecService sqlExecService ,DatabaseConnect dbInfo , String sql ,dealRowInterface dealRows ) throws MetaDataException {
-		if( sqlExecService == null ) {
+		if( sqlExecService == null || dbInfo == null ) {
 			return false;
 		}
 		RespResult<SqlQueryRespDto> sqlRes = sqlExecService.executeQuery(UserUtils.getUserName(), getSqlCommand(dbInfo, sql));
 		if( sqlRes.isSuccess()  ) {
 			SqlQueryRespDto res = sqlRes.getData() ;
 			if( res != null  && dealRows != null  ) {
+				 if( res.getColumns() == null || res.getColumns().isEmpty() ) {
+					log.error("从DbProxy查询库["+dbInfo.getDatasource().getDbName()+":"+dbInfo.getSchema().getName()+"],ql["+sql+"]返回结果为空,result:"+ res);
+					return false;
+				 }
 				for(int i=0 ; i<  res.getData().size(); i++ ){
 					 Map<String, Object> map  =  res.getData().get(i) ;
 					 if( map == null || map.isEmpty() ) {
@@ -103,6 +110,8 @@ public abstract class BaseSQLAnalyzer {
 					 }
 					dealRows.dealRow(i , map , res.getColumns());
 				}
+			}else {
+				log.error("从DbProxy查询库["+dbInfo.getDatasource().getDbName()+":"+dbInfo.getSchema().getName()+"],sql["+sql+"]返回结果为空.");
 			}
 			return true ;
 		}

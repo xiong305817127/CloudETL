@@ -39,10 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -156,9 +153,7 @@ public class EsIndexServiceImpl implements EsIndexService {
     @Override
     public boolean checkExistsIndex(Long schemaId, String schemaName, boolean isDrafted) {
 
-        if (StringUtils.isBlank(schemaName)) {
-            schemaName = getSchemaName(schemaId);
-        }
+        schemaName = Optional.ofNullable(schemaName).orElseGet(() -> getSchemaName(schemaId));
 
         List<EsMetadataPO> metadataList = esMetadataMapper.findBySchemaId(schemaId);
         if (CollectionUtils.isNotEmpty(metadataList)) {
@@ -232,7 +227,7 @@ public class EsIndexServiceImpl implements EsIndexService {
             List<String> indices = Lists.newArrayList();
             for (int i = 1; i <= maxVersion; i++) {
                 String indexFullName = indexName + "_" + i;
-                if(esConsumer.hasExistsIndex(indexFullName).getData()) {
+                if (esConsumer.hasExistsIndex(indexFullName).getData()) {
                     indices.add(indexName + "_" + i);
                 }
             }
@@ -735,25 +730,19 @@ public class EsIndexServiceImpl implements EsIndexService {
      * @return
      */
     private String getDeptNamesByCode(String deptCode) {
-        List<String> deptNames = Lists.newArrayList();
         try {
+            List<String> deptNames = Lists.newArrayList();
             for (String code : deptCode.split(",")) {
                 Organization organization = organizationService.findByCode(code);
                 if (null != organization) {
                     deptNames.add(organization.getDeptName());
                 }
             }
+            return StringUtils.join(deptNames, ",");
         } catch (Exception e) {
             log.error("根据deptCode:{} 获取部门名称异常:{}", deptCode, e.getMessage());
-        }
-
-        if (CollectionUtils.isNotEmpty(deptNames)) {
-            return StringUtils.join(deptNames, ",");
-        } else {
             return null;
         }
-
     }
-
 
 }

@@ -1,0 +1,8 @@
+{
+    "connection": "db connection name",
+    "schema": "database name",
+    "tables": [
+        {"table": "table name"},
+        {"table": "table name"}
+    ]
+}

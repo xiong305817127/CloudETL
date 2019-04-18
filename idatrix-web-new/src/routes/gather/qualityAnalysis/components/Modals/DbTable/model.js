@@ -14,7 +14,7 @@ export default {
     //表种类列表
     viewList: [],
     //表种类默认为
-    viewType: "table",
+    viewType: "",
     tables: [],
     owner: "",
     //选择的表id
@@ -50,7 +50,7 @@ export default {
         //表种类列表
         viewList: [],
         //表种类默认为
-        viewType: "table",
+        viewType: "",
         tables: [],
         owner: "",
         //选择的表id
@@ -80,8 +80,12 @@ export default {
         }
       ];
 
-      //更改视图列表内容
-      viewList.length = tableList.length;
+			//更改视图列表内容
+			let viewType = "";
+			viewList.length = tableList.length;
+			if(viewList.length > 0){
+				viewType = "table"
+			}
       const tables = tableList.length > 0 ? tableList[0] : [];
 
       yield put({
@@ -89,7 +93,8 @@ export default {
         payload: {
           ...payload,
           viewList,
-          tables
+					tables,
+					viewType
         }
       });
     },

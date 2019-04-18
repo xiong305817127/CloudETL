@@ -22,7 +22,7 @@
 	<modules>
 	    <module>idatrix-resource-web</module>
         <module>idatrix-resource-webservice</module>
-<!--        <module>idatrix-resource-service-api</module>-->
+        <module>idatrix-resource-service-api</module>
 	</modules>
 
 	<build>

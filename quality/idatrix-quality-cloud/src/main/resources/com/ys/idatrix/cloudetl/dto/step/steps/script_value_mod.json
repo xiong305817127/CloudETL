@@ -1,0 +1,21 @@
+{
+    "compatible": false,
+    "optimizationLevel": "",
+    "jsScripts": [
+        {
+            "name": "script name",
+            "type": "script type",
+            "value": "script text"
+        }
+    ],
+    "fields": [
+        {
+            "name": "field name",
+            "rename": "rename for the field",
+            "type": "field type",
+            "length": "field length",
+            "precision": "field precision",
+            "replace": false
+        }
+    ]
+}

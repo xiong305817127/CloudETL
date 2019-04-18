@@ -1,0 +1,18 @@
+{
+    "connection": "database connection name",
+    "sql": "sql text",
+    "executedEachInputRow": false,
+    "singleStatement": false,
+    "replaceVariables": false,
+    "setParams": false,
+    "quoteString": false,
+    "insertField": "",
+    "updateField": "",
+    "deleteField": "",
+    "readField": "",
+    "arguments": [
+        {
+            "name": "field name"
+        }
+    ]
+}

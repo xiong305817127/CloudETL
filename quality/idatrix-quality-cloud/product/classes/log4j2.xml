@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+	<properties>
+		<property name="LOG_HOME">./logs</property>
+		<property name="FILE_NAME">${sys:ETL_LOG_FILENAME}</property>
+	</properties>
+	<Appenders>
+		<Console name="iDatrixConsole" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{ABSOLUTE} %-5p %m%n" />
+		</Console>
+		 <RollingFile name="fileAppender" fileName="${LOG_HOME}/${FILE_NAME}.log"
+            filePattern="${LOG_HOME}/${FILE_NAME}.log.%d{yyyy-MM-dd}">
+            <PatternLayout pattern="%d{ABSOLUTE} %-5p %m%n" />
+            <Policies>
+				<TimeBasedTriggeringPolicy interval="1" />
+				<SizeBasedTriggeringPolicy size="10 MB" />
+			</Policies>
+        </RollingFile>
+	</Appenders>
+	<Loggers>
+		<!-- <Logger name="iDatrixCloudLog" level="trace" additivity="true">
+			<AppenderRef ref="iDatrixFileAppender2" />
+		</Logger> -->
+		<Root level="INFO">
+			<AppenderRef ref="iDatrixConsole" />
+			<AppenderRef ref="fileAppender" />
+		</Root>
+	</Loggers>
+</Configuration>

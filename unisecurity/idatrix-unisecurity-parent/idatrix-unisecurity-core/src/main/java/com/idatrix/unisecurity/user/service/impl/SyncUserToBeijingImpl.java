@@ -36,8 +36,8 @@ public class SyncUserToBeijingImpl implements SyncUserToBeijing {
     @Override
     public void addUser(String username, String password, String realName, String email) {
         if(propertes.getIsAddBeijing()) {
+            JSONObject json = new JSONObject();
             try{
-                JSONObject json = new JSONObject();
                 json.put("firstname", realName);
                 json.put("lastname", realName);
                 json.put("username", username);
@@ -49,7 +49,7 @@ public class SyncUserToBeijingImpl implements SyncUserToBeijing {
                 if(code.equals(200)){
                     log.debug("add user synchronized beijing success");
                 } else {
-                    log.error("add user synchronized beijing error,message：{}", responseJson.get("message"));
+                    log.error("add user synchronized beijing error, param ：{}, message：{}", json.toJSONString(), responseJson.get("message"));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -97,7 +97,7 @@ public class SyncUserToBeijingImpl implements SyncUserToBeijing {
                     } else {
                         log.error("delete user username:{} synchronized beijing，error, message：{}", username, responseJson.get("message"));
                     }
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                     log.error("delete user username:{} synchronized beijing error, message：{}", username, e.getMessage());
                 }

@@ -2,12 +2,14 @@ package com.idatrix.unisecurity.common.domain;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import net.sf.json.JSONObject;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
+@Data
 @ApiModel(description = "权限DTO")
 public class UPermission implements Serializable {
 
@@ -24,18 +26,20 @@ public class UPermission implements Serializable {
     private String name;
 
     /**
+     * 权限类型
+     */
+    @ApiModelProperty(value = "权限类型：系统，菜单，按钮，中转站")
+    @NotBlank(message = "权限类型不能为空")
+    private String type;
+
+    /**
      * 权限的url
      */
     @ApiModelProperty(value = "权限的url")
-    @NotBlank(message = "权限url不能为空")
     private String url;
 
-    /**
-     * 权限类型
-     */
-    @ApiModelProperty(value = "权限类型")
-    @NotBlank(message = "权限类型不能为空")
-    private String type;
+    @ApiModelProperty(value = "跳转的url")
+    private String redirectUrl;
 
     /**
      * 权限描述
@@ -69,78 +73,6 @@ public class UPermission implements Serializable {
     @ApiModelProperty(value = "客户端系统Id")
     @NotBlank(message = "客户端系统Id为空，错误的参数！！！")
     private String clientSystemId;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
-    }
-
-    public String getClientSystemId() {
-        return clientSystemId;
-    }
-
-    public void setClientSystemId(String clientSystemId) {
-        this.clientSystemId = clientSystemId;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Boolean getIsShow() {
-        return isShow;
-    }
-
-    public void setIsShow(Boolean isShow) {
-        this.isShow = isShow;
-    }
-
-    public Integer getShowOrder() {
-        return showOrder;
-    }
-
-    public void setShowOrder(Integer showOrder) {
-        this.showOrder = showOrder;
-    }
-
-    public String getUrlDesc() {
-        return urlDesc;
-    }
-
-    public void setUrlDesc(String urlDesc) {
-        this.urlDesc = urlDesc;
-    }
 
     public String toString() {
         return JSONObject.fromObject(this).toString();

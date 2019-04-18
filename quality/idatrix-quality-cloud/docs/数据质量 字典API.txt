@@ -1,0 +1,489 @@
+quality:项目拦截路径
+
+
+业务说明：查询字典列表，带分页（字典页面使用）
+url：/analysis/dictList.do
+method:GET
+参数说明：
+dictName：字典名（模糊查询）
+page：当前显示第几页
+size：当前显示几条数据
+返回值：
+{
+	"retCode": 0,
+	"message": null,
+	"data": {
+		"pages": 1,
+		"size": 10,
+		"page": 1,
+		"list": [{
+			"id": "1",
+			"dictName": "cs3",
+			"dictDesc": "这个值是手动输入的。",
+			"addTime": null,
+			"updateTime": null,
+			"status": 0,
+			"activeTime": null,
+			"userId": null
+		}, {
+			"id": "1213",
+			"dictName": "cs6",
+			"dictDesc": "asdasd",
+			"addTime": null,
+			"updateTime": null,
+			"status": 0,
+			"activeTime": null,
+			"userId": null
+		}, {
+			"id": "bb175315-d04c-11e8-b995-bfbc6a9d6613",
+			"dictName": "地区字典",
+			"dictDesc": "my is cs5",
+			"addTime": null,
+			"updateTime": 1539597613000,
+			"status": 1,
+			"activeTime": null,
+			"userId": "1010"
+		}]
+	},
+	"success": true
+}
+
+
+
+业务说明：查询所有的字典列表，不带分页（标准值页面使用）
+url：/analysis/dictAllList.do
+method:GET
+参数说明：
+没有参数
+返回值：
+{
+	"retCode": 0,
+	"message": null,
+	"data": {
+		"list": [{
+			"id": "1",
+			"dictName": "cs3",
+			"dictDesc": "这个值是手动输入的。",
+			"addTime": null,
+			"updateTime": null,
+			"activeTime": null,
+			"userId": null,
+			"active": null
+		}, {
+			"id": "1213",
+			"dictName": "cs6",
+			"dictDesc": "asdasd",
+			"addTime": null,
+			"updateTime": null,
+			"activeTime": null,
+			"userId": null,
+			"active": null
+		}, {
+			"id": "2",
+			"dictName": "cs2",
+			"dictDesc": "这个值是手动输入的。",
+			"addTime": null,
+			"updateTime": null,
+			"activeTime": null,
+			"userId": null,
+			"active": null
+		}, {
+			"id": "3",
+			"dictName": "cs1",
+			"dictDesc": "这个值是手动输入的。",
+			"addTime": null,
+			"updateTime": null,
+			"activeTime": null,
+			"userId": null,
+			"active": null
+		}, {
+			"id": "bb175315-d04c-11e8-b995-bfbc6a9d6613",
+			"dictName": "cs5",
+			"dictDesc": "my is cs5",
+			"addTime": null,
+			"updateTime": 1539597613000,
+			"activeTime": null,
+			"userId": "1010",
+			"active": false
+		}]
+	},
+	"success": true
+}
+
+
+业务说明：根据字典ID，查询字典信息
+url：/analysis/dict/{id}.do
+method:GET
+参数说明：
+在url上
+id：字典id
+返回值：
+{
+	"retCode": 0,
+	"message": null,
+	"data": {
+		"data": {
+			"id": "bb175315-d04c-11e8-b995-bfbc6a9d6613",
+			"dictName": "地区字典",
+			"dictDesc": "my is cs5",
+			"addTime": null,
+			"updateTime": 1539597613000,
+			"status": 1,
+			"activeTime": null,
+			"userId": "1010"
+		}
+	},
+	"success": true
+}
+
+
+业务说明：新增字典
+url：/analysis/dict.do
+method:POST
+参数说明：
+{
+  "dictName":"cs4",//字典名，唯一
+  "dictDesc":"myddddd is desc" //字典详情
+}
+返回值：
+{"retCode":0,"message":null,"data":null,"success":true}
+
+
+
+业务说明：修改字典的生效状态
+url：/analysis/dict/status.do
+method:POST
+参数说明：
+{
+  "id":"05927aff-d1bd-11e8-98d1-51bac4661c3b",//字典名，唯一标识
+  "status":1 //字典状态，0：未生效，1：生效，2：待更新
+}
+返回值：
+{
+    "retCode": 0,
+    "message": null,
+    "data": null,
+    "success": true
+}
+
+
+业务说明：根据字典ID，查询字典下的数据，带分页（字典数据页面使用）
+url：/analysis/dictDataList/{dictId}.do
+method:GET
+参数说明：
+dictId：字典id（精确查询）,必传
+value：标准值（模糊查询）
+page：显示第几页
+size：一页显示多少数据
+
+返回值：
+{
+    "retCode": 0,
+    "message": null,
+    "data": {
+        "pages": 1,
+        "size": 10,
+        "page": 1,
+        "list": [
+            {
+                "id": 4,
+                "dictId": "bb175315-d04c-11e8-b995-bfbc6a9d6613",
+                "stdVal1": "北京",
+                "simVal2": "大北京",
+                "simVal3": "首都",
+                "simVal4": "北了个京",
+                "simVal5": "北京飘了",
+                "simVal6": null,
+                "simVal7": null,
+                "simVal8": null,
+                "simVal9": null,
+                "simVal10": null,
+                "references": [
+                    "大北京",
+                    "首都",
+                    "北了个京",
+                    "北京飘了"
+                ],
+                "allValue": [
+                    "北京",
+                    "大北京",
+                    "首都",
+                    "北了个京",
+                    "北京飘了"
+                ]
+            },
+            {
+                "id": 5,
+                "dictId": "bb175315-d04c-11e8-b995-bfbc6a9d6613",
+                "stdVal1": "东北",
+                "simVal2": "东北大佬",
+                "simVal3": "东北真冷",
+                "simVal4": "冷东北",
+                "simVal5": "东北妹子真彪悍",
+                "simVal6": null,
+                "simVal7": null,
+                "simVal8": null,
+                "simVal9": null,
+                "simVal10": null,
+                "references": [
+                    "东北大佬",
+                    "东北真冷",
+                    "冷东北",
+                    "东北妹子真彪悍"
+                ],
+                "allValue": [
+                    "东北",
+                    "东北大佬",
+                    "东北真冷",
+                    "冷东北",
+                    "东北妹子真彪悍"
+                ]
+            },
+            {
+                "id": 6,
+                "dictId": "bb175315-d04c-11e8-b995-bfbc6a9d6613",
+                "stdVal1": "cs1",
+                "simVal2": "cs1",
+                "simVal3": "cs1",
+                "simVal4": "cs1",
+                "simVal5": "cs1",
+                "simVal6": null,
+                "simVal7": null,
+                "simVal8": null,
+                "simVal9": null,
+                "simVal10": null,
+                "references": [
+                    "cs1",
+                    "cs1",
+                    "cs1",
+                    "cs1"
+                ],
+                "allValue": [
+                    "cs1",
+                    "cs1",
+                    "cs1",
+                    "cs1",
+                    "cs1"
+                ]
+            },
+            {
+                "id": 7,
+                "dictId": "bb175315-d04c-11e8-b995-bfbc6a9d6613",
+                "stdVal1": "cs2",
+                "simVal2": "w",
+                "simVal3": "w",
+                "simVal4": "w",
+                "simVal5": "w",
+                "simVal6": "w",
+                "simVal7": "w",
+                "simVal8": null,
+                "simVal9": null,
+                "simVal10": null,
+                "references": [
+                    "w",
+                    "w",
+                    "w",
+                    "w",
+                    "w",
+                    "w"
+                ],
+                "allValue": [
+                    "cs2",
+                    "w",
+                    "w",
+                    "w",
+                    "w",
+                    "w",
+                    "w"
+                ]
+            },
+            {
+                "id": 8,
+                "dictId": "bb175315-d04c-11e8-b995-bfbc6a9d6613",
+                "stdVal1": "x",
+                "simVal2": "a",
+                "simVal3": "a",
+                "simVal4": "a",
+                "simVal5": "a",
+                "simVal6": "a",
+                "simVal7": "a",
+                "simVal8": "a",
+                "simVal9": "a",
+                "simVal10": null,
+                "references": [
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                    "a"
+                ],
+                "allValue": [
+                    "x",
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                    "a",
+                    "a"
+                ]
+            },
+            {
+                "id": 9,
+                "dictId": "bb175315-d04c-11e8-b995-bfbc6a9d6613",
+                "stdVal1": "xddd",
+                "simVal2": "w",
+                "simVal3": "w",
+                "simVal4": "w",
+                "simVal5": "w",
+                "simVal6": "w",
+                "simVal7": "w",
+                "simVal8": "w",
+                "simVal9": "w",
+                "simVal10": null,
+                "references": [
+                    "w",
+                    "w",
+                    "w",
+                    "w",
+                    "w",
+                    "w",
+                    "w",
+                    "w"
+                ],
+                "allValue": [
+                    "xddd",
+                    "w",
+                    "w",
+                    "w",
+                    "w",
+                    "w",
+                    "w",
+                    "w",
+                    "w"
+                ]
+            }
+        ]
+    },
+    "success": true
+}
+
+业务说明：根据字典ID，查询字典下的所有数据，不带分页
+url：/analysis/dictDataAllList/{dictId}.do
+method:GET
+参数说明：
+在url上
+id：字典id
+返回值：
+{
+	"retCode": 0,
+	"message": null,
+	"data": {
+		"list": [{
+			"id": 4,
+			"dictId": "bb175315-d04c-11e8-b995-bfbc6a9d6613",
+			"stdVal1": "北京",
+			"simVal2": "大北京",
+			"simVal3": "首都",
+			"simVal4": "北了个京",
+			"simVal5": "北京飘了",
+			"simVal6": null,
+			"simVal7": null,
+			"simVal8": null,
+			"simVal9": null,
+			"simVal10": null,
+			"references": ["大北京", "首都", "北了个京", "北京飘了"],
+			"allValue": ["北京", "大北京", "首都", "北了个京", "北京飘了"]
+		}, {
+			"id": 5,
+			"dictId": "bb175315-d04c-11e8-b995-bfbc6a9d6613",
+			"stdVal1": "东北",
+			"simVal2": "东北大佬",
+			"simVal3": "东北真冷",
+			"simVal4": "冷东北",
+			"simVal5": "东北妹子真彪悍",
+			"simVal6": null,
+			"simVal7": null,
+			"simVal8": null,
+			"simVal9": null,
+			"simVal10": null,
+			"references": ["东北大佬", "东北真冷", "冷东北", "东北妹子真彪悍"],
+			"allValue": ["东北", "东北大佬", "东北真冷", "冷东北", "东北妹子真彪悍"]
+		}]
+	},
+	"success": true
+}
+
+业务说明：根据字典数据id获取某条数据
+url:/analysis/dictData/{id}
+method:POST
+参数说明：
+参数在url上
+id：字典数据id
+返回值：
+{
+	"retCode": 0,
+	"message": null,
+	"data": {
+		"data": {
+			"id": 4,
+			"dictId": "bb175315-d04c-11e8-b995-bfbc6a9d6613",
+			"stdVal1": "北京",
+			"simVal2": "大北京",
+			"simVal3": "首都",
+			"simVal4": "北了个京",
+			"simVal5": "北京飘了",
+			"simVal6": null,
+			"simVal7": null,
+			"simVal8": null,
+			"simVal9": null,
+			"simVal10": null,
+			"references": ["大北京", "首都", "北了个京", "北京飘了"],
+			"allValue": ["北京", "大北京", "首都", "北了个京", "北京飘了"]
+		}
+	},
+	"success": true
+}
+
+
+业务说明：根据 字典数据id 修改字典数据（字典数据使用）
+url:/analysis/dictData/update.do
+method:POST
+参数说明：
+{
+  "id":5,//字典数据id
+  "dictId":"bb175315-d04c-11e8-b995-bfbc6a9d6613",//字典id
+  "stdVal1":"东北1111",//标准值
+  "valueArr":"a,b,c,d,e,f" //参考值，以字符串传入，每个参考值以,隔开
+}
+
+返回值：
+{
+    "retCode": 0,
+    "message": null,
+    "data": null,
+    "success": true
+}
+
+
+业务说明：新增字典数据，以文件方式新增
+url:/analysis/dictData.do
+method:POST
+参数说明：
+dictId：字典id
+file：文件（excel文件 或 csv文件）
+
+返回值：
+{
+	"retCode": 0,
+	"message": null,
+	"data": {
+		"errorMessageList": ["第1条数据加入失败！标准值重复！！！", "第2条数据加入失败！标准值重复！！！"],
+		"message": "当前新增字典成功0条，失败2条。"
+	},
+	"success": true
+}

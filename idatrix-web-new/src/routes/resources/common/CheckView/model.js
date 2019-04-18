@@ -7,10 +7,11 @@ import {
   getDatabaseListByRentId,
   dataUpload
 } from "services/catalog";
-import { getResourceShareDict, getResourceTypeDict } from "services/DirectoryOverview";
 import {
-  getSchemasByDsId,
-} from "services/metadataCommon";
+  getResourceShareDict,
+  getResourceTypeDict
+} from "services/DirectoryOverview";
+import { getRentTablesBySchemaId } from "services/metadataCommon";
 
 import { message } from "antd";
 
@@ -63,9 +64,9 @@ const immutableState = {
   //搜素名
   name: "",
   current: 1,
-	pageSize: 10,
-	//资源格式名称
-	ResourceFormat: []
+  pageSize: 10,
+  //资源格式名称
+  ResourceFormat: []
 };
 
 export default {
@@ -84,13 +85,17 @@ export default {
   effects: {
     *getTable({ payload }, { call, select, put }) {
       const { account } = yield select(state => state);
-      let arrType = payload.dsType === "MYSQL" ? 3 : "" || payload.dsType === "ORACLE" ? 2 : "" || payload.dsType === "DM" ? 14 : "";
+      let arrType = payload.dsType === "Oracle" ? 2 : 1;
       const { bindTableId } = payload;
-      const dataDataBase = yield call(getDatabaseListByRentId, { dsType: arrType, rentId: account.renterId })
-      const dataTables = yield call(getTableList, { name: payload.name, rentId: account.renterId });      
+      const dataDataBase = yield call(getDatabaseListByRentId, {
+        dsType: arrType,
+        rentId: account.renterId
+      });
+
+      // const dataTables = yield call(getTableList, { name: payload.name, rentId: account.renterId });
       const { code } = dataDataBase.data;
       const oldData = dataDataBase.data;
-    
+
       if (code === "200") {
         let args = [];
         let unqieArgs = [];
@@ -98,37 +103,55 @@ export default {
         for (let index of oldData.data) {
           if (!unqieArgs.includes(index.name)) {
             unqieArgs.push(index.name);
-            args.push({ value: index.name, label: index.name, isLeaf: false, dsId: index.dsId })
+            args.push({
+              value: index.name,
+              label: index.name,
+              isLeaf: false,
+              dsId: index.dsId
+            });
           }
         }
 
-        const databaseIndex = args.findIndex(val => val.value === bindTableId[0]);
+        const databaseIndex = args.findIndex(
+          val => val.value === bindTableId[0]
+        );
         const DsId = args[databaseIndex].dsId;
-        // 获取到对应的schema
-        const dataSchema = yield call(getSchemasByDsId, DsId);
-        args[databaseIndex].children = dataSchema.data.data.map(val => ({
-          value: val.name,
-          valuelist: val.id,
-          label: val.name,
-          isLeaf: false
-        }));
 
-        const schemaIndex = args[databaseIndex].children.findIndex(val => val.value === bindTableId[1]);
-				if(schemaIndex >= 0){
-          args[databaseIndex].children[schemaIndex].children = dataTables.data.data.tables.map(val => (
-            {
-              value: val.id,
-              label: val.tableName
-            }
-          ));
+        if (typeof DsId !== "undefined") {
+          // 获取到对应的schema
+          const dataSchema = yield call(getRentTablesBySchemaId, {
+            rentId: account.renterId,
+            schemaId: DsId
+          });
+
+          console.log(dataSchema);
+
+          if (dataSchema.data.code === "200") {
+            args[databaseIndex].children = dataSchema.data.data.tableList.map(
+              val => ({
+                value: val.id,
+                label: val.name,
+                isLeaf: false
+              })
+            );
+          }
         }
 
-        if (dataTables.data.code === "200") {
-          yield put({ type: "save", payload: { bindTables: args } })
-        }
+        // const schemaIndex = args[databaseIndex].children.findIndex(val => val.value === bindTableId[1]);
+        // if(schemaIndex >= 0){
+        //   args[databaseIndex].children[schemaIndex].children = dataTables.data.data.tables.map(val => (
+        //     {
+        //       value: val.id,
+        //       label: val.tableName
+        //     }
+        //   ));
+        // }
+
+        yield put({ type: "save", payload: { bindTables: args } });
       }
     },
     *getEditResource({ payload, actionType }, { call, put }) {
+      yield put({ type: "getResourceTypeDict" });
       const { data } = yield call(getResource, { ...payload });
       const { code } = data;
       if (code === "200") {
@@ -144,21 +167,23 @@ export default {
               name: config.libTableId.split(",")[0]
             }
           });
-          config.bindTableId = config.libTableId.split(",")
-          if (config.bindTableId[2]) {
-            config.bindTableId[2] = parseInt(config.bindTableId[2])
+          config.bindTableId = config.libTableId.split(",");
+          if (config.bindTableId[1]) {
+            config.bindTableId[1] = parseInt(config.bindTableId[1]);
           }
-
         }
 
         config.deptNameIdArray = config.deptNameIdArray.split(",");
         let controlVisible = getType(config.formatType);
         config.formatType && args.push(config.formatType);
-        config.formatInfo && args.push(config.formatInfo.toUpperCase());
+        config.formatInfo && args.push(config.formatInfo);
         config.formatType = args;
         let catalogCode = config.catalogCode + "/";
         let shareType = config.shareType + "";
         config.shareDeptArray = arrayToString(config.shareDeptArray);
+
+        console.log(config, "配置参数");
+
         yield put({
           type: "save",
           payload: {
@@ -227,14 +252,16 @@ export default {
       if (code === "200") {
         message.success("下载成功");
       }
-		},
-		//获取资源格式
-		*getResourceTypeDict({ payload }, { call, put }) {
-			const { data } = yield call(getResourceTypeDict, { ...payload });
-			const { code } = data;
-			if (code === "200") {
-				yield put({ type: "save", payload: { ResourceFormat: data.data } })
-			}
-		}
+    },
+    //获取资源格式
+    *getResourceTypeDict({ payload }, { call, put, select }) {
+      const { ResourceFormat } = yield select(state => state.checkview);
+      if (ResourceFormat.length > 0) return;
+      const { data } = yield call(getResourceTypeDict, { ...payload });
+      const { code } = data;
+      if (code === "200") {
+        yield put({ type: "save", payload: { ResourceFormat: data.data } });
+      }
+    }
   }
 };

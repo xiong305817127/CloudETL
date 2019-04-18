@@ -9,6 +9,7 @@ import Modal from "components/Modal";
 import baseInfo from "config/baseInfo.config";
 import UserProfile from "../user/Profile";
 import { inletDecorator } from "./homeDecorator";
+import { routerRedux } from "dva/router";
 
 import Style from "./Government.less";
 
@@ -17,28 +18,32 @@ const { Header, Content } = Layout;
 //功能菜单配置
 const menuFuc = {
   dataMap: {
-		path: "#/hotMap",
-		name:"数据展示"
+    path: "/hotMap",
+    name: "数据展示"
   },
   bbsPage: {
-		path: "#/bbsPage",
-		name:"大数据论坛"
+    path: "/bbsPage",
+    name: "大数据论坛"
   },
   dataView: {
-		path: "#/dataView",
-		name:"数据可视化"
+    path: "/dataView",
+    name: "数据可视化"
 	},
-	portalPage: {
-		path: "#/portalPage",
-		name:"门户网站"
+	dataViewTools: {
+    path: "/dataViewTools",
+    name: "可视化工具"
   },
-	kibanaPage: {
-		path: "#/kibanaPage",
-		name:"kibana"
+  portalPage: {
+    path: "/portalPage",
+    name: "门户网站"
   },
-	logAnalysis: {
-		path: "#/logAnalysis",
-		name:"日志分析"
+  kibanaPage: {
+    path: "/kibanaPage",
+    name: "kibana"
+  },
+  logAnalysis: {
+    path: "/logAnalysis",
+    name: "日志分析"
   }
 };
 
@@ -64,14 +69,16 @@ class HomePage extends HomeComponent {
   }
   //跳转神算子平台链接
   titleA() {
-		const { username } = this.props.account;
+    const { username } = this.props.account;
 
-		let DIVINE_URL = `"http://113.207.110.254:8088/dmp-oppm/users/ssologin?username=${username}&appkey=${username}`
+    let DIVINE_URL = `http://113.207.110.254:8088/dmp-oppm/users/ssologin?username=${username}&appkey=${username}`;
 
-		//增加神算子可配置化
-		if(CUSTOM_PARAMS && CUSTOM_PARAMS.DIVINE_URL){
-			DIVINE_URL = `${CUSTOM_PARAMS.DIVINE_URL}?username=${username}&appkey=${username}`
-		}
+    //增加神算子可配置化
+    if (CUSTOM_PARAMS && CUSTOM_PARAMS.DIVINE_URL) {
+      DIVINE_URL = `${
+        CUSTOM_PARAMS.DIVINE_URL
+      }?username=${username}&appkey=${username}`;
+    }
 
     window.open(DIVINE_URL);
     //location.href="https://senses.jusfoun.com/home/recommend/guide?username="+username+"&appkey="+username;
@@ -141,40 +148,39 @@ class HomePage extends HomeComponent {
     }
   }
 
-  /**
-  *  createCol(col) {
-      return (<div
-          className={Style.navItem + (!col.allow ? ` ${Style.disabled}` : '')}
-          onClick={() => col.allow && this.props.openSystem(col.path)}
-        >
-          <dl>
-            <dd><img src={col.icon2} /></dd>
-            <dt>{col.title}</dt>
-          </dl>
-          <p>{col.desc}</p>
-        </div>);
+  handleMenuClick(path) {
+		if(path === "/dataView"){
+			if(CUSTOM_PARAMS && CUSTOM_PARAMS.DATAVIEW_URL){
+				window.open(CUSTOM_PARAMS.DATAVIEW_URL);
+			}
+		}else if(path === "/dataViewTools"){
+			if(CUSTOM_PARAMS && CUSTOM_PARAMS.DATAVIEWTOOLS_URL){
+				window.open(CUSTOM_PARAMS.DATAVIEWTOOLS_URL);
+			}
+		}else{
+			const { dispatch } = this.props;
+			dispatch(routerRedux.push(`${path}`))
+		}
   }
-  */
 
   //home页面大屏  dataMap
   //bbs 论坛入口  bbsPage
   //可视化				dataView
 
-  menu = (menuList) => {
+  menu = menuList => {
     return (
       <Menu>
-				{
-					menuList.map(index=>(
-						<Menu.Item key={index}>
-						<a
-							rel="noopener noreferrer"
-							href={menuFuc[index].path}
-						>
-							{menuFuc[index].name}
-						</a>
-					</Menu.Item>
-					))
-				}
+        {menuList.map(index => (
+          <Menu.Item key={index}>
+            <span
+              onClick={() => {
+                this.handleMenuClick(menuFuc[index].path);
+              }}
+            >
+              {menuFuc[index].name}
+            </span>
+          </Menu.Item>
+        ))}
       </Menu>
     );
   };
@@ -185,9 +191,7 @@ class HomePage extends HomeComponent {
     const rowList1 = inletList.slice(0, 4); // 获取第一行数组
     const rowList2 = inletList.slice(4, 8); // 获取第一行数组
     const menuList = baseInfo.premit.filter(
-      index =>
-				index === "dataMap" || index === "bbsPage" || index === "dataView" || index === "portalPage"
-				|| index === "kibanaPage" || index === "logAnalysis"
+      index => Object.keys(menuFuc).includes(index)
     );
 
     return (
@@ -228,10 +232,23 @@ class HomePage extends HomeComponent {
                   </a>
                 </Dropdown>
               ) : null}
-              <a href="lingjiluping1://">
-                <Icon type="video-camera" />
-                <span style={{ paddingLeft: 7 }}>打开录屏</span>
-              </a>
+              <Dropdown
+                overlay={
+                  <Menu>
+                    <Menu.Item>
+                      <a href="lingjiluping://">打开录屏</a>
+                    </Menu.Item>
+                    <Menu.Item>
+                      <a href="/luping.reg">下载注册表</a>
+                    </Menu.Item>
+                  </Menu>
+                }
+              >
+                <a>
+                  <Icon type="video-camera" />
+                  录屏功能
+                </a>
+              </Dropdown>
               <a href="#" onClick={this.methodLogout.bind(this)}>
                 <img src={require("../../assets/images/drop_out.png")} />
                 <span style={{ paddingLeft: 7 }}>退出</span>

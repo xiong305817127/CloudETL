@@ -4,6 +4,7 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.google.common.collect.ImmutableList;
 import com.idatrix.unisecurity.api.domain.Organization;
 import com.idatrix.unisecurity.api.service.OrganizationService;
+import com.idatrix.unisecurity.sso.client.utils.GsonUtil;
 import com.ys.idatrix.metacube.api.beans.*;
 import com.ys.idatrix.metacube.api.service.MetadataServiceProvide;
 import com.ys.idatrix.metacube.common.exception.MetaDataException;
@@ -132,6 +133,7 @@ public class MetadataServiceProvideImpl implements MetadataServiceProvide {
 
     @Override
     public ResultBean<TableViewDTO> findTableOrViewBySchemaId(Long schemaId, String username, ModuleTypeEnum module, ActionTypeEnum actionType) {
+        log.info("schemaId：{}，username：{}，module：{}，actionType：{}", schemaId, username, module.getName(), actionType.getName());
         try {
             Set<MetadataDTO> tableResult = new HashSet<>();
             Set<MetadataDTO> viewResult = new HashSet<>();
@@ -145,6 +147,8 @@ public class MetadataServiceProvideImpl implements MetadataServiceProvide {
             if (database == null) {
                 throw new MetaDataException("错误的数据库信息");
             }
+
+            log.info("查询出的database类型：{}", database.getType());
 
             // 用户所属组织下元数据信息
             Organization ascriptionDept = securityConsumer.getAscriptionDeptByUserName(username);
@@ -162,19 +166,24 @@ public class MetadataServiceProvideImpl implements MetadataServiceProvide {
                 metadataPropertyCopy(ascriptionDeptViewList, viewResult);
             }
 
+            log.info("所属部门的表数据：{}，所属部门的视图数据：{}", GsonUtil.toJson(tableResult),GsonUtil.toJson(viewResult));
+
             // 用户授权数据
             // 授权的表
             List<ApprovalProcessVO> tableResourceList =
                     authorityService.getAuthorizedResource(username, module, actionType, ImmutableList.of(database.getType()), ImmutableList.of(1));
+            log.info("授权的表数据：{}", tableResourceList);
             addTableOrView(tableResourceList, tableResult, schemaId);
 
             if (ActionTypeEnum.WRITE != actionType) {
                 // 授权的视图
                 List<ApprovalProcessVO> viewResourceList =
                         authorityService.getAuthorizedResource(username, module, actionType, ImmutableList.of(database.getType()), ImmutableList.of(2));
+                log.info("授权的视图数据：{}", tableResourceList);
                 addTableOrView(viewResourceList, viewResult, schemaId);
             }
 
+            log.info("合并后的表数据：{}，合并后的视图数据：{}", GsonUtil.toJson(tableResult),GsonUtil.toJson(viewResult));
             TableViewDTO dto = new TableViewDTO();
             dto.setTableList(new ArrayList<>(tableResult));
             dto.setViewList(new ArrayList<>(viewResult));
@@ -189,14 +198,17 @@ public class MetadataServiceProvideImpl implements MetadataServiceProvide {
         if (CollectionUtils.isEmpty(resourceList)) {
             return;
         }
-        List<Long> resourceId = new ArrayList<>();
+        List<Long> idList = new ArrayList<>();
         for (ApprovalProcessVO vo : resourceList) {
             if (!vo.getSchemaId().equals(schemaId)) {
                 continue;
             }
-            resourceId.add(vo.getResourceId());
+            idList.add(vo.getResourceId());
         }
-        List<Metadata> list = metadataMapper.findByIdList(resourceId);
+        if(idList.size() <= 0) {
+            return;
+        }
+        List<Metadata> list = metadataMapper.findByIdList(idList);
         metadataPropertyCopy(list, target);
     }
 

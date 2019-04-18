@@ -1,0 +1,6 @@
+{
+    "name": "spark engine name",
+    "desc": "description",
+    "type": "Spark|Pentaho|Flink",
+    "url": "spark host url"
+}

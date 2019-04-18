@@ -210,14 +210,7 @@ public class OrganizationController {
 
                 organization.setDeptCode((String) cells.get(1));
                 organization.setDeptName((String) cells.get(2));
-
-                if (cells.size() >= 4 && cells.get(3) != null && !StringUtils.isEmpty((String) cells.get(3))) {
-                    if (cells.size() >= 5 && cells.get(4) != null && !StringUtils.isEmpty((String) cells.get(4))) {
-                        organization.setUnifiedCreditCode((String) cells.get(4)); // 社会信用代码
-                    } else {
-                        organization.setUnifiedCreditCode((String) cells.get(3)); // 社会信用代码
-                    }
-                }
+                organization.setUnifiedCreditCode((String) cells.get(4));// 社会信用代码
 
                 organization.setCreateTime(new Date());
                 organization.setLastUpdatedBy(new Date());

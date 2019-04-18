@@ -1,0 +1,17 @@
+{
+    "name": "trans name",
+    "configuration": {
+        "execLocal": false,
+        "execRemote": false,
+        "remoteServer": "remote (slave) server name",
+        "passExport": false,
+        "execCluster": false,
+        "clusterPrepare": false,
+        "clusterPost": false,
+        "clusterStart": false,
+        "clusterShowTrans": false,
+        "safeMode": false,
+        "gatherMetrics": false,
+        "logLevel": "log level"
+    }
+}

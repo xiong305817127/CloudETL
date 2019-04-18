@@ -1,0 +1,17 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\lingjiluping]
+@="longzhoufeng Protocol"
+"URL Protocol"=""
+
+[HKEY_CLASSES_ROOT\lingjiluping\DefaultIcon]
+@="C:\\Program Files (x86)\\EVCapture\\bin\\EVCapture.exe"
+
+[HKEY_CLASSES_ROOT\lingjiluping\shell]
+@=""
+
+[HKEY_CLASSES_ROOT\lingjiluping\shell\open]
+@=""
+
+[HKEY_CLASSES_ROOT\lingjiluping\shell\open\command]
+@="\"C:\\Program Files (x86)\\EVCapture\\bin\\EVCapture.exe\" "

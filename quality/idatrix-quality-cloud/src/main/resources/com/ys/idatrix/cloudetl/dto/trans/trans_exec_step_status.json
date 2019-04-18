@@ -1,0 +1,7 @@
+[
+        {
+            "stepName": "step name",
+            "errCount": "step status - error count",
+            "logText": "log text"
+        }
+]

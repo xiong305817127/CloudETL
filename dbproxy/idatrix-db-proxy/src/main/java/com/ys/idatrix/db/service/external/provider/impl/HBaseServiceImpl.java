@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -54,8 +53,7 @@ public class HBaseServiceImpl extends DbServiceAware implements HBaseService {
 
         try {
             String sql = MessageFormat.format(createSchema, namespace);
-            List<String> commands = Lists.newArrayList(sql);
-            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(commands);
+            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(sql);
             return wrapExecuteResult(result);
         } catch (Exception e) {
             log.error("createNamespace 执行异常:{}", e.getMessage());
@@ -72,7 +70,7 @@ public class HBaseServiceImpl extends DbServiceAware implements HBaseService {
 
         try {
             String sql = MessageFormat.format(dropSchema, namespace);
-            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(Lists.newArrayList(sql));
+            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(sql);
             return wrapExecuteResult(result);
         } catch (Exception e) {
             log.error("dropNamespace 执行异常:{}", e.getMessage());
@@ -90,7 +88,7 @@ public class HBaseServiceImpl extends DbServiceAware implements HBaseService {
                 return RespResult.buildFailWithMsg("表名称为空");
             }
 
-            if (null == createTable.getNamespace()) {
+            if (StringUtils.isBlank(createTable.getNamespace())) {
                 sb.append(createTable.getTableName());
             } else {
                 sb.append(createTable.getNamespace() + "." + createTable.getTableName());
@@ -144,9 +142,7 @@ public class HBaseServiceImpl extends DbServiceAware implements HBaseService {
             log.info("创建表语句:" + sb.toString());
 
             // 执行sql
-            List<String> commands = Lists.newArrayList();
-            commands.add(sb.toString());
-            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(commands);
+            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(sb.toString());
             return wrapExecuteResult(result);
         } catch (Exception e) {
             log.error("createTable 执行异常:{}", e.getMessage());
@@ -175,9 +171,7 @@ public class HBaseServiceImpl extends DbServiceAware implements HBaseService {
                 }
             }
             String sql = MessageFormat.format(dropTable, fullName);
-            List<String> commands = Lists.newArrayList();
-            commands.add(sql);
-            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(commands);
+            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(sql);
             return wrapExecuteResult(result);
         } catch (Exception e) {
             log.error("dropTable 执行异常:{}", e.getMessage());
@@ -294,7 +288,7 @@ public class HBaseServiceImpl extends DbServiceAware implements HBaseService {
                 return RespResult.buildSuccessWithMsg("unchanged:no sql commands");
             }
 
-            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(commands);
+            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(commands.toArray(new String[0]));
             return wrapExecuteResult(result);
 
         } catch (Exception e) {
@@ -322,9 +316,7 @@ public class HBaseServiceImpl extends DbServiceAware implements HBaseService {
                 sql = sql + " " + dataType + ",";
             }
 
-            List<String> commands = new ArrayList<String>();
-            commands.add(sql.substring(0, sql.length() - 1));
-            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(commands);
+            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(sql.substring(0, sql.length() - 1));
             log.info("addColumn -> result:{}", JSONObject.toJSONString(result, true));
             return wrapExecuteResult(result);
         } catch (Exception e) {
@@ -342,9 +334,7 @@ public class HBaseServiceImpl extends DbServiceAware implements HBaseService {
             for (String name : columnNames) {
                 sql = sql + name + ",";
             }
-            List<String> commands = new ArrayList<String>();
-            commands.add(sql.substring(0, sql.length() - 1));
-            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(commands);
+            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(sql.substring(0, sql.length() - 1));
             return wrapExecuteResult(result);
         } catch (Exception e) {
             log.error("dropColumn 执行异常:{}", e.getMessage());
@@ -367,7 +357,7 @@ public class HBaseServiceImpl extends DbServiceAware implements HBaseService {
                 indexCols.deleteCharAt(indexCols.lastIndexOf(","));
             }
             String indexCommand = MessageFormat.format(createIndex, indexName, fullName, indexCols);
-            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(Lists.newArrayList(indexCommand));
+            List<SqlExecRespDto> result = phoenixExecService.batchExecuteUpdate(indexCommand);
             return wrapExecuteResult(result);
         } catch (Exception e) {
             log.error("createIndex 执行异常:{}", e.getMessage());
